@@ -1,0 +1,9 @@
+package com.sist.web.service;
+
+import java.util.List;
+
+import com.sist.web.vo.UsersVO;
+
+public interface AdminService {
+	public List<UsersVO> usersList(int page);
+}

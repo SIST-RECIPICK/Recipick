@@ -3,10 +3,12 @@ server:
   servlet:
     context-path: /
 spring:
+  config:
+    import: classpath:db.properties
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${sist_url}
+    username: ${sist_username}
+    password: ${sist_password}
     driver-class-name: oracle.jdbc.driver.OracleDriver
   jpa:
     database: oracle
