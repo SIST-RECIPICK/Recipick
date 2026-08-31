@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sist.web.mapper.CalendarMapper">
+  <select id="selectCalendarItems" parameterType="map" resultType="com.sist.web.vo.CalendarItemVO">
+  	SELECT ci.id AS id,
+  		   ci.user_id as user_id,
+  		   ci.meal_date as meal_date,
+  		   ci.meal_type as meal_type,
+  		   ci.RCP_SEQ as rcp_seq,
+  		   r.RCP_NM as rcp_nm,
+  		   r.ATT_FILE_NO_MAIN as att_file_no_main
+  	FROM CALENDAR_ITEM ci
+  	JOIN RECIPE r ON ci.RCP_SEQ = r.RCP_SEQ
+  	WHERE ci.user_id = #{user_id}
+  		 AND TO_CHAR(ci.meal_date, 'YYYY') = #{year}
+  		 AND TO_CHAR(ci.meal_date, 'MM') = #{month}
+  	ORDER BY ci.meal_date, ci.meal_type
+  </select>
+</mapper>
