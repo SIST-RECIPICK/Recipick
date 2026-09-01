@@ -1,6 +1,7 @@
 package com.sist.web.restcontroller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sist.web.service.RecipeDetailService;
+import com.sist.web.vo.RecipeManualVO;
 import com.sist.web.vo.RecipeVO;
 
 import lombok.RequiredArgsConstructor;
@@ -28,9 +30,11 @@ public class RecipeDetailRestController {
 		
 		try 
 		{
-			RecipeVO vo = service.recipeDetailData(rcp_seq);
-			
-			map.put("recipeData", vo);
+			RecipeVO recipeData = service.recipeDetailData(rcp_seq);
+			List<RecipeManualVO> manualList = service.recipeHowList(rcp_seq);
+
+			map.put("recipeData", recipeData);
+			map.put("manualList", manualList);
 			
 		}catch(Exception ex)
 		{

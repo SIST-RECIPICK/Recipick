@@ -3,8 +3,15 @@
 <mapper namespace="com.sist.web.mapper.RecipeDetailMapper">
 	<select id="recipeDetailData" resultType="com.sist.web.vo.RecipeVO" parameterType="int">
 		SELECT rcp_seq,rcp_nm,rcp_way2,rcp_pat2,info_wgt,info_eng,info_car,info_pro,info_fat,
-		info_na,hash_tag,att_file_no_main,att_file_no_main,att_file_no_mk,rcp_parts_dtls,rcp_na_tip
+		info_na,hash_tag,att_file_no_main,att_file_no_main,att_file_no_mk,rcp_parts_dtls,rcp_na_tip,user_id,hit
 		FROM recipe
 		WHERE rcp_seq=#{rcp_seq}
+	</select>
+	
+	<select id="recipeHowList" resultType="com.sist.web.vo.RecipeManualVO" parameterType="int">
+		SELECT rcp_seq,step_no,manual_desc,manual_img
+		FROM recipe_manual
+		WHERE rcp_seq=#{rcp_seq}
+		ORDER BY step_no ASC
 	</select>
 </mapper>

@@ -1,8 +1,11 @@
 package com.sist.web.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
+import com.sist.web.vo.RecipeManualVO;
 import com.sist.web.vo.RecipeVO;
 
 @Mapper
@@ -17,4 +20,13 @@ public interface RecipeDetailMapper {
 	</select>
 	 */
 	public RecipeVO recipeDetailData(int rcp_seq);
+	
+	/*
+	<select id="recipeHowList" resultType="com.sist.web.vo.RecipeManualVO" parameterType="int">
+		SELECT rcp_seq,step_no,manual_desc,manual_img
+		FROM recipemanual
+		WHERE rcp_seq=#{rcp_seq}
+	</select>
+	 */
+	public List<RecipeManualVO> recipeHowList(int rcp_seq);
 }
