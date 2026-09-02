@@ -10,7 +10,7 @@ import lombok.Data;
  */
 @Data
 public class CalendarItemVO {
-	private int id,user_id,rcp_Seq;
+	private int id,user_id,rcp_seq;
 	private String meal_type,rcp_nm,att_file_no_main;
 	private Date meal_date;
 }
