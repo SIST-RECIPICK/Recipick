@@ -10,4 +10,6 @@ public interface AdminService {
 	public int[] pages(int page);
 	
 	public void userRoleUpdate(int id, String role);
+	
+	public void userStatusUpdate(int id, String status);
 }

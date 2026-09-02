@@ -43,4 +43,9 @@ public class AdminServiceImpl implements AdminService {
 		adminMapper.userRoleUpdate(id, role);
 	}
 
+	@Override
+	public void userStatusUpdate(int id, String status) {
+		adminMapper.userStatusUpdate(id, status);
+	}
+
 }
