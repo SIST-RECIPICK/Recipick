@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mybatis.mapper.review-mapper">
+<!-- 
+이름         널?       유형            
+ID         NOT NULL NUMBER        
+USERS_ID   NOT NULL NUMBER        
+SUBJECT    NOT NULL VARCHAR2(255) 
+CONTENT    NOT NULL CLOB          
+CREATED_AT NOT NULL DATE          
+HIT        NOT NULL NUMBER        
+IMAGE_URL           VARCHAR2(255) 
+IMAGE_SIZE          NUMBER        
+RCP_SEQ    NOT NULL NUMBER        
+ -->
+<select id="boardListData" parameterType="int" resultType="Review_BoardVO">
+	SELECT id, users_id, subject, created_at, hit, image_url, rcp_seq
+	FROM review_board
+	<!-- Join해서 users_id에서 닉네임 가져와야 함.
+	recipe에서 recipe랑 chef도 가져와야 함.-->
+</select> 
+ 
+ <select id="boardDetailData" parameterType="int" resultType="Review_BoardVO">
+	SELECT id, user_id, subject, content, created_at, hit, image_url, image_size, rcp_seq
+	FROM review_board
+	<!-- Join해서 users_id에서 닉네임 가져와야 함.
+	recipe에서 recipe랑 chef도 가져와야 함. resultType은 Map인가 String인가
+	작성자의 다른 레시피와 같은 레시피의 다른 후기는 별도의 select id를 만드는 게 좋을 것으로 판단.
+	우선 필수적인 것부터 차례로 하고, 나중에 작업할 것. 변수명 섞이지 않도록 유의.
+	 -->
+</select> 
+
+</mapper>
