@@ -28,4 +28,9 @@ public interface AdminMapper {
 			+ "WHERE id = #{id}")
 	public void userRoleUpdate(@Param("id") int id, @Param("role") String role);
 	
+	@Update("UPDATE users "
+			+ "SET status = #{status} "
+			+ "WHERE id = #{id}")
+	public void userStatusUpdate(@Param("id") int id, @Param("status") String status);
+	
 }

@@ -51,13 +51,22 @@ public class AdminRestController {
 	// RequestBody는 하나의 body 덩어리로만 받을 수 있음
 	@PutMapping("/user/role")
 	public ResponseEntity<?> role_update(@RequestBody UsersVO vo) {
-		Map<String, Object> map = new HashMap<>();
 		try {
 			adminService.userRoleUpdate(vo.getId(), vo.getRole());
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 
+		return ResponseEntity.ok().build();
+	}
+	
+	@PutMapping("/user/status")
+	public ResponseEntity<?> status_update(@RequestBody UsersVO vo){
+		try {
+			adminService.userStatusUpdate(vo.getId(), vo.getStatus());
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 		return ResponseEntity.ok().build();
 	}
 
