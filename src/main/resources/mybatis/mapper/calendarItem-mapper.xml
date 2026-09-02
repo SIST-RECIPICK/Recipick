@@ -16,4 +16,14 @@
   		 AND TO_CHAR(ci.meal_date, 'MM') = #{month}
   	ORDER BY ci.meal_date, ci.meal_type
   </select>
+  <insert id="upsertCalendarItem" parameterType="com.sist.web.vo.CalendarItemVO">
+    MERGE INTO CALENDAR_ITEM ci
+    USING (SELECT #{user_id} AS user_id, #{meal_date} AS meal_date, #{meal_type} AS meal_type FROM dual) src
+    ON (ci.user_id = src.user_id AND ci.meal_date = src.meal_date AND ci.meal_type = src.meal_type)
+    WHEN MATCHED THEN
+        UPDATE SET ci.RCP_SEQ = #{rcp_seq}
+    WHEN NOT MATCHED THEN
+        INSERT (id, user_id, meal_date, meal_type, RCP_SEQ)
+        VALUES (seq_calendar_item.NEXTVAL, #{user_id}, #{meal_date}, #{meal_type}, #{rcp_seq})
+  </insert>
 </mapper>

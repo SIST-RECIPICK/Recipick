@@ -11,12 +11,18 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class CalendarServiceImpl implements CalendarService{
-	private final CalendarMapper mapper;
+	private final CalendarMapper cMapper;
 
 	@Override
 	public List<CalendarItemVO> selectCalendarItems(int user_id, String year, String month) {
 		// TODO Auto-generated method stub
-		return mapper.selectCalendarItems(user_id, year, month);
+		return cMapper.selectCalendarItems(user_id, year, month);
+	}
+
+	@Override
+	public void upsertCalendarItem(CalendarItemVO vo) {
+		// TODO Auto-generated method stub
+		cMapper.upsertCalendarItem(vo);
 	}
 	
 

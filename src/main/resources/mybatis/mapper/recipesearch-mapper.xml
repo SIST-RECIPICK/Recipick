@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sist.web.mapper.RecipeSearchMapper">
+  <select id="selectRecipeSearch" resultType="com.sist.web.vo.RecipeSearchVO">
+    SELECT r.RCP_SEQ as rcp_seq,
+    	   r.RCP_NM as rcp_nm,
+    	   r.ATT_FILE_NO_MAIN as att_file_no_main,
+    	   r.INFO_ENG as info_eng,
+    	   r.RCP_PAT2 as rcp_pat2,
+    	   CASE WHEN b.BOOKMARK_ID IS NOT NULL THEN 1 ELSE 0 END as is_bookmark 
+   	FROM RECIPE r
+   	LEFT JOIN recipe_bookmark b 
+   	ON r.RCP_SEQ = b.RECIPE_ID AND b.user_id =#{user_id}
+   	WHERE r.RCP_NM LIKE '%'||#{keyword}||'%'
+    ORDER BY is_bookmark DESC, r.RCP_SEQ
+  </select>
+</mapper>
