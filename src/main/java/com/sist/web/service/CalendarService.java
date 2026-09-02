@@ -9,4 +9,5 @@ import com.sist.web.vo.CalendarItemVO;
 public interface CalendarService {
 	public List<CalendarItemVO> selectCalendarItems(
 			int user_id,String year,String month);
+	public void upsertCalendarItem(CalendarItemVO vo);
 }
