@@ -19,4 +19,6 @@ public class RecipeVO {
     private String att_file_no_mk;
     private String rcp_parts_dtls;
     private String rcp_na_tip;
+    private String user_id;
+    private int hit;
 }
