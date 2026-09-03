@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sist.web.service.AdminService;
+import com.sist.web.vo.CurationVO;
 import com.sist.web.vo.UsersVO;
 
 import lombok.RequiredArgsConstructor;
@@ -27,13 +28,13 @@ public class AdminRestController {
 
 	private final AdminService adminService;
 
-	@GetMapping("/user/list")
+	@GetMapping("/user")
 	public ResponseEntity<Map<String, Object>> memberList(@RequestParam(value = "page", defaultValue = "1") int page) {
 		Map<String, Object> map = new HashMap<>();
 		try {
 
 			List<UsersVO> list = adminService.usersList(page);
-			int[] pages = adminService.pages(page);
+			int[] pages = adminService.pages(page, "users");
 
 			map.put("list", list);
 			map.put("curpage", pages[0]);
@@ -68,6 +69,26 @@ public class AdminRestController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 		return ResponseEntity.ok().build();
+	}
+	
+	@GetMapping("/curation")
+	public ResponseEntity<Map<String, Object>> curation_list(@RequestParam(value="page", defaultValue = "1") int page){
+		
+		Map<String, Object> map = new HashMap<>();
+		try {
+			List<CurationVO> list = adminService.curation_list(page);
+			int[] pages = adminService.pages(page, "curation");
+			
+			map.put("list", list);
+			map.put("curpage", pages[0]);
+			map.put("totalpage", pages[1]);
+			map.put("startpage", pages[2]);
+			map.put("endpage", pages[3]);
+			
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		return ResponseEntity.ok(map);
 	}
 
 }
