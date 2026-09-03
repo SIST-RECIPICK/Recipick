@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.sist.web.mapper.RecipeDetailMapper;
+import com.sist.web.vo.IngredientUnitVO;
 import com.sist.web.vo.RecipeManualVO;
 import com.sist.web.vo.RecipeVO;
 
@@ -25,6 +26,12 @@ public class RecipeDetailServiceImpl implements RecipeDetailService{
 	public List<RecipeManualVO> recipeHowList(int rcp_seq) {
 		
 		return mapper.recipeHowList(rcp_seq);
+	}
+
+	@Override
+	public List<IngredientUnitVO> ingredientUnitList(int rcp_seq) {
+		
+		return mapper.ingredientUnitList(rcp_seq);
 	}
 	
 	
