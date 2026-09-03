@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
+import com.sist.web.vo.CurationVO;
 import com.sist.web.vo.UsersVO;
 
 @Mapper
@@ -20,8 +21,8 @@ public interface AdminMapper {
 	public List<UsersVO> usersList(@Param("start") int start);
 	
 	@Select("SELECT CEIL(COUNT(*)/10.0) "
-			+ "FROM users ")
-	public int userTotalCount();
+			+ "FROM ${tablename} ")
+	public int totalPageCount(String tablename);
 	
 	@Update("UPDATE users "
 			+ "SET role = #{role} "
@@ -32,5 +33,7 @@ public interface AdminMapper {
 			+ "SET status = #{status} "
 			+ "WHERE id = #{id}")
 	public void userStatusUpdate(@Param("id") int id, @Param("status") String status);
+	
+	public List<CurationVO> curation_list(@Param("start") int start);
 	
 }
