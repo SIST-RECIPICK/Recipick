@@ -43,4 +43,52 @@ public interface CalendarMapper {
 	  </insert>
 	 */
 	public void upsertCalendarItem(CalendarItemVO vo);
+/*
+ * <select id="selectCalendarInfo" parameterType="map" resultType="com.sist.web.vo.CalendarInfoVO">
+    SELECT
+        ROUND(SUM(r.INFO_ENG),1) AS total_cal,
+        ROUND(SUM(r.INFO_ENG) / COUNT(DISTINCT ci.meal_date),1) AS avg_cal,
+        ROUND(COUNT(ci.id) / (#{days_in_month} * 3) * 100,1) AS fill_rate,
+        COUNT(ci.id) AS filled_count,
+        (#{days_in_month} * 3) as total_slots
+        ROUND(SUM(r.INFO_CAR) / COUNT(DISTINCT ci.meal_date),1) AS total_car,
+        ROUND(SUM(r.INFO_PRO) / COUNT(DISTINCT ci.meal_date),1) AS total_pro,
+        ROUND(SUM(r.INFO_FAT) / COUNT(DISTINCT ci.meal_date),1) AS total_fat
+    FROM CALENDAR_ITEM ci
+    JOIN RECIPE r ON ci.RCP_SEQ = r.RCP_SEQ
+    WHERE ci.user_id = #{user_id}
+      AND TO_CHAR(ci.meal_date, 'YYYY') = #{year}
+      AND TO_CHAR(ci.meal_date, 'MM') = #{month}   	
+  </select>
+	  */
+	public CalendarInfoVO selectCalendarInfo(
+			@Param("user_id") int user_id,
+			@Param("year") String year,
+			@Param("month") String month,
+			@Param("days_in_month") int days_in_month
+			);
+	/*
+	  <select id="selectTop1Recipe" parameterType="map" resultType="map">
+	     SELECT * FROM (
+	        SELECT 
+	        	ci2.RCP_SEQ AS top1_rcp_seq,
+	        	r2.RCP_NM AS top1_nm,
+	        	COUNT(ci2.RCP_SEQ) AS top1_count
+	        FROM CALENDAR_ITEM ci2
+	        JOIN RECIPE r2 ON ci2.RCP_SEQ = r2.RCP_SEQ
+	        WHERE ci.user_id = #{user_id}
+		      AND TO_CHAR(ci.meal_date, 'YYYY') = #{year}
+		      AND TO_CHAR(ci.meal_date, 'MM') = #{month} 
+	        GROUP BY ci2.RCP_SEQ, r2.RCP_NM
+	        ORDER BY top1_count DESC
+	    ) WHERE ROWNUM = 1;
+	</select>
+ */
+	// Top1레시피명 조회 따로 분류
+	public Map<String, Object> selectTop1Recipe(
+			@Param("user_id") int user_id,
+	        @Param("year") String year,
+	        @Param("month") String month
+			);
+	
 }
