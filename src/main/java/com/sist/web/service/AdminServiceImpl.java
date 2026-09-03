@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.sist.web.mapper.AdminMapper;
+import com.sist.web.vo.CurationVO;
 import com.sist.web.vo.UsersVO;
 
 import lombok.RequiredArgsConstructor;
@@ -18,16 +19,19 @@ import lombok.RequiredArgsConstructor;
 public class AdminServiceImpl implements AdminService {
 
 	private final AdminMapper adminMapper;
-
+	private final int LIST_SIZE = 15;
 	@Override
 	public List<UsersVO> usersList(int page) {
-		int start = (page - 1) * 15;
+		int start = (page - 1) * LIST_SIZE;
 		return adminMapper.usersList(start);
 	}
 
 	@Override
-	public int[] pages(int page) {
-		int totalpage = adminMapper.userTotalCount();
+	public int[] pages(int page, String tablename) {
+		if (!tablename.equals("users") && !tablename.equals("curation")) {
+	        throw new IllegalArgumentException("허용되지 않은 테이블: " + tablename);
+	    }
+		int totalpage = adminMapper.totalPageCount(tablename);
 		// 화면에 몇 개의 페이지를 보여줄 건지 정하는 부분
 		final int BLOCK = 10;
 		int startpage = ((page - 1) / BLOCK * BLOCK) + 1;
@@ -41,6 +45,17 @@ public class AdminServiceImpl implements AdminService {
 	@Override
 	public void userRoleUpdate(int id, String role) {
 		adminMapper.userRoleUpdate(id, role);
+	}
+
+	@Override
+	public void userStatusUpdate(int id, String status) {
+		adminMapper.userStatusUpdate(id, status);
+	}
+
+	@Override
+	public List<CurationVO> curation_list(int page) {
+		int start = (page - 1) * LIST_SIZE;
+		return adminMapper.curation_list(start);
 	}
 
 }

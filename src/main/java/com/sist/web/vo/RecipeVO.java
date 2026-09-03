@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class RecipeVO {
-	private int rcp_seq;
+	  private int rcp_seq;
     private String rcp_nm;
     private String rcp_way2;
     private String rcp_pat2;
@@ -19,4 +19,6 @@ public class RecipeVO {
     private String att_file_no_mk;
     private String rcp_parts_dtls;
     private String rcp_na_tip;
+    private String user_id;
+    private int hit;
 }

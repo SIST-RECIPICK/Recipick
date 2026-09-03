@@ -1,5 +1,9 @@
 package com.sist.web.service;
 
-public class ReviewService {
+import java.util.List;
 
+import com.sist.web.vo.Review_BoardVO;
+
+public interface ReviewService {
+	public List<Review_BoardVO> ReviewBoardListData(int page);
 }
