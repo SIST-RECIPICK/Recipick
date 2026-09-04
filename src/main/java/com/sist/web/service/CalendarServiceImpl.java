@@ -1,6 +1,7 @@
 package com.sist.web.service;
 
 import java.time.YearMonth;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,12 @@ public class CalendarServiceImpl implements CalendarService{
 	    }
 			
 		return info;
+	}
+
+	@Override
+	public int deleteCalendarItem(int user_id, String meal_date, String meal_type) {
+		// TODO Auto-generated method stub
+		return cMapper.deleteCalendarItem(user_id, meal_date, meal_type);
 	}
 	
 
