@@ -15,4 +15,6 @@ public class Review_BoardVO {
     private String image_url;
     private double image_size;
     private int rcp_seq;
+    
+    
 }
