@@ -60,5 +60,11 @@
         GROUP BY ci2.RCP_SEQ, r2.RCP_NM
         ORDER BY top1_count DESC
     ) WHERE ROWNUM = 1
-</select>
+  </select>
+  <delete id="deleteCalendarItem" parameterType="map">
+    DELETE FROM CALENDAR_ITEM 
+    WHERE user_id = #{user_id}
+      AND TRUNC(meal_date) = TO_DATE(#{meal_date}, 'YYYY-MM-DD')
+      AND meal_type = #{meal_type}
+  </delete>
 </mapper>
