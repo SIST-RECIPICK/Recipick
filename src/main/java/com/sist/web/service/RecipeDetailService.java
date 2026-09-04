@@ -5,6 +5,7 @@ import java.util.List;
 import com.sist.web.vo.IngredientUnitVO;
 import com.sist.web.vo.RecipeManualVO;
 import com.sist.web.vo.RecipeVO;
+import com.sist.web.vo.ShopLinkVO;
 
 public interface RecipeDetailService {
 
