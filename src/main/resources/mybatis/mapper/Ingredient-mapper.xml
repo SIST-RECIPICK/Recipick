@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sist.web.mapper.IngredientMapper">
+	<select id="searchData" parameterType="String" resultType="com.sist.web.vo.IngredientVO">
+		SELECT id,
+			category_name,
+			ingredient_name
+		FROM ingredient
+		WHERE ingredient_name LIKE '%'||#{keyword}||'%'
+	</select>
+	
+</mapper>
