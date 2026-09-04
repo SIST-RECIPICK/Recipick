@@ -26,4 +26,39 @@
         INSERT (id, user_id, meal_date, meal_type, RCP_SEQ)
         VALUES (seq_calendar_item.NEXTVAL, #{user_id}, #{meal_date}, #{meal_type}, #{rcp_seq})
   </insert>
+  <!-- 칼로리등 정보 
+  		#{days_in_month} 이건 자바에서 계산해서 넘겨준 한달 일수
+  -->
+  <select id="selectCalendarInfo" parameterType="map" resultType="com.sist.web.vo.CalendarInfoVO">
+    SELECT
+        ROUND(SUM(r.INFO_ENG),1) AS total_cal,
+        ROUND(SUM(r.INFO_ENG) / COUNT(DISTINCT ci.meal_date),1) AS avg_cal,
+        ROUND(COUNT(ci.id) / (#{days_in_month} * 3) * 100,1) AS fill_rate,
+        COUNT(ci.id) AS filled_count,
+        (#{days_in_month} * 3) as total_slots,
+        ROUND(SUM(r.INFO_CAR) / COUNT(DISTINCT ci.meal_date),1) AS total_car,
+        ROUND(SUM(r.INFO_PRO) / COUNT(DISTINCT ci.meal_date),1) AS total_pro,
+        ROUND(SUM(r.INFO_FAT) / COUNT(DISTINCT ci.meal_date),1) AS total_fat
+    FROM CALENDAR_ITEM ci
+    JOIN RECIPE r ON ci.RCP_SEQ = r.RCP_SEQ
+    WHERE ci.user_id = #{user_id}
+      AND TO_CHAR(ci.meal_date, 'YYYY') = #{year}
+      AND TO_CHAR(ci.meal_date, 'MM') = #{month}   	
+  </select>
+  <!-- Top1레시피명 조회 따로 분류 --> 
+  <select id="selectTop1Recipe" parameterType="map" resultType="map">
+     SELECT * FROM (
+        SELECT 
+        	ci2.RCP_SEQ AS top1_rcp_seq,
+        	r2.RCP_NM AS top1_nm,
+        	COUNT(ci2.RCP_SEQ) AS top1_count
+        FROM CALENDAR_ITEM ci2
+        JOIN RECIPE r2 ON ci2.RCP_SEQ = r2.RCP_SEQ
+        WHERE ci2.user_id = #{user_id}
+	      AND TO_CHAR(ci2.meal_date, 'YYYY') = #{year}
+	      AND TO_CHAR(ci2.meal_date, 'MM') = #{month} 
+        GROUP BY ci2.RCP_SEQ, r2.RCP_NM
+        ORDER BY top1_count DESC
+    ) WHERE ROWNUM = 1
+</select>
 </mapper>
