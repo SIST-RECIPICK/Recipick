@@ -20,5 +20,5 @@ public interface ReviewMapper {
 	public List<Review_BoardVO> ReviewBoardListData(
 			@Param("page") int page
 	);
-
+	public int reviewBoardTotalpage();
 }

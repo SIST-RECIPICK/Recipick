@@ -1,7 +1,6 @@
 package com.sist.web.service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import org.springframework.stereotype.Service;
 
@@ -14,11 +13,34 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
 	private final ReviewMapper rMapper;
-
+	private final int ROW_SIZE = 12;
+	
 	@Override
-	public List<Review_BoardVO> ReviewBoardListData(int page) {
+    public Map<String, Object> ReviewBoardListData(int page) {
+        // 1. DB 쿼리용 OFFSET 계산
+        int start = (page - 1) * ROW_SIZE;
+        List<Review_BoardVO> list = rMapper.ReviewBoardListData(start);
 
-		return rMapper.ReviewBoardListData(page);
-	}
+        // 2. 전체 페이지 수 및 블록 계산
+        int totalpage = rMapper.reviewBoardTotalpage();
+        final int BLOCK = 12;
+        int startpage = ((page - 1) / BLOCK * BLOCK) + 1;
+        int endpage = ((page - 1) / BLOCK * BLOCK) + BLOCK;
+        if (endpage > totalpage) {
+            endpage = totalpage;
+        }
+
+        // 3. Map 구성 후 반환
+        Map<String, Object> map = new HashMap<>();
+        map.put("list", list);
+        map.put("curpage", page);
+        map.put("totalpage", totalpage);
+        map.put("startpage", startpage);
+        map.put("endpage", endpage);
+
+        return map;
+    }
+
+	
 
 }

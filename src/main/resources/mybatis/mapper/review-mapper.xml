@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="mybatis.mapper.review-mapper">
+<mapper namespace="com.sist.web.mapper.ReviewMapper">
 <!-- 
 이름         널?       유형            
 ID         NOT NULL NUMBER        
@@ -13,13 +13,17 @@ IMAGE_URL           VARCHAR2(255)
 IMAGE_SIZE          NUMBER        
 RCP_SEQ    NOT NULL NUMBER        
  -->
-<select id="boardListData" parameterType="int" resultType="Review_BoardVO">
+<select id="ReviewBoardListData" parameterType="int" resultType="Review_BoardVO">
 	SELECT id, users_id, subject, created_at, hit, image_url, rcp_seq
 	FROM review_board
 	<!-- Join해서 users_id에서 닉네임 가져와야 함.
 	recipe에서 recipe랑 chef도 가져와야 함.
 	좋아요도 join으로 가져와야 함-->
 </select> 
+
+<select id="reviewBoardTotalpage" resultType="int">
+    SELECT CEIL(COUNT(*) / 12.0) FROM review_board
+</select>
  
  <select id="boardDetailData" parameterType="int" resultType="Review_BoardVO">
 	SELECT id, user_id, subject, content, created_at, hit, image_url, image_size, rcp_seq
