@@ -1,5 +1,6 @@
 package com.sist.web.restcontroller;
 
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewRestController {
 	private final ReviewService rService;
 
+
 	@GetMapping("/review/list")
     public ResponseEntity<Map<String, Object>> review_list(
             @RequestParam(value = "page", defaultValue = "1") int page
@@ -34,4 +36,5 @@ public class ReviewRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 }

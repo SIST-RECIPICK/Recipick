@@ -17,11 +17,10 @@ public class ReviewServiceImpl implements ReviewService {
 	
 	@Override
     public Map<String, Object> ReviewBoardListData(int page) {
-        // 1. DB 쿼리용 OFFSET 계산
+
         int start = (page - 1) * ROW_SIZE;
         List<Review_BoardVO> list = rMapper.ReviewBoardListData(start);
 
-        // 2. 전체 페이지 수 및 블록 계산
         int totalpage = rMapper.reviewBoardTotalpage();
         final int BLOCK = 12;
         int startpage = ((page - 1) / BLOCK * BLOCK) + 1;
@@ -30,7 +29,6 @@ public class ReviewServiceImpl implements ReviewService {
             endpage = totalpage;
         }
 
-        // 3. Map 구성 후 반환
         Map<String, Object> map = new HashMap<>();
         map.put("list", list);
         map.put("curpage", page);
