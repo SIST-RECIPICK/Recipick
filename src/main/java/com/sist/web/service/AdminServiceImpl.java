@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.sist.web.mapper.AdminMapper;
 import com.sist.web.vo.CurationDetailVO;
@@ -98,6 +99,13 @@ public class AdminServiceImpl implements AdminService {
 		return curation;
 	}
 
-	
+	@Override
+	@Transactional
+	public void deleteCuration(int id) {
+		// 상세 데이터 삭제
+		adminMapper.deleteCurationDetail(id);
+		// 큐레이션 삭제
+		adminMapper.deleteCuration(id);
+	}
 
 }

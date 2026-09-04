@@ -18,4 +18,6 @@ public interface AdminService {
 	public List<CurationVO> curation_list(int page);
 	
 	public CurationVO selectCurationDetail(int id);
+
+	public void deleteCuration(int id);
 }
