@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sist.web.mapper.RecipeDetailMapper">
-
+	
 	<!-- 레시피 상세정보 -->
 	<select id="recipeDetailData" resultType="com.sist.web.vo.RecipeVO" parameterType="int">
 		SELECT rcp_seq,rcp_nm,rcp_way2,rcp_pat2,info_wgt,info_eng,info_car,info_pro,info_fat,
@@ -12,8 +12,10 @@
 	
 	<!-- 레시피 상세 재료 -->
 	<select id="ingredientUnitList" resultType="com.sist.web.vo.IngredientUnitVO" parameterType="int">
-		SELECT recipe_id,name,amount,unit,amount_text,original
+		SELECT recipe_id,name,amount,unit,amount_text,original,NVL(category_name,'기타') as category_name
 		FROM Ingredient_unit
+		LEFT JOIN ingredient
+		ON name = Ingredient_name
 		WHERE recipe_id=#{rcp_seq}
 	</select>
 	

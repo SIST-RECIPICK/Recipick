@@ -8,6 +8,7 @@ import com.sist.web.mapper.RecipeDetailMapper;
 import com.sist.web.vo.IngredientUnitVO;
 import com.sist.web.vo.RecipeManualVO;
 import com.sist.web.vo.RecipeVO;
+import com.sist.web.vo.ShopLinkVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RecipeDetailServiceImpl implements RecipeDetailService{
 	private final RecipeDetailMapper mapper;
+	private final ShopLinkService shopService;
 
 	@Override
 	public RecipeVO recipeDetailData(int rcp_seq) {
@@ -31,8 +33,15 @@ public class RecipeDetailServiceImpl implements RecipeDetailService{
 	@Override
 	public List<IngredientUnitVO> ingredientUnitList(int rcp_seq) {
 		
-		return mapper.ingredientUnitList(rcp_seq);
+		List<IngredientUnitVO> unitList = mapper.ingredientUnitList(rcp_seq);
+		
+		for(IngredientUnitVO vo : unitList)
+		{
+			List<ShopLinkVO> linkVO = shopService.shopLinkData(vo.getName());
+
+			vo.setShopVO(linkVO);
+		}
+	
+		return unitList;
 	}
-	
-	
 }
