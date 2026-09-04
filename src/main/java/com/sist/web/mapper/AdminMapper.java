@@ -2,6 +2,7 @@ package com.sist.web.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -43,6 +44,12 @@ public interface AdminMapper {
 	public CurationVO selectCurationHeader(@Param("id") int id);
 	
 	public List<CurationDetailVO> selectCurationDetail(@Param("curation_id") int curation_id);
+
+	@Delete("DELETE FROM CURATION WHERE id = #{id}")
+	public void deleteCuration(int id);
+	
+	@Delete("DELETE FROM CURATION_DETAIL WHERE curation_id = #{id}")
+	public void deleteCurationDetail(int id);
 	
 	
 }
