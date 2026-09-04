@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
+import com.sist.web.vo.CurationDetailVO;
 import com.sist.web.vo.CurationVO;
 import com.sist.web.vo.UsersVO;
 
@@ -34,6 +35,14 @@ public interface AdminMapper {
 			+ "WHERE id = #{id}")
 	public void userStatusUpdate(@Param("id") int id, @Param("status") String status);
 	
-	public List<CurationVO> curation_list(@Param("start") int start);
+	public List<CurationVO> selectCurationList(@Param("start") int start);
+	
+	@Select("SELECT id, title, year || '년 '|| month ||'월' as targetday, created_at "
+			+ "FROM curation "
+			+ "WHERE id = #{id}")
+	public CurationVO selectCurationHeader(@Param("id") int id);
+	
+	public List<CurationDetailVO> selectCurationDetail(@Param("curation_id") int curation_id);
+	
 	
 }

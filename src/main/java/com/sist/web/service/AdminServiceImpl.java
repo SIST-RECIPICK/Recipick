@@ -1,15 +1,17 @@
 package com.sist.web.service;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.sist.web.mapper.AdminMapper;
+import com.sist.web.vo.CurationDetailVO;
 import com.sist.web.vo.CurationVO;
+import com.sist.web.vo.IngredientGroupVO;
+import com.sist.web.vo.RecipeVO;
 import com.sist.web.vo.UsersVO;
 
 import lombok.RequiredArgsConstructor;
@@ -55,7 +57,47 @@ public class AdminServiceImpl implements AdminService {
 	@Override
 	public List<CurationVO> curation_list(int page) {
 		int start = (page - 1) * LIST_SIZE;
-		return adminMapper.curation_list(start);
+		return adminMapper.selectCurationList(start);
 	}
+
+	@Override
+	public CurationVO selectCurationDetail(int id) {
+		
+		CurationVO curation = adminMapper.selectCurationHeader(id);
+		
+		List<CurationDetailVO> detailList = adminMapper.selectCurationDetail(id);
+		
+		Map<String, IngredientGroupVO> map = new LinkedHashMap<>();
+		
+		for(CurationDetailVO detail : detailList) {
+			String name = detail.getIngredient_name();
+			// 처음 나오는 재료라면
+			if(!map.containsKey(name)) {
+				
+				IngredientGroupVO ingredients = new IngredientGroupVO();
+				
+				ingredients.setIngredient_name(name);
+				ingredients.setIngredient_id(detail.getIngredient_id());
+				ingredients.setSort_order(detail.getSort_order());
+				
+				map.put(name, ingredients);
+				
+			}
+
+			RecipeVO recipe = new RecipeVO();
+			recipe.setRcp_seq(detail.getRcp_seq());
+			recipe.setRcp_nm(detail.getRcp_nm());
+			recipe.setAtt_file_no_main(detail.getAtt_file_no_main());
+			recipe.setHit(detail.getHit());
+			
+			map.get(name).getRecipes().add(recipe);
+		}
+		
+		curation.setGroup(new ArrayList<>(map.values()));
+		
+		return curation;
+	}
+
+	
 
 }
