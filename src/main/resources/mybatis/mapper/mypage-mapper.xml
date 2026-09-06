@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="mybatis.mapper.mypage-mapper">
-
+<mapper namespace="com.sist.web.mapper.MypageMapper">
+	    
+    <select id="mypageSideProfile" resultType="com.sist.web.vo.UsersVO">
+        SELECT id, nickname, profile_image_url, email, created_at
+        FROM users
+        WHERE id = #{userId}
+    </select>
+    
+    <select id="mypageMainCount" resultType="map">
+        SELECT 
+            (SELECT COUNT(*) FROM recipe WHERE user_id = #{userId}) AS my_recipe_cnt,
+            (SELECT COUNT(*) FROM recipe_like WHERE user_id = #{userId}) AS like_recipe_cnt,
+            (SELECT COUNT(*) FROM review_board WHERE users_id = #{userId}) AS my_review_cnt,
+            (SELECT COUNT(*) FROM review_board_reply WHERE users_id = #{userId}) AS my_reply_cnt
+        FROM DUAL
+    </select>
+    
 </mapper>
