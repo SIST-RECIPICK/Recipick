@@ -18,30 +18,30 @@ public class ReviewServiceImpl implements ReviewService {
 	private final int ROW_SIZE = 12;
 
 	@Override
-	public List<Review_BoardVO> ReviewBoardListData(int page) {
-		int start = (page - 1) * ROW_SIZE;
-		return rMapper.ReviewBoardListData(start);
-	}
+    public List<Review_BoardVO> ReviewBoardListData(int page, String keyword, String type) {
+        int start = (page - 1) * ROW_SIZE;
+        return rMapper.ReviewBoardListData(start, keyword, type);
+    }
 
-	@Override
-	public int reviewBoardTotalpage() {
-		return rMapper.reviewBoardTotalpage();
-	}
+    @Override
+    public int reviewBoardTotalpage(String keyword, String type) {
+        return rMapper.reviewBoardTotalpage(keyword, type);
+    }
 
-	@Override
-	public int[] pages(int page) {
-		int totalpage = rMapper.reviewBoardTotalpage();
-		final int BLOCK = 10;
+    @Override
+    public int[] pages(int page, String keyword, String type) {
+        int totalpage = rMapper.reviewBoardTotalpage(keyword, type);
+        final int BLOCK = 10;
 
-		int startpage = ((page - 1) / BLOCK * BLOCK) + 1;
-		int endpage = ((page - 1) / BLOCK * BLOCK) + BLOCK;
-		if (endpage > totalpage) {
-			endpage = totalpage;
-		}
+        int startpage = ((page - 1) / BLOCK * BLOCK) + 1;
+        int endpage = ((page - 1) / BLOCK * BLOCK) + BLOCK;
+        if (endpage > totalpage) {
+            endpage = totalpage;
+        }
 
-		int[] pages = { page, totalpage, startpage, endpage };
-		return pages;
-	}
+        int[] pages = { page, totalpage, startpage, endpage };
+        return pages;
+    }
 
 	@Override
 	public Review_BoardVO boardDetailData(int id) {

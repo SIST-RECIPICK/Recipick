@@ -8,9 +8,9 @@ import com.sist.web.vo.Review_BoardVO;
 import com.sist.web.vo.Review_Board_ReplyVO;
 
 public interface ReviewService {
-	public List<Review_BoardVO> ReviewBoardListData(int start);
-	public int reviewBoardTotalpage();
-	public int[] pages(int page);
+	public List<Review_BoardVO> ReviewBoardListData(int page, String keyword, String type);
+    public int reviewBoardTotalpage(String keyword, String type);
+    public int[] pages(int page, String keyword, String type);
 	public Review_BoardVO boardDetailData(int id);
 	public List<Review_BoardVO> writerOtherReviews(Map<String, Object> map);
 	public List<Review_BoardVO> recipeOtherReviews(Map<String, Object> map);

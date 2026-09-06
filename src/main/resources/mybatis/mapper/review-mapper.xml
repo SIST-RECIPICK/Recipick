@@ -2,36 +2,67 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sist.web.mapper.ReviewMapper">
 		
-	<select id="ReviewBoardListData" parameterType="int" resultType="Review_BoardVO">
-		SELECT
-		rb.id AS id,
-		rb.subject AS subject,
-		rb.created_at AS created_at,
-		rb.hit AS hit,
-		rb.image_url AS image_url,
-		rb.rcp_seq AS rcp_seq,
-
-		u1.id AS writer_id,
-		u1.nickname AS writer_nickname,
-		u1.profile_image_url AS writer_profile_image,
-
-		rec.rcp_nm AS rcp_nm,
-		rec.att_file_no_main AS att_file_no_main,
-
-		u2.id AS chef_id,
-		u2.nickname AS chef_nickname,
-		u2.profile_image_url AS chef_profile_image
-
-		FROM review_board rb
-		LEFT OUTER JOIN users u1 ON rb.users_id = u1.id
-		LEFT OUTER JOIN recipe rec ON rb.rcp_seq = rec.rcp_seq
-		LEFT OUTER JOIN users u2 ON rec.user_id = u2.id
-		ORDER BY rb.id DESC
-		OFFSET #{start} ROWS FETCH NEXT 12 ROWS ONLY
+	<select id="ReviewBoardListData" parameterType="map" resultType="Review_BoardVO">
+    	SELECT
+        rb.id AS id,
+        rb.subject AS subject,
+        rb.created_at AS created_at,
+        rb.hit AS hit,
+        rb.image_url AS image_url,
+        rb.rcp_seq AS rcp_seq,
+        
+        u1.id AS writer_id,
+        u1.nickname AS writer_nickname,
+        u1.profile_image_url AS writer_profile_image,
+        
+        rec.rcp_nm AS rcp_nm,
+        rec.att_file_no_main AS att_file_no_main,
+        
+        u2.id AS chef_id,
+        u2.nickname AS chef_nickname,
+        u2.profile_image_url AS chef_profile_image
+    	
+    	FROM review_board rb
+	    LEFT OUTER JOIN users u1 ON rb.users_id = u1.id
+	    LEFT OUTER JOIN recipe rec ON rb.rcp_seq = rec.rcp_seq
+	    LEFT OUTER JOIN users u2 ON rec.user_id = u2.id
+	    <where>
+	        <if test="keyword != null and keyword != ''">
+	            <choose>
+	                <when test="type == 'content'">
+	                    UPPER(rb.content) LIKE '%' || UPPER(#{keyword}) || '%'
+	                </when>
+	                <when test="type == 'writer'">
+	                    UPPER(u1.nickname) LIKE '%' || UPPER(#{keyword}) || '%'
+	                </when>
+	                <otherwise>
+	                    UPPER(rb.subject) LIKE '%' || UPPER(#{keyword}) || '%'
+	                </otherwise>
+	            </choose>
+	        </if>
+	    </where>
+	    ORDER BY rb.id DESC
+	    OFFSET #{start} ROWS FETCH NEXT 12 ROWS ONLY
 	</select>
-
-	<select id="reviewBoardTotalpage" resultType="int">
-		SELECT CEIL(COUNT(*) / 12.0) FROM review_board
+	
+	<select id="reviewBoardTotalpage" parameterType="String" resultType="int">
+	    SELECT CEIL(COUNT(*) / 12.0) 
+	    FROM review_board
+	    <where>
+	        <if test="keyword != null and keyword != ''">
+	            <choose>
+	                <when test="type == 'content'">
+	                    UPPER(rb.content) LIKE '%' || UPPER(#{keyword}) || '%'
+	                </when>
+	                <when test="type == 'writer'">
+	                    UPPER(u1.nickname) LIKE '%' || UPPER(#{keyword}) || '%'
+	                </when>
+	                <otherwise>
+	                    UPPER(rb.subject) LIKE '%' || UPPER(#{keyword}) || '%'
+	                </otherwise>
+	            </choose>
+	        </if>
+	    </where>
 	</select>
 	
 	<select id="boardDetailData" parameterType="int" resultType="Review_BoardVO">
@@ -147,5 +178,6 @@
 	    DELETE FROM review_board_reply
 	    WHERE id = #{id}
 	</delete>
+	
 
 </mapper>

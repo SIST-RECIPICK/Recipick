@@ -30,24 +30,21 @@ public class ReviewRestController {
 
 	@GetMapping("/review/list")
 	public ResponseEntity<Map<String, Object>> review_list(
-			@RequestParam(value = "page", defaultValue = "1") int page
+	        @RequestParam(value = "page", defaultValue = "1") int page,
+	        @RequestParam(value = "keyword", required = false) String keyword,
+	        @RequestParam(value = "type", defaultValue = "subject") String type // <-- 기본값 subject 지정
 	) {
-		try {
-			List<Review_BoardVO> list = rService.ReviewBoardListData(page);
-			int[] pages = rService.pages(page);
+	    List<Review_BoardVO> list = rService.ReviewBoardListData(page, keyword, type);
+	    int[] pages = rService.pages(page, keyword, type);
 
-			Map<String, Object> map = new HashMap<>();
-			map.put("list", list);
-			map.put("curpage", pages[0]);
-			map.put("totalpage", pages[1]);
-			map.put("startpage", pages[2]);
-			map.put("endpage", pages[3]);
+	    Map<String, Object> map = new HashMap<>();
+	    map.put("list", list);
+	    map.put("curpage", pages[0]);
+	    map.put("totalpage", pages[1]);
+	    map.put("startpage", pages[2]);
+	    map.put("endpage", pages[3]);
 
-			return ResponseEntity.ok(map);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
+	    return ResponseEntity.ok(map);
 	}
 	
 	@GetMapping("/review/detail")
