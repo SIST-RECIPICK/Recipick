@@ -90,5 +90,18 @@ public interface CalendarMapper {
 	        @Param("year") String year,
 	        @Param("month") String month
 			);
-	
+	/*
+	 * <delete id="deleteCalendarItem" parameterType="map">
+	    DELETE FROM CALENDAR_ITEM 
+	    WHERE user_id = #{user_id}
+	      AND meal_date = TO_DATE(#{meal_date}, 'YYYY-MM-DD')
+	      AND meal_type = #{meal_type}
+	  </delete>
+	 */
+	public int deleteCalendarItem(
+			@Param("user_id") int user_id,
+			@Param("meal_date") String meal_date,
+			@Param("meal_type") String meal_type
+
+	);
 }

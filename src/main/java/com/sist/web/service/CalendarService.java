@@ -1,5 +1,6 @@
 package com.sist.web.service;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
@@ -12,4 +13,5 @@ public interface CalendarService {
 			int user_id,String year,String month);
 	public void upsertCalendarItem(CalendarItemVO vo);
 	public CalendarInfoVO selectCalendarInfo(int user_id,String year,String month);
+	public int deleteCalendarItem(int user_id,String meal_date, String meal_type);
 }
