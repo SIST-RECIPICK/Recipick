@@ -47,7 +47,8 @@
 	
 	<select id="reviewBoardTotalpage" parameterType="String" resultType="int">
 	    SELECT CEIL(COUNT(*) / 12.0) 
-	    FROM review_board
+	    FROM review_board rb
+	    LEFT OUTER JOIN users u1 ON rb.users_id = u1.id
 	    <where>
 	        <if test="keyword != null and keyword != ''">
 	            <choose>
