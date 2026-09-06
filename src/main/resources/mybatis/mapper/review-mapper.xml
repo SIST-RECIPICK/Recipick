@@ -18,7 +18,7 @@ RCP_SEQ    NOT NULL NUMBER
 	FROM review_board
 	<!-- Join해서 users_id에서 닉네임 가져와야 함.
 	recipe에서 recipe랑 chef도 가져와야 함.
-	좋아요도 join으로 가져와야 함-->
+	좋아요도 join으로 가져와야 함. test-->
 </select> 
 
 <select id="reviewBoardTotalpage" resultType="int">
