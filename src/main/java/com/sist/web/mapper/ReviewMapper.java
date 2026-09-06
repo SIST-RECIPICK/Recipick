@@ -1,6 +1,6 @@
 package com.sist.web.mapper;
 
-import java.util.List;
+import java.util.*;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -17,8 +17,7 @@ public interface ReviewMapper {
 	 * review_board <!-- Join해서 users_id에서 닉네임 가져와야 함. recipe에서 recipe랑 chef도 가져와야
 	 * 함. 좋아요도 join으로 가져와야 함--> </select>
 	 */
-	public List<Review_BoardVO> ReviewBoardListData(
-			@Param("page") int page
-	);
-	public int reviewBoardTotalpage();
+	public List<Map<String, Object>> ReviewBoardListData(@Param("start") int start);
+
+    public int reviewBoardTotalpage();
 }
