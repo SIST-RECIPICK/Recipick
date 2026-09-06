@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.sist.web.mapper.ReviewMapper;
 import com.sist.web.vo.Review_BoardVO;
+import com.sist.web.vo.Review_Board_ReplyVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,31 +15,38 @@ import lombok.RequiredArgsConstructor;
 public class ReviewServiceImpl implements ReviewService {
 	private final ReviewMapper rMapper;
 	private final int ROW_SIZE = 12;
-
+	
 	@Override
-	public Map<String, Object> ReviewBoardListData(int page) {
-		int start = (page - 1) * ROW_SIZE;
-
-		List<Map<String, Object>> list = rMapper.ReviewBoardListData(start);
-
-		int totalpage = rMapper.reviewBoardTotalpage();
-
-		final int BLOCK = 10;
-		int startpage = ((page - 1) / BLOCK * BLOCK) + 1;
-		int endpage = ((page - 1) / BLOCK * BLOCK) + BLOCK;
-		if (endpage > totalpage) {
-			endpage = totalpage;
-		}
-
-		Map<String, Object> resultMap = new HashMap<>();
-		resultMap.put("list", list);
-		resultMap.put("curpage", page);
-		resultMap.put("totalpage", totalpage);
-		resultMap.put("startpage", startpage);
-		resultMap.put("endpage", endpage);
-
-		return resultMap;
-
+	public List<Review_BoardVO> ReviewBoardListData(int start) {
+		// TODO Auto-generated method stub
+		return null;
 	}
+	@Override
+	public int reviewBoardTotalpage() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public Review_BoardVO boardDetailData(int id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public List<Review_BoardVO> writerOtherReviews(Map<String, Object> map) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public List<Review_BoardVO> recipeOtherReviews(Map<String, Object> map) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public List<Review_Board_ReplyVO> boardReplyList(int reviewBoardId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
 
 }

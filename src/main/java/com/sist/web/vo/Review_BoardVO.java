@@ -16,5 +16,18 @@ public class Review_BoardVO {
     private double image_size;
     private int rcp_seq;
     
+    // 작성자(users)
+    private int writer_id;
+    private String writer_nickname;
+    private String writer_profile_image;
+
+    // 레시피(recipe)
+    private String rcp_nm;
+    private String att_file_no_main;
+
+    // 쉐프(users)
+    private int chef_id;
+    private String chef_nickname;
+    private String chef_profile_image;
     
 }

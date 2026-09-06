@@ -11,4 +11,7 @@ public class Review_Board_ReplyVO {
     private int users_id;
     private String content;
     private Date created_at;
+    
+    // 댓글 작성자(user)
+    private String writer_nickname;
 }

@@ -1,43 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sist.web.mapper.ReviewMapper">
-	<!-- 이름 널? 유형 
-	ID NOT NULL NUMBER 
-	USERS_ID NOT NULL NUMBER 
-	SUBJECT NOT NULL VARCHAR2(255) 
-	CONTENT NOT NULL CLOB 
-	CREATED_AT NOT NULL DATE 
-	HIT NOT NULL NUMBER 
-	IMAGE_URL VARCHAR2(255) 
-	IMAGE_SIZE NUMBER 
-	RCP_SEQ NOT NULL NUMBER -->
-	
-	<resultMap id="reviewBoardMap" type="java.util.Map">
-        <result property="id" column="id"/>
-        <result property="subject" column="subject"/>
-        <result property="content" column="content" javaType="java.lang.String" jdbcType="CLOB"/>
-        <result property="created_at" column="created_at"/>
-        <result property="hit" column="hit"/>
-        <result property="image_url" column="image_url"/>
-        <result property="rcp_seq" column="rcp_seq"/>
-        
-        <result property="writer_id" column="writer_id"/>
-        <result property="writer_nickname" column="writer_nickname"/>
-        <result property="writer_profile_image" column="writer_profile_image"/>
-        
-        <result property="rcp_nm" column="rcp_nm"/>
-        <result property="att_file_no_main" column="att_file_no_main"/>
-        
-        <result property="chef_id" column="chef_id"/>
-        <result property="chef_nickname" column="chef_nickname"/>
-        <result property="chef_profile_image" column="chef_profile_image"/>
-    </resultMap>	
-	
-	<select id="ReviewBoardListData" parameterType="int" resultMap="reviewBoardMap">
+		
+	<select id="ReviewBoardListData" parameterType="int" resultType="Review_BoardVO">
 		SELECT
 		rb.id AS id,
 		rb.subject AS subject,
-		rb.content AS content,
 		rb.created_at AS created_at,
 		rb.hit AS hit,
 		rb.image_url AS image_url,
@@ -65,14 +33,58 @@
 	<select id="reviewBoardTotalpage" resultType="int">
 		SELECT CEIL(COUNT(*) / 12.0) FROM review_board
 	</select>
-
+	
 	<select id="boardDetailData" parameterType="int" resultType="Review_BoardVO">
-		SELECT id, user_id, subject, content, created_at, hit, image_url,
-		image_size, rcp_seq
+		SELECT
+		rb.id AS id,
+		rb.subject AS subject,
+		rb.content AS content,
+		rb.created_at AS created_at,
+		rb.hit AS hit,
+		rb.image_url AS image_url,
+		rb.image_size AS image_size,
+		rb.rcp_seq AS rcp_seq,
+
+		u.id AS writer_id,
+		u.nickname AS writer_nickname,
+		u.profile_image_url AS writer_profile_image
+		
+		FROM review_board rb
+		LEFT OUTER JOIN users u ON rb.users_id = u.id
+		WHERE rb.id = #{id}
+	</select>
+	
+	<select id="writerOtherReviews" parameterType="map" resultType="Review_BoardVO">
+    	SELECT id, subject, image_url, created_at
+    	FROM review_board
+    	WHERE users_id = #{users_id} AND id != #{id}
+    	ORDER BY id DESC
+    	OFFSET 0 ROWS FETCH NEXT 4 ROWS ONLY
+	</select>
+	
+	<select id="recipeOtherReviews" parameterType="map" resultType="Review_BoardVO">
+    	SELECT id, subject, image_url
 		FROM review_board
-		<!-- Join해서 users_id에서 닉네임 가져와야 함. recipe에서 recipe랑 chef도 가져와야 함. resultType은 
-			Map인가 String인가 작성자의 다른 레시피와 같은 레시피의 다른 후기는 별도의 select id를 만드는 게 좋을 것으로 판단. 
-			우선 필수적인 것부터 차례로 하고, 나중에 작업할 것. 변수명 섞이지 않도록 유의. -->
+		WHERE rcp_seq = #{rcp_seq} AND id != #{id}
+		ORDER BY id DESC
+		OFFSET 0 ROWS FETCH NEXT 4 ROWS ONLY
+	</select>
+
+	<select id="boardReplyList" parameterType="int" resultType="Review_Board_ReplyVO">
+	    SELECT
+		r.id AS id,
+		r.review_board_id AS review_board_id,
+		r.users_id AS users_id,
+		r.content AS content,
+		r.created_at AS created_at,
+			
+		u.nickname AS writer_nickname,
+		u.profile_image_url AS writer_profile_image
+			
+		FROM review_board_reply r
+		LEFT OUTER JOIN users u ON r.users_id = u.id
+		WHERE r.review_board_id = #{review_board_id}
+		ORDER BY r.id ASC
 	</select>
 
 </mapper>

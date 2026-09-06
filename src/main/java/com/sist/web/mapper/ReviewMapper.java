@@ -7,17 +7,15 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import com.sist.web.vo.Review_BoardVO;
+import com.sist.web.vo.Review_Board_ReplyVO;
 
 @Mapper
 @Repository
 public interface ReviewMapper {
-	/*
-	 * <select id="boardListData" parameterType="int" resultType="Review_BoardVO">
-	 * SELECT id, users_id, subject, created_at, hit, image_url, rcp_seq FROM
-	 * review_board <!-- Join해서 users_id에서 닉네임 가져와야 함. recipe에서 recipe랑 chef도 가져와야
-	 * 함. 좋아요도 join으로 가져와야 함--> </select>
-	 */
-	public List<Map<String, Object>> ReviewBoardListData(@Param("start") int start);
-
-    public int reviewBoardTotalpage();
+	public List<Review_BoardVO> ReviewBoardListData(@Param("start") int start);
+	public int reviewBoardTotalpage();
+	public Review_BoardVO boardDetailData(@Param("id") int id);
+	public List<Review_BoardVO> writerOtherReviews(Map<String, Object> map);
+	public List<Review_BoardVO> recipeOtherReviews(Map<String, Object> map);
+	public List<Review_Board_ReplyVO> boardReplyList(@Param("review_board_id") int reviewBoardId);
 }
