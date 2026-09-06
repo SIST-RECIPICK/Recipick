@@ -86,5 +86,66 @@
 		WHERE r.review_board_id = #{review_board_id}
 		ORDER BY r.id ASC
 	</select>
+	
+	<update id="boardHitUpdate" parameterType="int">
+		UPDATE review_board
+		SET hit = hit+1
+		WHERE id=#{id} 
+	</update>
+	
+	
+	
+	<insert id="reviewInsert" parameterType="Review_BoardVO">
+	    INSERT INTO review_board (
+	        id, subject, content, image_url, image_size, rcp_seq, users_id, hit, created_at
+	    ) VALUES (
+	        seq_review_board.NEXTVAL,
+	        #{subject},
+	        #{content},
+	        #{image_url, jdbcType=VARCHAR},
+	        #{image_size, jdbcType=DOUBLE},
+	        #{rcp_seq},
+	        #{users_id},
+	        0,
+	        SYSDATE
+	    )
+	</insert>
+	
+	<update id="reviewUpdate" parameterType="com.sist.web.vo.Review_BoardVO">
+	    UPDATE review_board
+	    SET subject = #{subject},
+	        content = #{content},
+	        image_url = #{image_url, jdbcType=VARCHAR}
+	    WHERE id = #{id}
+	</update>
+	
+	<delete id="reviewReplyAllDelete" parameterType="int">
+	    DELETE FROM review_board_reply
+	    WHERE review_board_id = #{review_board_id}
+	</delete>
+	
+	<delete id="reviewDelete" parameterType="int">
+	    DELETE FROM review_board
+	    WHERE id = #{id}
+	</delete>
+	
+	
+	
+	<insert id="reviewReplyInsert" parameterType="com.sist.web.vo.Review_Board_ReplyVO">
+	    INSERT INTO review_board_reply (
+	        id, review_board_id, users_id, content, created_at
+	    ) VALUES (
+	        seq_review_board_reply.NEXTVAL,
+	        #{review_board_id},
+	        #{users_id},
+	        #{content},
+	        SYSDATE
+	    )
+	</insert>
+	
+	<delete id="reviewReplyDelete" parameterType="int">
+	    DELETE FROM review_board_reply
+	    WHERE id = #{id}
+	</delete>
 
 </mapper>

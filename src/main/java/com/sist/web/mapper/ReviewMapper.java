@@ -18,4 +18,12 @@ public interface ReviewMapper {
 	public List<Review_BoardVO> writerOtherReviews(Map<String, Object> map);
 	public List<Review_BoardVO> recipeOtherReviews(Map<String, Object> map);
 	public List<Review_Board_ReplyVO> boardReplyList(@Param("review_board_id") int reviewBoardId);
+	public void boardHitUpdate(@Param("id") int id);
+	public void reviewInsert(Review_BoardVO vo);
+	public void reviewUpdate(Review_BoardVO vo);
+	public void reviewReplyAllDelete(@Param("review_board_id") int reviewBoardId);
+	public void reviewDelete(@Param("id") int id);
+	public void reviewReplyInsert(Review_Board_ReplyVO vo);
+	public void reviewReplyDelete(@Param("id") int id);
+	
 }
