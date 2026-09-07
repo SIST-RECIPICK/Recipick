@@ -5,12 +5,16 @@ import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sist.web.service.CalendarService;
+import com.sist.web.vo.CalendarInfoVO;
 import com.sist.web.vo.CalendarItemVO;
 
 import lombok.RequiredArgsConstructor;
@@ -39,5 +43,56 @@ public class CalendarRestController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}		
 		return ResponseEntity.ok(list);
+	}
+	@PostMapping("/calendar/item")
+	public ResponseEntity<String> calendar_item_upsert(
+			@RequestBody CalendarItemVO vo
+	)
+	{		
+		try
+		{
+			cService.upsertCalendarItem(vo);
+		}catch(Exception ex)
+		{
+			ex.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}		
+		return ResponseEntity.ok("OK");
+	}
+	@GetMapping("/calendar/info")
+	public ResponseEntity<CalendarInfoVO> calendar_info(
+			@RequestParam("user_id") int user_id,
+			@RequestParam("year") String year,
+			@RequestParam("month") String month
+			)
+	{	
+		CalendarInfoVO info;
+		try
+		{
+			info = cService.selectCalendarInfo(user_id, year, month);
+		}catch(Exception ex)
+		{
+			ex.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		return ResponseEntity.ok(info);
+	}
+	@DeleteMapping("/calendar/item")
+	public ResponseEntity<Integer> calendar_item_delete(
+			@RequestParam("user_id") int user_id,
+			@RequestParam("meal_date") String meal_date,
+			@RequestParam("meal_type") String meal_type
+			)
+	{
+		int result;
+		try
+		{
+			result = cService.deleteCalendarItem(user_id, meal_date, meal_type);
+		}catch(Exception ex)
+		{
+			ex.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		return ResponseEntity.ok(result);
 	}
 }

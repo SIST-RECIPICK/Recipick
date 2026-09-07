@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sist.web.mapper.RecipeMapper">
+<!-- 레시피 목록 출력, 페이징 -->
+ <select id="recipeListData" resultType="com.sist.web.vo.RecipeVO" parameterType="int">
+  SELECT rcp_seq,rcp_nm,rcp_pat2,info_eng,user_id,att_file_no_main,hit,user.nickname
+  FROM recipe
+  JOIN users
+  ON recipe.user_id = users.id
+  ORDER BY rcp_seq DESC
+  OFFSET #{start} ROWS FETCH NEXT 12 ROWS ONLY
+ </select>
+</mapper>
