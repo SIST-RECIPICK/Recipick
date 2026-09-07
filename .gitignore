@@ -38,3 +38,7 @@ out/
 
 ### properties
 src/main/resources/db.properties
+
+### claude ###
+.claude/
+graphify-out/
