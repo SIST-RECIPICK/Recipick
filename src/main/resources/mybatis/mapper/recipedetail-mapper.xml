@@ -27,4 +27,42 @@
 		ORDER BY step_no ASC
 	</select>
 	
+	<!-- 좋아요 유무 -->
+	<select id="recipeDetailLikeExist" resultType="int" parameterType="com.sist.web.vo.RecipeLikeVO">
+		SELECT COUNT(*)
+		FROM recipe_like
+		WHERE recipe_id=#{recipe_id} AND user_id=#{user_id}
+	</select>
+	
+	<!-- 좋아요 추가 -->
+	<insert id="recipeDetailLikeInsert" parameterType="com.sist.web.vo.RecipeLikeVO">
+		INSERT INTO recipe_like(like_id,recipe_id,user_id) 
+		VALUES(recipe_like_seq.nextval,#{recipe_id},#{user_id})
+	</insert>
+	
+	<!-- 좋아요 삭제 -->
+	<delete id="recipeDetailLikeDelete" parameterType="com.sist.web.vo.RecipeLikeVO">
+		DELETE FROM recipe_like
+		WHERE recipe_id=#{recipe_id} AND user_id=#{user_id}
+	</delete>
+	
+	<!-- 북마크 유무 -->
+	<select id="recipeDetailBookmarkExist" resultType="int" parameterType="com.sist.web.vo.RecipeBookMarkVO">
+		SELECT COUNT(*)
+		FROM recipe_bookmark
+		WHERE recipe_id=#{recipe_id} AND user_id=#{user_id}
+	</select>
+	
+	<!-- 북마크 추가 -->
+	<insert id="recipeDetailBookmarkInsert" parameterType="com.sist.web.vo.RecipeBookMarkVO">
+		INSERT INTO recipe_bookmark(bookmark_id,recipe_id,user_id) 
+		VALUES(recipe_bm_seq.nextval,#{recipe_id},#{user_id})
+	</insert>
+	
+	<!-- 북마크 삭제 -->
+	<delete id="recipeDetailBookmarkDelete" parameterType="com.sist.web.vo.RecipeBookMarkVO">
+		DELETE FROM recipe_bookmark
+		WHERE recipe_id=#{recipe_id} AND user_id=#{user_id}
+	</delete>
+	
 </mapper>
