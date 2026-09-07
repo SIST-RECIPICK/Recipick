@@ -8,8 +8,9 @@ import lombok.Data;
 
 @Data
 public class UsersVO {
-	private int id;                
-	private String nickname;          
+	private int id;
+	private String email;
+	private String nickname;
 	private String profile_image_url; 
 	private String status;            
 	private String role;              

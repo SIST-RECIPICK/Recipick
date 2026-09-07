@@ -138,3 +138,16 @@ com.sist.web.vo.UsersVO / LocalAccountVO           ← 필요 시 참조
 - [x] 소셜 계정의 이메일 저장/조회 방식 확정 — `users.email`로 통합, 로컬/소셜 공통 사용
 - [ ] 스키마 마이그레이션 필요: `users.email` 컬럼 추가 + `local_accounts.email`의 기존(더미) 데이터 이관. 다른 팀원이 `local_accounts.email`을 참조 중인지 먼저 확인 후 진행
 - [ ] 프론트: 검사 트리거 방식(버튼 클릭 vs 자동) 확정
+
+---
+
+## 6. api 테스트 결과
+| 케이스 | 요청 | 결과                                         |
+|---|---|--------------------------------------------|
+| 신규 이메일 | `email=new@gmail.com` | 200, `available: true, reason: null`       |
+| 중복 이메일 | `email=user1@sist.co.kr` | 200, `available: false, reason: DUPLICATE` |
+| 형식 오류 | `email=abc` | 400, `"errorCode: INVALID_EMAIL_FORMAT, message: 올바른 이메일 형식을 입력해주세요.`  |          
+
+- 테스트 도구: Swagger UI
+- 테스트 일자: 2026-09-07
+- 결과: 명세서와 100% 일치, 별도 수정 없음

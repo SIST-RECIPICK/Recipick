@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sist.web.mapper.AuthMapper">
+  <!-- 이메일로 사용자 찾기 -->
+  <select id="findUserByEmail" parameterType="String" resultType="com.sist.web.vo.UsersVO">
+    SELECT id, email, nickname
+    FROM users
+    WHERE email = #{email}
+  </select>
+
+  <!-- userId로 로컬 가입 사용자 찾기 -->
+  <select id="findLocalAccountByUserId" parameterType="int" resultType="com.sist.web.vo.LocalAccountVO">
+    SELECT id, user_id
+    FROM local_accounts
+    WHERE user_id = #{user_id}
+  </select>
+</mapper>
