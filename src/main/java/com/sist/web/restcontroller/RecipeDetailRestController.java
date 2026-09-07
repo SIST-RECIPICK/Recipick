@@ -1,5 +1,6 @@
 package com.sist.web.restcontroller;
 
+import java.io.Console;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,14 +10,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.sist.web.service.RecipeDetailService;
 import com.sist.web.vo.IngredientUnitVO;
+import com.sist.web.vo.RecipeLikeVO;
 import com.sist.web.vo.RecipeManualVO;
 import com.sist.web.vo.RecipeVO;
+import com.sist.web.vo.UsersVO;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,9 +36,10 @@ allowCredentials = "true"
 public class RecipeDetailRestController {
 	private final RecipeDetailService service;
 
-	//레시피 번호를 받아서 상세보기 데이처 전송
+	//레시피 번호를 받아서 상세보기 데이터 전송
 	@GetMapping("/recipe/detail")
 	public ResponseEntity<Map> recipe_detail(
+			@RequestParam("user_id") int user_id,
 			@RequestParam("rcp_seq") int rcp_seq,
 			HttpServletResponse response,
 			HttpServletRequest request
@@ -56,11 +61,9 @@ public class RecipeDetailRestController {
 	
 			if (cookies != null) {
 			    for (Cookie getCookie : cookies) {
-			    	System.out.println(getCookie);
 			        if (getCookie.getName().startsWith("recipe_detail_")) {
 			        	
 			        	RecipeVO cookieData = service.recipeDetailData(Integer.parseInt(getCookie.getValue()));
-			        	System.out.println(getCookie.getValue());
 			        	cookieList.add(cookieData);
 			        	cookieNo++; //방문 기록은 6개까지만 보여준다
 			        }
@@ -70,6 +73,12 @@ public class RecipeDetailRestController {
 		        	}
 			    }
 			}
+			//좋아요 유무
+			int likeExist = service.recipeDetailLikeExist(rcp_seq,user_id);
+			
+			//북마크 유무
+			int markExist = service.recipeDetailBookmarkExist(rcp_seq,user_id);
+			
 			//작성자,조회수,칼로리,영양정보 등 ...
 			RecipeVO recipeData = service.recipeDetailData(rcp_seq);
 			
@@ -83,6 +92,8 @@ public class RecipeDetailRestController {
 			map.put("manualList", manualList);
 			map.put("ingredientUnitList", ingredientUnitList);
 			map.put("cookieList", cookieList);
+			map.put("likeExist", likeExist);
+			map.put("markExist", markExist);
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -90,5 +101,50 @@ public class RecipeDetailRestController {
 		}
 
 		return ResponseEntity.ok(map);
+	}
+	
+	//북마크 좋아요 처리
+	@GetMapping("/recipe/interaction")
+	public ResponseEntity<?> recipe_interaction(
+			@RequestParam("user_id") int user_id,
+			@RequestParam("rcp_seq") int rcp_seq,
+			@RequestParam("type") String type
+		) 
+	{	
+
+		try {
+			
+			if(type.equals("like"))
+			{
+				int likeExist = service.recipeDetailLikeExist(rcp_seq,user_id);
+				
+				if(likeExist < 1)
+				{
+					service.recipeDetailLikeInsert(rcp_seq,user_id);
+				}
+				else
+				{
+					service.recipeDetailLikeDelete(rcp_seq,user_id);
+				}
+			}else 
+			{
+				int bookmarkExist = service.recipeDetailBookmarkExist(rcp_seq,user_id);
+				
+				if(bookmarkExist < 1)
+				{
+					service.recipeDetailBookmarkInsert(rcp_seq, user_id);
+				}
+				else
+				{
+					service.recipeDetailBookmarkDelete(rcp_seq, user_id);
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		
+		return ResponseEntity.ok().build();
 	}
 }
