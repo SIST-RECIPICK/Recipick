@@ -3,10 +3,18 @@
 <mapper namespace="com.sist.web.mapper.MypageMapper">
 	    
     <select id="mypageSideProfile" resultType="com.sist.web.vo.UsersVO">
-        SELECT id, nickname, profile_image_url, email, created_at
-        FROM users
-        WHERE id = #{userId}
-    </select>
+	    SELECT 
+	    u.id, 
+	    u.nickname, 
+	    u.profile_image_url, 
+	    u.created_at,
+	        
+	    la.email
+	    
+	    FROM users u
+	    LEFT OUTER JOIN local_accounts la ON u.id = la.user_id
+	    WHERE u.id = #{userId}
+	</select>
     
     <select id="mypageMainCount" resultType="map">
         SELECT 
