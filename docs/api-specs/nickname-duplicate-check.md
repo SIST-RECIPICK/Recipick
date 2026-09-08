@@ -127,3 +127,16 @@ public ResponseEntity<NicknameCheckResponse> checkNickname(
 ## 5. 열린 이슈
 
 - [x] 닉네임 길이/형식 정책 확정 (2~10자, 한글/영문/숫자) — 회원가입 명세서 작성 시 동일하게 반영
+
+---
+
+## 6. api 테스트 결과
+| 케이스       | 요청               | 결과                                         |
+|-----------|------------------|--------------------------------------------|
+| 사용 가능 닉네임 | `nickname=안뇽가리`  | 200, `available: true`       |
+| 중복 닉네임    | `nickname=오늘뭐먹지` | 200, `available: false` |
+| 형식 오류     | `nickname=안뇽#$%`         | 400, `errorCode: INVALID_NICKNAME_FORMAT, message: 닉네임은 2~10자의 한글, 영문, 숫자만 사용 가능합니다.`  |          
+
+- 테스트 도구: Swagger UI
+- 테스트 일자: 2026-09-08
+- 결과: 명세서와 100% 일치, 별도 수정 없음

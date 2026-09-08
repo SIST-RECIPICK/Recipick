@@ -16,4 +16,7 @@ public interface AuthMapper {
 
 	// userId로 로컬 가입 사용자 찾기
 	public LocalAccountVO findLocalAccountByUserId(@Param("user_id") int user_id);
+
+	// 닉네임으로 사용자 찾기
+	public UsersVO findUserByNickname(@Param("nickname") String nickname);
 }

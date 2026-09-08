@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sist.web.dto.EmailCheckResponse;
+import com.sist.web.dto.NicknameCheckResponse;
 import com.sist.web.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
@@ -23,5 +24,11 @@ public class AuthRestController {
 	@GetMapping("/email/check")
 	public EmailCheckResponse checkEmail(@RequestParam("email") String email) {
 		return authService.checkEmailDuplicate(email);
+	}
+
+	// [닉네임 중복 검사]
+	@GetMapping("/nickname/check")
+	public NicknameCheckResponse checkNickname(@RequestParam("nickname") String nickname) {
+		return authService.checkNicknameDuplicate(nickname);
 	}
 }

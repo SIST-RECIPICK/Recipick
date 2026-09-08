@@ -14,4 +14,11 @@
     FROM local_accounts
     WHERE user_id = #{user_id}
   </select>
+
+  <!-- 닉네임으로 사용자 찾기 -->
+  <select id="findUserByNickname" parameterType="String" resultType="com.sist.web.vo.UsersVO">
+    SELECT id, nickname
+    FROM users
+    WHERE nickname = #{nickname}
+  </select>
 </mapper>

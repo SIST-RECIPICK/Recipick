@@ -146,7 +146,7 @@ com.sist.web.vo.UsersVO / LocalAccountVO           ← 필요 시 참조
 |---|---|--------------------------------------------|
 | 신규 이메일 | `email=new@gmail.com` | 200, `available: true, reason: null`       |
 | 중복 이메일 | `email=user1@sist.co.kr` | 200, `available: false, reason: DUPLICATE` |
-| 형식 오류 | `email=abc` | 400, `"errorCode: INVALID_EMAIL_FORMAT, message: 올바른 이메일 형식을 입력해주세요.`  |          
+| 형식 오류 | `email=abc` | 400, `errorCode: INVALID_EMAIL_FORMAT, message: 올바른 이메일 형식을 입력해주세요.`  |          
 
 - 테스트 도구: Swagger UI
 - 테스트 일자: 2026-09-07
