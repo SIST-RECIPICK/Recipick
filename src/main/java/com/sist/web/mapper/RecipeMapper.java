@@ -17,5 +17,13 @@ public interface RecipeMapper {
 		 </select>
 	 */
 	// 목록 출력
-	public List<RecipeVO> recipeListData(int start);
+	public List<RecipeListVO> recipeListData(int start);
+	
+	/*
+	 * <select id="recipeTotalPage" resultType="int">
+		  SELECT COUNT(*) FROM recipe
+	   </select>
+	 */
+	// 레시피 총 페이지 수 구하기
+	public int recipeTotalPage();
 }
