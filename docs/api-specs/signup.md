@@ -175,3 +175,20 @@ com.sist.web.vo.UsersVO, LocalAccountVO
 - [x] `SOCIAL_ONLY` 판별 로직 — `users.email` 통합으로 해결 (email-check.md 참조)
 - [ ] 스키마 마이그레이션 필요: `users.email` 컬럼 추가, `local_accounts.email`의 기존(더미) 데이터 이관 후 해당 컬럼은 당분간 유지(다른 팀원 참조 여부 확인 후 제거)
 - [ ] `PasswordEncoder` Bean이 SecurityConfig에 아직 없음 — 이 기능 구현 시 함께 추가 필요
+
+---
+
+## 6. api 테스트 결과
+| 케이스        | 요청                                                                                                 | 결과                                                              |
+|------------|----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
+| 성공         | `email: test123@naver.com, password: password123!, passwordConfirm: password123!, nickname: "안뇽가리` | 201, `email: test123@naver.com, nickname: 안뇽가리, userId: 1001`   |
+| 중복 이메일     | `email: user1@sist.co.kr, password: password123!, passwordConfirm: password123!, nickname: "안뇽가리`  | 409, `errorCode: EMAIL_DUPLICATE, message: 이미 사용 중인 이메일입니다.`    |
+| 형식 닉네임     | `email: test1234@naver.com, password: password123!, passwordConfirm: password123!, nickname: "김철수` | 409, `errorCode: NICKNAME_DUPLICATE, message: 이미 사용 중인 닉네임입니다.` |   
+| 비밀번호 형식 오류 | `email: test1234@naver.com, password: password123, passwordConfirm: password123, nickname: "김철수`   | 400, `errorCode: INVALID_PASSWORD_FORMAT, message: 비밀번호는 문자, 숫자, 특수기호를 모두 포함해 8~20자로 입력해주세요.` |
+| 비밀번호 불일치   | `email: test1234@naver.com, password: password123!, passwordConfirm: password123, nickname: "김철수`  | 400, `errorCode: PASSWORD_MISMATCH, message: 비밀번호가 일치하지 않습니다.` |
+| 닉네임 형식 오류  | `email: test1234@naver.com, password: password123!, passwordConfirm: password123!, nickname: "김`   | 400, `errorCode: INVALID_NICKNAME_FORMAT, message: 닉네임은 2~10자의 한글, 영문, 숫자만 사용 가능합니다.` |
+| 이메일 불일치    | `email: test1234, password: password123!, passwordConfirm: password123!, nickname: "김철수` | 400, `errorCode: INVALID_EMAIL_FORMAT, message: 올바른 이메일 형식을 입력해주세요.` |
+
+- 테스트 도구: Swagger UI
+- 테스트 일자: 2026-09-08
+- 결과: 명세서와 100% 일치, 별도 수정 없음

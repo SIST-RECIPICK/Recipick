@@ -21,4 +21,22 @@
     FROM users
     WHERE nickname = #{nickname}
   </select>
+
+  <!-- users 레코드 생성 (데이터 DB에 추가) -->
+  <insert id="insertUser" parameterType="com.sist.web.vo.UsersVO">
+    <selectKey keyProperty="id" resultType="int" order="BEFORE">
+      SELECT USERS_SEQ.NEXTVAL FROM dual
+    </selectKey>
+    INSERT INTO users (id, email, nickname, status, role, created_at, updated_at)
+    VALUES (#{id}, #{email}, #{nickname}, 'ACTIVE', 'USER', SYSTIMESTAMP, SYSTIMESTAMP)
+  </insert>
+
+  <!-- local_accounts 레코드 생성 (데이터 DB에 추가) -->
+  <insert id="insertLocalAccount" parameterType="com.sist.web.vo.LocalAccountVO">
+    <selectKey keyProperty="id" resultType="int" order="BEFORE">
+      SELECT LOCAL_ACCOUNTS_SEQ.NEXTVAL FROM dual
+    </selectKey>
+    INSERT INTO local_accounts (id, password, user_id)
+    VALUES (#{id}, #{password}, #{user_id})
+  </insert>
 </mapper>

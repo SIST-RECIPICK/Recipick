@@ -19,4 +19,10 @@ public interface AuthMapper {
 
 	// 닉네임으로 사용자 찾기
 	public UsersVO findUserByNickname(@Param("nickname") String nickname);
+
+	// users 레코드 생성 (데이터 추가)
+	public int insertUser(UsersVO user);
+
+	// local_accounts 레코드 생성 (데이터 추가)
+	public int insertLocalAccount(LocalAccountVO localAccount);
 }

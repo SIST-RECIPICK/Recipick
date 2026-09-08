@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class AuthExceptionHandler {
 
-	// [400 BAD_REQUEST]
+	// [AuthException.status에 담긴 상태코드로 응답 (기본값 400 BAD_REQUEST)]
 	@ExceptionHandler(AuthException.class)
 	public ResponseEntity<Map<String, Object>> handleAuthException(AuthException e) {
 		Map<String, Object> body = new HashMap<>();
 		body.put("errorCode", e.getErrorCode());
 		body.put("message", e.getMessage());
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+		return ResponseEntity.status(e.getStatus()).body(body);
 	}
 }
