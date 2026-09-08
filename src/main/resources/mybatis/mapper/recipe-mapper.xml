@@ -2,12 +2,19 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sist.web.mapper.RecipeMapper">
 <!-- 레시피 목록 출력, 페이징 -->
- <select id="recipeListData" resultType="com.sist.web.vo.RecipeVO" parameterType="int">
-  SELECT rcp_seq,rcp_nm,rcp_pat2,info_eng,user_id,att_file_no_main,hit,user.nickname
+ <select id="recipeListData" resultType="com.sist.web.vo.RecipeListVO" parameterType="int">
+  SELECT rcp_seq,rcp_nm,rcp_pat2,info_eng,user_id,att_file_no_main,hit,hash_tag,users.nickname,
+   (SELECT COUNT(*) FROM recipe_like 
+                     WHERE recipe_like.recipe_id = recipe.rcp_seq) AS like_count
   FROM recipe
   JOIN users
   ON recipe.user_id = users.id
   ORDER BY rcp_seq DESC
   OFFSET #{start} ROWS FETCH NEXT 12 ROWS ONLY
+ </select>
+ 
+ <!-- 레시피 총페이지 수 구하기  한페이지에 레시피 12개 출력-->
+ <select id="recipeTotalPage" resultType="int">
+  SELECT CEIL(COUNT(*)/12.0) FROM recipe
  </select>
 </mapper>
