@@ -20,6 +20,9 @@ public interface AuthMapper {
 	// 닉네임으로 사용자 찾기
 	public UsersVO findUserByNickname(@Param("nickname") String nickname);
 
+	// userId로 로컬 계정 조회 (비밀번호 포함, 로그인 검증용)
+	public LocalAccountVO findLocalAccountWithPasswordByUserId(@Param("user_id") int user_id);
+
 	// users 레코드 생성 (데이터 추가)
 	public int insertUser(UsersVO user);
 

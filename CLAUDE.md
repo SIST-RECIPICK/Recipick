@@ -57,3 +57,9 @@ Rules:
 
 ## Git 브랜치
 - feature/기능명 브랜치에서 작업, develop으로 PR
+
+## 알려진 기술 부채
+- 인증 필요 API는 현재 authorizeHttpRequests가 아닌 컨트롤러별
+  @AuthenticationPrincipal null 체크로 처리 중 (팀 정책상 개발 중 SecurityConfig
+  전체 개방 유지 때문). 배포 준비 시점에 authorizeHttpRequests 기반으로
+  전환 필요 — 팀 전체 논의 후 진행.

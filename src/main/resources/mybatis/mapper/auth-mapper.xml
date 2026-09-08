@@ -3,7 +3,7 @@
 <mapper namespace="com.sist.web.mapper.AuthMapper">
   <!-- 이메일로 사용자 찾기 -->
   <select id="findUserByEmail" parameterType="String" resultType="com.sist.web.vo.UsersVO">
-    SELECT id, email, nickname
+    SELECT id, email, nickname, status, role
     FROM users
     WHERE email = #{email}
   </select>
@@ -20,6 +20,13 @@
     SELECT id, nickname
     FROM users
     WHERE nickname = #{nickname}
+  </select>
+
+  <!-- userId로 로컬 계정 조회 (비밀번호 포함, 로그인 검증용) -->
+  <select id="findLocalAccountWithPasswordByUserId" parameterType="int" resultType="com.sist.web.vo.LocalAccountVO">
+    SELECT id, password, user_id
+    FROM local_accounts
+    WHERE user_id = #{user_id}
   </select>
 
   <!-- users 레코드 생성 (데이터 DB에 추가) -->

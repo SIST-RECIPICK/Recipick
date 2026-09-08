@@ -178,17 +178,106 @@ com.sist.web.vo.UsersVO, LocalAccountVO
 
 ---
 
-## 6. api 테스트 결과
-| 케이스        | 요청                                                                                                 | 결과                                                              |
-|------------|----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| 성공         | `email: test123@naver.com, password: password123!, passwordConfirm: password123!, nickname: "안뇽가리` | 201, `email: test123@naver.com, nickname: 안뇽가리, userId: 1001`   |
-| 중복 이메일     | `email: user1@sist.co.kr, password: password123!, passwordConfirm: password123!, nickname: "안뇽가리`  | 409, `errorCode: EMAIL_DUPLICATE, message: 이미 사용 중인 이메일입니다.`    |
-| 형식 닉네임     | `email: test1234@naver.com, password: password123!, passwordConfirm: password123!, nickname: "김철수` | 409, `errorCode: NICKNAME_DUPLICATE, message: 이미 사용 중인 닉네임입니다.` |   
-| 비밀번호 형식 오류 | `email: test1234@naver.com, password: password123, passwordConfirm: password123, nickname: "김철수`   | 400, `errorCode: INVALID_PASSWORD_FORMAT, message: 비밀번호는 문자, 숫자, 특수기호를 모두 포함해 8~20자로 입력해주세요.` |
-| 비밀번호 불일치   | `email: test1234@naver.com, password: password123!, passwordConfirm: password123, nickname: "김철수`  | 400, `errorCode: PASSWORD_MISMATCH, message: 비밀번호가 일치하지 않습니다.` |
-| 닉네임 형식 오류  | `email: test1234@naver.com, password: password123!, passwordConfirm: password123!, nickname: "김`   | 400, `errorCode: INVALID_NICKNAME_FORMAT, message: 닉네임은 2~10자의 한글, 영문, 숫자만 사용 가능합니다.` |
-| 이메일 불일치    | `email: test1234, password: password123!, passwordConfirm: password123!, nickname: "김철수` | 400, `errorCode: INVALID_EMAIL_FORMAT, message: 올바른 이메일 형식을 입력해주세요.` |
+## 6. 테스트 기록
+
+### 요약
+| # | 케이스 | 상태 | errorCode |
+|---|---|---|---|
+| 1 | 성공 | 201 | - |
+| 2 | 이메일 중복 | 409 | EMAIL_DUPLICATE |
+| 3 | 닉네임 중복 | 409 | NICKNAME_DUPLICATE |
+| 4 | 비밀번호 형식 오류 | 400 | INVALID_PASSWORD_FORMAT |
+| 5 | 비밀번호 불일치 | 400 | PASSWORD_MISMATCH |
+| 6 | 닉네임 형식 오류 | 400 | INVALID_NICKNAME_FORMAT |
+| 7 | 이메일 형식 오류 | 400 | INVALID_EMAIL_FORMAT |
 
 - 테스트 도구: Swagger UI
 - 테스트 일자: 2026-09-08
 - 결과: 명세서와 100% 일치, 별도 수정 없음
+### 상세
+
+<details>
+<summary>1. 성공</summary>
+
+**Request**
+```json
+{ "email": "test123@naver.com", "password": "password123!", "passwordConfirm": "password123!", "nickname": "안뇽가리" }
+```
+**Response** `201`
+```json
+{ "userId": 1001, "email": "test123@naver.com", "nickname": "안뇽가리" }
+```
+</details>
+<details>
+<summary>2. 이메일 중복</summary>
+
+**Request**
+```json
+{ "email": "user1@sist.co.kr", "password": "password123!", "passwordConfirm": "password123!", "nickname": "안뇽가리" }
+```
+**Response** `409`
+```json
+{ "errorCode": "EMAIL_DUPLICATE", "message": "이미 사용 중인 이메일입니다." }
+```
+</details>
+<details>
+<summary>3. 닉네임 중복</summary>
+
+**Request**
+```json
+{ "email": "test1234@naver.com", "password": "password123!", "passwordConfirm": "password123!", "nickname": "김철수" }
+```
+**Response** `409`
+```json
+{ "errorCode": "NICKNAME_DUPLICATE", "message": "이미 사용 중인 닉네임입니다." }
+```
+</details>
+<details>
+<summary>4. 비밀번호 형식 오류</summary>
+
+**Request**
+```json
+{ "email": "test1234@naver.com", "password": "password123", "passwordConfirm": "password123", "nickname": "김철수" }
+```
+**Response** `400`
+```json
+{ "errorCode": "INVALID_PASSWORD_FORMAT", "message": "비밀번호는 문자, 숫자, 특수기호를 모두 포함해 8~20자로 입력해주세요." }
+```
+</details>
+<details>
+<summary>5. 비밀번호 불일치</summary>
+
+**Request**
+```json
+{ "email": "test1234@naver.com", "password": "password123!", "passwordConfirm": "password123", "nickname": "김철수" }
+```
+**Response** `400`
+```json
+{ "errorCode": "PASSWORD_MISMATCH", "message": "비밀번호가 일치하지 않습니다." }
+```
+</details>
+<details>
+<summary>6. 닉네임 형식 오류</summary>
+
+**Request**
+```json
+{ "email": "test1234@naver.com", "password": "password123!", "passwordConfirm": "password123!", "nickname": "김" }
+```
+**Response** `400`
+```json
+{ "errorCode": "INVALID_NICKNAME_FORMAT", "message": "닉네임은 2~10자의 한글, 영문, 숫자만 사용 가능합니다." }
+```
+</details>
+<details>
+<summary>7. 이메일 형식 오류</summary>
+
+**Request**
+```json
+{ "email": "test1234", "password": "password123!", "passwordConfirm": "password123!", "nickname": "김철수" }
+```
+**Response** `400`
+```json
+{ "errorCode": "INVALID_EMAIL_FORMAT", "message": "올바른 이메일 형식을 입력해주세요." }
+```
+</details>
+ 

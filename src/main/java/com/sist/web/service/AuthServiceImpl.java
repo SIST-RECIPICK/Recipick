@@ -1,18 +1,24 @@
 package com.sist.web.service;
 
+import java.time.Duration;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sist.web.dto.EmailCheckResponse;
+import com.sist.web.dto.LoginRequest;
+import com.sist.web.dto.LoginResponse;
 import com.sist.web.dto.NicknameCheckResponse;
 import com.sist.web.dto.SignupRequest;
 import com.sist.web.dto.SignupResponse;
 import com.sist.web.exception.AuthException;
 import com.sist.web.mapper.AuthMapper;
+import com.sist.web.security.JwtTokenProvider;
 import com.sist.web.vo.LocalAccountVO;
 import com.sist.web.vo.UsersVO;
 
@@ -26,9 +32,13 @@ public class AuthServiceImpl implements AuthService {
 	private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[가-힣a-zA-Z0-9]{2,10}$");
 	private static final Pattern PASSWORD_PATTERN = Pattern
 			.compile("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{}|;:,.<>?]).{8,20}$");
+	private static final String ACCOUNT_STATUS_WITHDRAWN = "WITHDRAWN";
+	private static final Duration RECOVERY_TOKEN_TTL = Duration.ofMinutes(5);
 
 	private final AuthMapper authMapper;
 	private final PasswordEncoder passwordEncoder;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final StringRedisTemplate redisTemplate;
 
 	// [이메일 중복 검사]
 	@Override
@@ -133,6 +143,56 @@ public class AuthServiceImpl implements AuthService {
 		response.setUserId(user.getId());
 		response.setEmail(user.getEmail());
 		response.setNickname(user.getNickname());
+		return response;
+	}
+
+	// [로그인]
+	@Override
+	public LoginResponse login(LoginRequest request) {
+		String email = request.getEmail();
+		String password = request.getPassword();
+
+		// 1. 이메일로 사용자 조회
+		UsersVO user = authMapper.findUserByEmail(email);
+		if (user == null) {
+			throw new AuthException("INVALID_CREDENTIALS", "이메일 또는 비밀번호가 올바르지 않습니다.", HttpStatus.UNAUTHORIZED);
+		}
+
+		// 2. 로컬 계정 조회 (없으면 소셜 전용 계정)
+		LocalAccountVO localAccount = authMapper.findLocalAccountWithPasswordByUserId(user.getId());
+		if (localAccount == null) {
+			throw new AuthException("SOCIAL_ACCOUNT_ONLY", "구글 로그인을 이용해주세요.", HttpStatus.FORBIDDEN);
+		}
+
+		// 3. 비밀번호 검증 (계정 존재 여부 미노출 위해 1번과 동일 에러코드/메시지)
+		if (!passwordEncoder.matches(password, localAccount.getPassword())) {
+			throw new AuthException("INVALID_CREDENTIALS", "이메일 또는 비밀번호가 올바르지 않습니다.", HttpStatus.UNAUTHORIZED);
+		}
+
+		LoginResponse response = new LoginResponse();
+		response.setAccountStatus(user.getStatus());
+
+		// 4. 소프트탈퇴 계정 - 토큰 미발급, 복구용 단기 토큰만 발급
+		if (ACCOUNT_STATUS_WITHDRAWN.equals(user.getStatus())) {
+			String recoveryToken = UUID.randomUUID().toString();
+			redisTemplate.opsForValue().set("recovery:" + recoveryToken, String.valueOf(user.getId()), RECOVERY_TOKEN_TTL);
+
+			response.setRecoveryToken(recoveryToken);
+			response.setMessage("탈퇴한 계정입니다. 계정을 복구하시겠습니까?");
+			return response;
+		}
+
+		// 5. 활성 계정 - Access Token(body) + Refresh Token(Redis 저장 + 쿠키) 발급
+		String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRole());
+		String refreshToken = UUID.randomUUID().toString();
+		redisTemplate.opsForValue().set("refresh:" + refreshToken, String.valueOf(user.getId()),
+				Duration.ofMillis(jwtTokenProvider.getRefreshTokenExpiration()));
+
+		response.setAccessToken(accessToken);
+		response.setUserId(user.getId());
+		response.setNickname(user.getNickname());
+		response.setRole(user.getRole());
+		response.setRefreshToken(refreshToken);
 		return response;
 	}
 }

@@ -151,3 +151,42 @@ com.sist.web.vo.UsersVO, LocalAccountVO
 ## 5. 열린 이슈
 
 없음 (이전 대화에서 소셜 판별, recoveryToken 방식, 관리자 정지 여부, 브루트포스 제한 여부 모두 확정됨)
+
+---
+
+## 6. 테스트 기록
+
+### 요약
+| # | 케이스 | 상태  | errorCode |
+|---|---|-----|---|
+| 1 | 성공 | 200 | - |
+
+
+- 테스트 도구: Swagger UI
+- 테스트 일자: 2026-09-09
+- 결과: 명세서와 100% 일치, 별도 수정 없음
+### 상세
+
+<details>
+<summary>1. 성공</summary>
+
+**Request**
+```json
+{
+   "email": "test123@naver.com",
+   "password": "password123!"
+}
+```
+**Response** `200`
+```json
+{
+   "accessToken": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMDAxIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3ODg4NTY5OTgsImV4cCI6MTc4ODg1ODc5OH0.A6WWnm2dpwnk_i17FO1Icggwn-clktew_6EqGXIII_eizld4knYAUvYpGygjsgWXuxQqbxcQDFe-m_XC_Zk2GQ",
+   "accountStatus": "ACTIVE",
+   "message": null,
+   "nickname": "안뇽가리",
+   "recoveryToken": null,
+   "role": "USER",
+   "userId": 1001
+}
+```
+</details>

@@ -10,6 +10,10 @@ spring:
     username: ${sist_username}
     password: ${sist_password}
     driver-class-name: oracle.jdbc.driver.OracleDriver
+  data:
+    redis:
+      host: localhost
+      port: 6379
   jpa:
     database: oracle
     properties:
@@ -27,6 +31,10 @@ spring:
     #google:
       #genai:
         #api-key:
+jwt:
+  secret: ${jwt_secret}
+  access-token-expiration: 1800000       # 30분
+  refresh-token-expiration: 1209600000   # 14일
 mybatis:
   type-aliases-package: com.sist.web.vo
   mapper-locations: mybatis/mapper/*.xml
