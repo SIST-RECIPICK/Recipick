@@ -19,6 +19,7 @@ import com.sist.web.dto.SignupResponse;
 import com.sist.web.exception.AuthException;
 import com.sist.web.mapper.AuthMapper;
 import com.sist.web.security.JwtTokenProvider;
+import com.sist.web.security.JwtUser;
 import com.sist.web.vo.LocalAccountVO;
 import com.sist.web.vo.UsersVO;
 
@@ -194,5 +195,24 @@ public class AuthServiceImpl implements AuthService {
 		response.setRole(user.getRole());
 		response.setRefreshToken(refreshToken);
 		return response;
+	}
+
+	// [로그아웃]
+	@Override
+	public void logout(JwtUser jwtUser, String refreshToken, String authHeader) {
+		// 1. 인증 여부 확인
+		if (jwtUser == null) {
+			throw new AuthException("UNAUTHORIZED", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED);
+		}
+
+		// 2. Refresh Token 삭제
+		if (refreshToken != null) {
+			redisTemplate.delete("refresh:" + refreshToken);
+		}
+
+		// 3. Access Token 블랙리스트 등록 (남은 유효기간만큼 TTL 설정)
+		String accessToken = authHeader.substring("Bearer ".length());
+		long remainingExpiration = jwtTokenProvider.getRemainingExpiration(accessToken);
+		redisTemplate.opsForValue().set("blacklist:" + accessToken, "true", Duration.ofMillis(remainingExpiration));
 	}
 }

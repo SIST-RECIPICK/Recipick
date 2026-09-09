@@ -53,4 +53,12 @@ public class JwtTokenProvider {
 				.parseSignedClaims(token)
 				.getPayload();
 	}
+
+	// [AccessToken 남은 유효시간(ms) 계산] - 블랙리스트 등록 TTL 등록에 사용
+	public long getRemainingExpiration(String token) {
+        // 원래 만료 시간
+		Date expiration = parseClaims(token).getExpiration();
+        // 원래 만료 시간 - 지난 시간 = 남은 시간 (이 시간 동안 블랙리스트 등록)
+		return expiration.getTime() - System.currentTimeMillis();
+	}
 }

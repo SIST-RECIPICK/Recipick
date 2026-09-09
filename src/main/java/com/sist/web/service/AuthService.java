@@ -6,6 +6,7 @@ import com.sist.web.dto.LoginResponse;
 import com.sist.web.dto.NicknameCheckResponse;
 import com.sist.web.dto.SignupRequest;
 import com.sist.web.dto.SignupResponse;
+import com.sist.web.security.JwtUser;
 
 public interface AuthService {
 	// [이메일 중복 검사]
@@ -19,4 +20,7 @@ public interface AuthService {
 
 	// [로그인]
 	LoginResponse login(LoginRequest request);
+
+	// [로그아웃]
+	void logout(JwtUser jwtUser, String refreshToken, String authHeader);
 }
