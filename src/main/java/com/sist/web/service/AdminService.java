@@ -1,9 +1,11 @@
 package com.sist.web.service;
 
 import java.util.List;
+import java.util.Map;
 
-import com.sist.web.vo.CurationDetailVO;
+import com.sist.web.vo.CurationCreateVO;
 import com.sist.web.vo.CurationVO;
+import com.sist.web.vo.RecipeVO;
 import com.sist.web.vo.UsersVO;
 
 public interface AdminService {
@@ -20,4 +22,8 @@ public interface AdminService {
 	public CurationVO selectCurationDetail(int id);
 
 	public void deleteCuration(int id);
+
+	public Map<String, List<RecipeVO>> selectRecipeTop3(List<Integer> ids);
+
+	public void createCuration(CurationCreateVO vo);
 }

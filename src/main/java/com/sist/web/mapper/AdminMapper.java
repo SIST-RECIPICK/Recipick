@@ -11,6 +11,9 @@ import org.springframework.stereotype.Repository;
 
 import com.sist.web.vo.CurationDetailVO;
 import com.sist.web.vo.CurationVO;
+import com.sist.web.vo.IngredientGroupVO;
+import com.sist.web.vo.RecIngredientVO;
+import com.sist.web.vo.RecipeVO;
 import com.sist.web.vo.UsersVO;
 
 @Mapper
@@ -50,6 +53,16 @@ public interface AdminMapper {
 	
 	@Delete("DELETE FROM CURATION_DETAIL WHERE curation_id = #{id}")
 	public void deleteCurationDetail(int id);
+	
+	public List<RecIngredientVO> findIngNameUsedInRecipes();
+	
+	public String selectIngredientName(int id);
+
+	public List<RecipeVO> selectRecipeTop3(int id);
+	
+	public void createCuration(CurationVO vo);
+	
+	public void createCurationDetail(CurationDetailVO vo);
 	
 	
 }

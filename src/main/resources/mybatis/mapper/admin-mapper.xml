@@ -22,4 +22,45 @@
 		 WHERE d.curation_id = #{curation_id}
 		ORDER BY d.sort_order asc, r.hit desc
 	</select>
+	
+	<select id="findIngNameUsedInRecipes" resultType="RecIngredientVO">
+		SELECT i.id, i.ingredient_name, count(d.rcp_seq)
+         FROM ingredient i
+	    JOIN ingredient_detail d 
+	      ON i.id = d.ingredient_id
+        WHERE i.category_name NOT IN ('조미료','유제품/난류','곡류/가공식품', '기타')
+        GROUP BY i.id, i.ingredient_name
+        HAVING COUNT(d.rcp_seq) >= 5
+        ORDER BY COUNT(d.rcp_seq) DESC
+        FETCH FIRST 100 ROWS ONLY
+	</select>
+	
+	
+	<select id="selectIngredientName" parameterType="int" resultType="String">
+		SELECT ingredient_name
+		 FROM ingredient
+		WHERE id = #{id}
+	</select>
+	
+	<select id="selectRecipeTop3" parameterType="int" resultType="RecipeVO">
+	    SELECT r.*
+	     FROM recipe r
+	    JOIN ingredient_detail d ON r.rcp_seq = d.rcp_seq
+	    WHERE d.ingredient_id = #{id}
+	    ORDER BY r.hit DESC NULLS LAST
+	    FETCH FIRST 3 ROWS ONLY
+	</select>
+	
+	<insert id="createCuration" parameterType="com.sist.web.vo.CurationVO">
+		<selectKey keyProperty="id" resultType="int" order="BEFORE">
+			SELECT cur_id_seq.nextval FROM DUAL
+		</selectKey>
+		INSERT INTO curation(id, title, year, month, status, created_at, users_id)
+		VALUES (#{id}, #{title}, #{year}, #{month}, #{status}, SYSDATE, #{users_id})
+	</insert>
+	
+	<insert id="createCurationDetail" parameterType="com.sist.web.vo.CurationDetailVO">
+		INSERT INTO curation_detail(id, sort_order, curation_id, rcp_seq, ingredient_id)
+		VALUES (cur_detail_id_seq.nextval, #{sort_order}, #{curation_id}, #{rcp_seq}, #{ingredient_id})
+	</insert>
 </mapper>
