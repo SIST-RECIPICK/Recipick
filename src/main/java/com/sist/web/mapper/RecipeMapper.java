@@ -18,7 +18,8 @@ public interface RecipeMapper {
 		 </select>
 	 */
 	// 목록 출력
-	public List<RecipeListVO> recipeListData(int start);
+	// 기존 int에서 정렬되는 값까지 추가돼 map으로 변경
+	public List<RecipeListVO> recipeListData(Map map);
 	
 	/*
 	 * <select id="recipeTotalPage" resultType="int">
@@ -52,4 +53,35 @@ public interface RecipeMapper {
 	 */
 	// 카테고리 용 총 페이지 
 	public int categoryTotalPage(String main_category);
+	
+	
+	/*
+	 * <select id="checkRecipeLike" resultType="int" parameterType="hashmap">
+	    SELECT COUNT(*) FROM recipe_like
+	    WHERE user_id = #{user_id} AND recipe_id = #{recipe_id}
+	</select>
+	 */
+	// 좋아요 여부 확인 (0=안눌렀음, 1=이미 눌렀음)
+	public int checkRecipeLike(Map map);
+
+	
+	/*
+	 * <insert id="insertRecipeLike" parameterType="hashmap">
+	    INSERT INTO recipe_like (like_id, user_id, recipe_id)
+	    VALUES (recipe_like_seq.NEXTVAL, #{user_id}, #{recipe_id})
+	</insert>
+	
+	 */
+	// 좋아요 등록
+	public int insertRecipeLike(Map map);
+
+	/*
+	 * <delete id="deleteRecipeLike" parameterType="hashmap">
+	    DELETE FROM recipe_like
+	    WHERE user_id = #{user_id} AND recipe_id = #{recipe_id}
+	</delete>
+	 */
+	
+	// 좋아요 취소
+	public int deleteRecipeLike(Map map);
 }
