@@ -157,9 +157,13 @@ com.sist.web.vo.UsersVO, LocalAccountVO
 ## 6. 테스트 기록
 
 ### 요약
-| # | 케이스 | 상태  | errorCode |
-|---|---|-----|---|
-| 1 | 성공 | 200 | - |
+| # | 케이스 | 상태  | errorCode            |
+|---|--|-----|----------------------|
+| 1 | 성공 | 200 | -                    |
+| 2 | 이메일/비밀번호 불일치 | 401 | INVALID_CREDENTIALS  |
+| 3 | 존재하지 않는 이메일 | 401 | INVALID_CREDENTIALS  |
+| 4 | 소셜 전용 계정 | -   | ⚠️ 소셜 계정 구현 후 테스트 예정 |
+| 5 | 소프트탈퇴 계정 | -   | ⚠️ 소셜 계정 구현 후 테스트 예정  |
 
 
 - 테스트 도구: Swagger UI
@@ -187,6 +191,44 @@ com.sist.web.vo.UsersVO, LocalAccountVO
    "recoveryToken": null,
    "role": "USER",
    "userId": 1001
+}
+```
+</details>
+
+<details>
+<summary>2. 이메일/비밀번호 불일치</summary>
+
+**Request**
+```json
+{
+  "email": "test123@naver.com",
+  "password": "string"
+}
+```
+**Response** `401`
+```json
+{
+  "errorCode": "INVALID_CREDENTIALS",
+  "message": "이메일 또는 비밀번호가 올바르지 않습니다."
+}
+```
+</details>
+
+<details>
+<summary>3. 존재하지 않는 이메일</summary>
+
+**Request**
+```json
+{
+  "email": "happy@gmail.comk",
+  "password": "string"
+}
+```
+**Response** `401`
+```json
+{
+  "errorCode": "INVALID_CREDENTIALS",
+  "message": "이메일 또는 비밀번호가 올바르지 않습니다."
 }
 ```
 </details>
