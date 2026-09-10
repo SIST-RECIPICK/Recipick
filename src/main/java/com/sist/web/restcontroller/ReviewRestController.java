@@ -32,7 +32,7 @@ public class ReviewRestController {
 	public ResponseEntity<Map<String, Object>> review_list(
 	        @RequestParam(value = "page", defaultValue = "1") int page,
 	        @RequestParam(value = "keyword", required = false) String keyword,
-	        @RequestParam(value = "type", defaultValue = "subject") String type // <-- 기본값 subject 지정
+	        @RequestParam(value = "type", defaultValue = "subject") String type
 	) {
 	    List<Review_BoardVO> list = rService.ReviewBoardListData(page, keyword, type);
 	    int[] pages = rService.pages(page, keyword, type);

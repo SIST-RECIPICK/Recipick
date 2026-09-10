@@ -22,6 +22,7 @@ public interface ReviewService {
 	public void reviewUpdate(Review_BoardVO vo);
 	public void reviewDelete(int id);
 	
+
 	public void reviewReplyInsert(Review_Board_ReplyVO vo);
 	public void reviewReplyDelete(int id);
 }
