@@ -25,4 +25,69 @@
         FROM DUAL
     </select>
     
+    <select id="myReviewList" resultType="com.sist.web.vo.Review_BoardVO">
+        SELECT 
+            rb.id,
+            rb.subject,
+            rb.content,
+            rb.image_url,
+            rb.hit,
+            rb.created_at,
+            rb.rcp_seq,
+            r.rcp_nm,
+            r.att_file_no_main
+        FROM review_board rb
+        LEFT OUTER JOIN recipe r ON rb.rcp_seq = r.rcp_seq
+        WHERE rb.users_id = #{userId}
+        ORDER BY rb.id DESC
+        OFFSET #{start} ROWS FETCH NEXT 10 ROWS ONLY
+    </select>
+    
+    
+    <select id="myReviewList" resultType="com.sist.web.vo.Review_BoardVO">
+		SELECT
+		rb.id,
+		rb.subject,
+		rb.content,
+		rb.image_url,
+		rb.hit,
+		rb.created_at,
+		rb.rcp_seq,
+		
+		r.rcp_nm,
+		r.att_file_no_main
+		
+		FROM review_board rb
+		LEFT OUTER JOIN recipe r ON rb.rcp_seq = r.rcp_seq
+		WHERE rb.users_id = #{userId}
+		ORDER BY rb.id DESC
+		OFFSET #{start} ROWS FETCH NEXT 10 ROWS ONLY
+	</select>
+    
+    <select id="myReviewReplyList" resultType="com.sist.web.vo.Review_Board_ReplyVO">
+	    SELECT id, review_board_id, content, created_at
+	    FROM review_board_reply
+	    WHERE users_id = #{userId}
+	    ORDER BY id DESC
+	    OFFSET #{start} ROWS FETCH NEXT 10 ROWS ONLY
+	</select>
+	
+	<delete id="deleteMyReviews">
+	    DELETE FROM review_board
+	    WHERE users_id = #{userId}
+	    AND id IN
+	    <foreach item="id" collection="idList" open="(" separator="," close=")">
+	        #{id}
+	    </foreach>
+	</delete>
+
+	<delete id="deleteMyReviewReplies">
+	    DELETE FROM review_board_reply
+	    WHERE users_id = #{userId}
+	    AND id IN
+	    <foreach item="id" collection="idList" open="(" separator="," close=")">
+	        #{id}
+	    </foreach>
+	</delete>
+    
 </mapper>
