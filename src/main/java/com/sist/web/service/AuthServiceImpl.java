@@ -18,6 +18,7 @@ import com.sist.web.dto.LoginRequest;
 import com.sist.web.dto.LoginResponse;
 import com.sist.web.dto.NicknameCheckResponse;
 import com.sist.web.dto.PasswordResetLinkRequest;
+import com.sist.web.dto.PasswordResetRequest;
 import com.sist.web.dto.PasswordResetValidateResponse;
 import com.sist.web.dto.ReissueResponse;
 import com.sist.web.dto.SignupRequest;
@@ -343,5 +344,54 @@ public class AuthServiceImpl implements AuthService {
 		redisTemplate.opsForValue().set("pwReset:" + token, String.valueOf(userId), PASSWORD_RESET_TOKEN_TTL);
 		redisTemplate.opsForValue().set("pwResetUser:" + userId, token, PASSWORD_RESET_TOKEN_TTL);
 		return token;
+	}
+
+	// [비밀번호 재설정] - 다른 기기 세션(Refresh Token) 무효화는 이번 개발에서 제외 (열린 이슈로 확정)
+	@Override
+	public void resetPassword(PasswordResetRequest request) {
+		String token = request.getToken();
+		String newPassword = request.getNewPassword();
+		String newPasswordConfirm = request.getNewPasswordConfirm();
+
+		// 1. 필수값 존재 확인
+		if (token == null || token.isBlank() || newPassword == null || newPasswordConfirm == null) {
+			throw new AuthException("INVALID_REQUEST", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST);
+		}
+
+		// 2. 새 비밀번호 형식 검증
+		if (!PASSWORD_PATTERN.matcher(newPassword).matches()) {
+			throw new AuthException("INVALID_PASSWORD_FORMAT", "비밀번호는 문자, 숫자, 특수기호를 모두 포함해 8~20자로 입력해주세요.");
+		}
+
+		// 3. 새 비밀번호 / 확인 일치 검사
+		if (!newPassword.equals(newPasswordConfirm)) {
+			throw new AuthException("PASSWORD_MISMATCH", "비밀번호가 일치하지 않습니다.");
+		}
+
+		// 4. Redis 재조회 (제출 시점 재검증)
+		String userIdValue = redisTemplate.opsForValue().get("pwReset:" + token);
+		if (userIdValue == null) {
+			throw new AuthException("INVALID_OR_EXPIRED_TOKEN", "유효하지 않거나 만료된 링크입니다.", HttpStatus.GONE);
+		}
+		int userId = Integer.parseInt(userIdValue);
+
+		// 5. 계정 상태 재확인 (ACTIVE가 아니면 토큰 정리 후 동일한 에러로 통일 - 탈퇴 여부 비노출)
+		UsersVO user = authMapper.findUserStatusById(userId);
+		if (user == null || !"ACTIVE".equals(user.getStatus())) {
+			invalidatePasswordResetToken(token, userId);
+			throw new AuthException("INVALID_OR_EXPIRED_TOKEN", "유효하지 않거나 만료된 링크입니다.", HttpStatus.GONE);
+		}
+
+		// 6. 비밀번호 업데이트
+		authMapper.updatePassword(userId, passwordEncoder.encode(newPassword));
+
+		// 7. Redis 토큰 제거
+		invalidatePasswordResetToken(token, userId);
+	}
+
+	// [비밀번호 재설정 토큰 + 역인덱스 정리]
+	private void invalidatePasswordResetToken(String token, int userId) {
+		redisTemplate.delete("pwReset:" + token);
+		redisTemplate.delete("pwResetUser:" + userId);
 	}
 }

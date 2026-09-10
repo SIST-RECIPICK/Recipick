@@ -23,6 +23,7 @@ import com.sist.web.dto.LoginRequest;
 import com.sist.web.dto.LoginResponse;
 import com.sist.web.dto.NicknameCheckResponse;
 import com.sist.web.dto.PasswordResetLinkRequest;
+import com.sist.web.dto.PasswordResetRequest;
 import com.sist.web.dto.PasswordResetValidateResponse;
 import com.sist.web.dto.ReissueResponse;
 import com.sist.web.dto.SignupRequest;
@@ -136,5 +137,12 @@ public class AuthRestController {
 	public PasswordResetValidateResponse validatePasswordResetToken(
 			@RequestParam(value = "token", required = false) String token) {
 		return authService.validatePasswordResetToken(token);
+	}
+
+	// [비밀번호 재설정]
+	@PostMapping("/password/reset")
+	public ResponseEntity<Map<String, String>> resetPassword(@RequestBody PasswordResetRequest request) {
+		authService.resetPassword(request);
+		return ResponseEntity.ok(Map.of("message", "비밀번호가 변경되었습니다."));
 	}
 }

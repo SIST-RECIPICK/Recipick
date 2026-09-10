@@ -141,3 +141,179 @@ com.sist.web.vo.UsersVO
 ## 5. 열린 이슈
 
 1. **다른 기기 세션(Refresh Token) 전체 무효화 — 이번 스콥 제외로 확정.** 비밀번호 재설정 시 다른 기기에 이미 로그인되어 있던 세션(Refresh Token)은 자연 만료(최대 14일, Rolling)까지 유지된다. 이를 구현하려면 Refresh Token을 `userId` 기준으로 역조회할 수 있는 별도 인덱스(예: `refreshSet:{userId}` → 활성 토큰 Set)를 새로 설계해야 하며, 이는 이미 완료·테스트된 로그인/로그아웃/재발급 API를 소급 수정해야 하는 작업이라 이번 스콥에서는 제외한다. 향후 보안 강화 시점에 CLAUDE.md의 기술 부채 목록에 추가하여 재논의한다.
+
+---
+
+## 6. 테스트 기록
+
+### 요약
+| # | 케이스                         | 상태  | errorCode    |
+|---|-----------------------------|-----|--------------|
+| 1 | 성공                          | 200 | -            |
+| 2 | 필수값 누락                      | 400 | INVALID_REQUEST |
+| 3 | 비밀번호 형식 오류                  | 400 | INVALID_PASSWORD_FORMAT |
+| 4 | 비밀번호 확인 불일치                 | 400 | PASSWORD_MISMATCH   |
+| 5 | 존재하지 않는 토큰                  | 410 | INVALID_OR_EXPIRED_TOKEN |
+| 6 | 이미 소비된 토큰 재사용               | 410 | INVALID_OR_EXPIRED_TOKEN  |
+| 7 | WITHDRAWN (탈퇴) 계정           | 410 |  INVALID_OR_EXPIRED_TOKEN  |
+| 8 | 실제 비밀번호 변경 확인                      | 200 | -            |
+
+- 테스트 도구: Swagger UI
+- 테스트 일자: 2026-09-10
+
+### 상세
+<details>
+<summary>1. 성공</summary>
+
+**Request**
+```json
+{
+   "token": "171b620e-6965-40af-bda7-4484f11d545f",
+   "newPassword": "password1234!",
+   "newPasswordConfirm": "password1234!"
+}
+```
+**Response** `200`
+```json
+{
+   "message": "비밀번호가 변경되었습니다."
+}
+```
+</details>
+<details>
+<summary>2. 필수값 누락</summary>
+
+**Request**
+```json
+{
+   "token": "",
+   "newPassword": "password1234!",
+   "newPasswordConfirm": "password1234!"
+}
+```
+**Response** `400`
+```json
+{
+   "errorCode": "INVALID_REQUEST",
+   "message": "잘못된 요청입니다."
+}
+```
+</details>
+<details>
+<summary>3. 비밀번호 형식 오류</summary>
+
+**Request**
+```json
+{
+   "token": "171b620e-6965-40af-bda7-4484f11d545f",
+   "newPassword": "password123",
+   "newPasswordConfirm": "password123"
+}
+```
+**Response** `400`
+```json
+{
+   "errorCode": "INVALID_PASSWORD_FORMAT",
+   "message": "비밀번호는 문자, 숫자, 특수기호를 모두 포함해 8~20자로 입력해주세요."
+}
+```
+</details>
+<details>
+<summary>4. 비밀번호 확인 불일치</summary>
+
+**Request**
+```json
+{
+   "token": "171b620e-6965-40af-bda7-4484f11d545f",
+   "newPassword": "password1234!",
+   "newPasswordConfirm": "password123!"
+}
+```
+**Response** `400`
+```json
+{
+   "errorCode": "PASSWORD_MISMATCH",
+   "message": "비밀번호가 일치하지 않습니다."
+}
+```
+</details>
+<details>
+<summary>5. 존재하지 않는 토큰</summary>
+
+**Request**
+```json
+{
+   "token": "aslkdjfla아무거나f",
+   "newPassword": "password1234!",
+   "newPasswordConfirm": "password1234!"
+}
+```
+**Response** `410`
+```json
+{
+   "errorCode": "INVALID_OR_EXPIRED_TOKEN",
+   "message": "유효하지 않거나 만료된 링크입니다."
+}
+```
+</details>
+<details>
+<summary>6. 이미 소비된 토큰 재사용</summary>
+
+**Request**
+```json
+{
+   "token": "171b620e-6965-40af-bda7-4484f11d545f(1번에서 이미 사용된 토큰)",
+   "newPassword": "password1234!",
+   "newPasswordConfirm": "password1234!"
+}
+```
+**Response** `410`
+```json
+{
+   "errorCode": "INVALID_OR_EXPIRED_TOKEN",
+   "message": "유효하지 않거나 만료된 링크입니다."
+}
+```
+</details>
+<details>
+<summary>7. WITHDRAWN (탈퇴) 계정</summary>
+
+**Request**
+```json
+{
+   "token": "e6128a0f-8bc9-42d4-b8dd-94a0237cfb82(메일 요청 후 탈퇴함)",
+   "newPassword": "password1234!",
+   "newPasswordConfirm": "password1234!"
+}
+```
+**Response** `410`
+```json
+{
+   "errorCode": "INVALID_OR_EXPIRED_TOKEN",
+   "message": "유효하지 않거나 만료된 링크입니다."
+}
+```
+</details>
+<details>
+<summary>8. 실제 비밀번호 변경 확인</summary>
+
+**Request**
+```json
+{
+   "email": "rmawl8600@naver.com",
+   "password": "password1234!"
+}
+```
+**Response** `200`
+```json
+{
+   "accessToken": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMDAzIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3ODkwMjg4NzcsImV4cCI6MTc4OTAzMDY3N30.5cCXfRYO6-a25LZUZmjc1qf7gOxMGidHIybLKxL1Ug0",
+   "accountStatus": "ACTIVE",
+   "message": null,
+   "nickname": "안녕하세여",
+   "recoveryToken": null,
+   "role": "USER",
+   "userId": 1003
+}
+```
+</details>

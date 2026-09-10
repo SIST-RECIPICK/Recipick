@@ -36,6 +36,13 @@
     WHERE id = #{id}
   </select>
 
+  <!-- userId의 로컬 계정 비밀번호 변경 (비밀번호 재설정 시 사용) -->
+  <update id="updatePassword">
+    UPDATE local_accounts
+    SET password = #{password}
+    WHERE user_id = #{user_id}
+  </update>
+
   <!-- users 레코드 생성 (데이터 DB에 추가) -->
   <insert id="insertUser" parameterType="com.sist.web.vo.UsersVO">
     <selectKey keyProperty="id" resultType="int" order="BEFORE">
