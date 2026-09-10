@@ -1,6 +1,7 @@
 package com.sist.web.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sist.web.mapper.AdminMapper;
+import com.sist.web.vo.CurationCreateVO;
 import com.sist.web.vo.CurationDetailVO;
 import com.sist.web.vo.CurationVO;
 import com.sist.web.vo.IngredientGroupVO;
@@ -106,6 +108,69 @@ public class AdminServiceImpl implements AdminService {
 		adminMapper.deleteCurationDetail(id);
 		// 큐레이션 삭제
 		adminMapper.deleteCuration(id);
+	}
+
+	@Override
+	public Map<String, List<RecipeVO>> selectRecipeTop3(List<Integer> ids) {
+		Map<String, List<RecipeVO>> map = new HashMap<>();
+		for(int id : ids) {
+			String name = adminMapper.selectIngredientName(id);
+			List<RecipeVO> list = adminMapper.selectRecipeTop3(id);
+			map.put(name, list);
+		}
+		
+ 		return map;
+	}
+
+	@Override
+	@Transactional
+	public void insertCuration(CurationCreateVO vo) {
+		
+		CurationVO curation = new CurationVO();
+		curation.setTitle(vo.getTitle());
+		curation.setYear(vo.getYear());
+		curation.setMonth(vo.getMonth());
+		curation.setStatus("PUBLISHED");
+		curation.setUsers_id(1);
+		adminMapper.createCuration(curation);
+		
+		int curationId = curation.getId();
+			
+		for (CurationDetailVO d : vo.getDetails()) {
+			CurationDetailVO detail = new CurationDetailVO();
+			detail.setSort_order(d.getSort_order());
+	        detail.setCuration_id(curationId);
+	        detail.setRcp_seq(d.getRcp_seq());
+	        detail.setIngredient_id(d.getIngredient_id());
+	        adminMapper.createCurationDetail(detail);
+	    }
+		
+	}
+
+	@Override
+	public void updateCuration(CurationCreateVO vo, int id) {
+
+		// 1. 큐레이션 업데이트
+		CurationVO curation = new CurationVO();
+		curation.setId(id);
+		curation.setTitle(vo.getTitle());
+		curation.setYear(vo.getYear());
+		curation.setMonth(vo.getMonth());
+		adminMapper.updateCuration(curation);
+		
+		// 2. 디테일 삭제 후
+		adminMapper.deleteCurationDetail(id);
+			
+		// 3. 디테일 다시 입력
+		for (CurationDetailVO d : vo.getDetails()) {
+			CurationDetailVO detail = new CurationDetailVO();
+			detail.setSort_order(d.getSort_order());
+	        detail.setCuration_id(id);
+	        detail.setRcp_seq(d.getRcp_seq());
+	        detail.setIngredient_id(d.getIngredient_id());
+	        adminMapper.createCurationDetail(detail);
+	    }
+		
 	}
 
 }

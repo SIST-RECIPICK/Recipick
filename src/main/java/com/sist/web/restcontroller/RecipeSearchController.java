@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sist.web.service.RecipeSearchService;
+import com.sist.web.vo.RecipePreviewVO;
 import com.sist.web.vo.RecipeSearchVO;
 
 import lombok.RequiredArgsConstructor;
@@ -37,5 +38,21 @@ public class RecipeSearchController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 		return ResponseEntity.ok(list);
+	}
+	@GetMapping("recipe/preview")
+	public ResponseEntity<RecipePreviewVO> recipe_preview(
+			@RequestParam("rcp_seq") int rcp_seq
+	)
+	{
+		RecipePreviewVO preview;
+		try
+		{
+			preview = rsService.selectRecipePreview(rcp_seq);
+		}catch(Exception ex)
+		{
+			ex.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		return ResponseEntity.ok(preview);
 	}
 }
