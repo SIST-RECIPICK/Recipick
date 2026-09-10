@@ -124,8 +124,8 @@ public class AdminServiceImpl implements AdminService {
 
 	@Override
 	@Transactional
-	public void createCuration(CurationCreateVO vo) {
-				
+	public void insertCuration(CurationCreateVO vo) {
+		
 		CurationVO curation = new CurationVO();
 		curation.setTitle(vo.getTitle());
 		curation.setYear(vo.getYear());
@@ -140,6 +140,32 @@ public class AdminServiceImpl implements AdminService {
 			CurationDetailVO detail = new CurationDetailVO();
 			detail.setSort_order(d.getSort_order());
 	        detail.setCuration_id(curationId);
+	        detail.setRcp_seq(d.getRcp_seq());
+	        detail.setIngredient_id(d.getIngredient_id());
+	        adminMapper.createCurationDetail(detail);
+	    }
+		
+	}
+
+	@Override
+	public void updateCuration(CurationCreateVO vo, int id) {
+
+		// 1. 큐레이션 업데이트
+		CurationVO curation = new CurationVO();
+		curation.setId(id);
+		curation.setTitle(vo.getTitle());
+		curation.setYear(vo.getYear());
+		curation.setMonth(vo.getMonth());
+		adminMapper.updateCuration(curation);
+		
+		// 2. 디테일 삭제 후
+		adminMapper.deleteCurationDetail(id);
+			
+		// 3. 디테일 다시 입력
+		for (CurationDetailVO d : vo.getDetails()) {
+			CurationDetailVO detail = new CurationDetailVO();
+			detail.setSort_order(d.getSort_order());
+	        detail.setCuration_id(id);
 	        detail.setRcp_seq(d.getRcp_seq());
 	        detail.setIngredient_id(d.getIngredient_id());
 	        adminMapper.createCurationDetail(detail);
