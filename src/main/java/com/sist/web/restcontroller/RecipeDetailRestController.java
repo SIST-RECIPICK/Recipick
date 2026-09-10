@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.sist.web.service.RecipeDetailService;
 import com.sist.web.vo.IngredientUnitVO;
+import com.sist.web.vo.MyListVO;
 import com.sist.web.vo.RecipeLikeVO;
 import com.sist.web.vo.RecipeManualVO;
 import com.sist.web.vo.RecipeVO;
@@ -52,7 +53,7 @@ public class RecipeDetailRestController {
 		response.addCookie(cookie);
 		
 		Cookie[] cookies = request.getCookies();
-		int cookieNo = 1;
+		
 		Map map = new HashMap();
 		
 		List<RecipeVO> cookieList = new ArrayList<RecipeVO>();
@@ -64,13 +65,10 @@ public class RecipeDetailRestController {
 			        if (getCookie.getName().startsWith("recipe_detail_")) {
 			        	
 			        	RecipeVO cookieData = service.recipeDetailData(Integer.parseInt(getCookie.getValue()));
-			        	cookieList.add(cookieData);
-			        	cookieNo++; //방문 기록은 6개까지만 보여준다
+			        	if(cookieData != null)	 
+			        		cookieList.add(cookieData);
 			        }
-			        if(cookieNo > 6)
-		        	{
-		        		break;
-		        	}
+			        
 			    }
 			}
 			//좋아요 유무
@@ -146,5 +144,51 @@ public class RecipeDetailRestController {
 		}
 		
 		return ResponseEntity.ok().build();
+	}
+	
+	
+	@GetMapping("/recipe/my-list")
+	public ResponseEntity<Map> recipe_my_list(
+		@RequestParam("user_id") int user_id,
+		@RequestParam("page") int page,	
+		@RequestParam(value = "type",required = false) String type		
+	) 
+	{	
+		if(type == null)
+			type ="like";
+		
+		Map map = new HashMap();
+		
+		try 
+		{
+			if(type.equals("like"))
+			{
+				List<MyListVO> myLikeList = service.userLikeList(user_id, page);
+				int[] pages = service.pages(user_id, page);
+				map.put("myLikeList", myLikeList);
+				map.put("curpage", pages[0]);
+				map.put("totalPage", pages[1]);
+				map.put("startPage", pages[2]);
+				map.put("endPage", pages[3]);
+				
+			}else
+			{
+				List<MyListVO> myMarkList = service.userMarkList(user_id, page);
+				int[] pages = service.pages(user_id, page);
+				
+				map.put("myMarkList", myMarkList);
+				map.put("curpage", pages[0]);
+				map.put("totalPage", pages[1]);
+				map.put("startPage", pages[2]);
+				map.put("endPage", pages[3]);
+			}
+						
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		
+		return ResponseEntity.ok(map);
 	}
 }
