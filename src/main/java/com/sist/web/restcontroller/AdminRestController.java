@@ -158,7 +158,6 @@ public class AdminRestController {
 	
 	@GetMapping("/curation/title/recommend")
 	public ResponseEntity<String> titleRecommand(@RequestParam("month") int month, @RequestParam("ids") List<String> ids){
-		System.out.println("ids :: " + ids.get(0));
 		try {
 			String title = recommander.recommandTitle(month, ids);
 			return ResponseEntity.ok(title);
@@ -172,7 +171,18 @@ public class AdminRestController {
 	@PostMapping("/curation")
 	public ResponseEntity<?> insert_curation(@RequestBody CurationCreateVO vo){
 		try {
-			adminService.createCuration(vo);
+			adminService.insertCuration(vo);
+			return ResponseEntity.ok().build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+	
+	@PutMapping("/curation/{id}")
+	public ResponseEntity<?> update_curation(@RequestBody CurationCreateVO vo, @PathVariable("id") int id){
+		try {
+			adminService.updateCuration(vo, id);
 			return ResponseEntity.ok().build();
 		} catch (Exception e) {
 			e.printStackTrace();
