@@ -22,4 +22,5 @@ public class CurationVO {
 	private LocalDateTime created_at;
 	private int users_id;  
 	private List<IngredientGroupVO> group = new ArrayList<>(); 
+	private int hit;
 }

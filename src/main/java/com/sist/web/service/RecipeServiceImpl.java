@@ -18,9 +18,9 @@ public class RecipeServiceImpl implements RecipeService {
 	private final RecipeMapper rMapper;
 
 	@Override
-	public List<RecipeListVO> recipeListData(int start) {
+	public List<RecipeListVO> recipeListData(Map map) {
 		// TODO Auto-generated method stub
-		return rMapper.recipeListData(start);
+		return rMapper.recipeListData(map);
 	}
 
 	@Override
@@ -62,4 +62,19 @@ public class RecipeServiceImpl implements RecipeService {
 		return pages;
 	}
 
+	// 좋아요 토글 버튼
+	// Map => user_id(좋아요 누른 사용자), recipe_id(좋아요 누른 레시피)
+	@Override
+	public boolean toggleLike(Map map) {
+	    int count = rMapper.checkRecipeLike(map);
+	    if (count > 0) {
+	        // 이미 눌렀음 -> 취소
+	        rMapper.deleteRecipeLike(map);
+	        return false;
+	    } else {
+	        // 안 눌렀음 -> 등록
+	        rMapper.insertRecipeLike(map);
+	        return true;
+	    }
+	}
 }
