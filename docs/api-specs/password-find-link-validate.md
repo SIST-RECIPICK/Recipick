@@ -115,3 +115,108 @@ resources/mybatis/mapper/auth-mapper.xml
 ## 5. 열린 이슈
 
 없음 (토큰 소비 여부(읽기 전용으로 확정), 계정 상태(WITHDRAWN) 재확인 포함 여부 모두 확정됨)
+
+---
+
+## 6. 테스트 기록
+
+### 요약
+| # | 케이스                         | 상태  | errorCode        |
+|---|-----------------------------|-----|------------------|
+| 1 | 성공 (토큰 유효)                  | 200 | -                |
+| 2 | 존재하지 않는/조작된 토큰              | 200 | -                |
+| 3 | token 누락                    | 400 | MISSING_TOKEN    |
+| 4 | 1번 성공 직후, 같은 토큰으로 재요청       | 200 | -                |
+| 5 | 만료된 토큰                      | 200 | -                |
+| 6 | 토큰은 유효하나 계정이 WITHDRAWN (탈퇴) | 200 | -                |
+
+- 테스트 도구: Swagger UI
+- 테스트 일자: 2026-09-10
+
+### 상세
+
+<details>
+<summary>1. 성공 (토큰 유효)</summary>
+
+**Request**
+```
+token=받은 이메일에서 뒷부분 파라미터 
+```
+**Response** `200`
+```json
+{
+   "valid": true
+}
+```
+</details>
+<details>
+<summary>2. 존재하지 않는/조작된 토큰</summary>
+
+**Request**
+```
+token=존재하지 않은 토큰 (임의 문자열)
+```
+**Response** `200`
+```json
+{
+   "valid": false
+}
+```
+</details>
+<details>
+<summary>3. token 누락</summary>
+
+**Request**
+```
+token=""
+```
+**Response** `400`
+```json
+{
+   "errorCode": "MISSING_TOKEN",
+   "message": "잘못된 접근입니다."
+}
+```
+</details>
+<details>
+<summary>4. 1번 성공 직후, 같은 토큰으로 재요청</summary>
+
+**Request**
+```
+token=받은 이메일에서 뒷부분 파라미터 
+```
+**Response** `200`
+```json
+{
+"valid": true
+}
+```
+</details>
+<details>
+<summary>5. 만료된 토큰</summary>
+
+**Request**
+```
+token=30분 지난 토큰 
+```
+**Response** `200`
+```json
+{
+"valid": false
+}
+```
+</details>
+<details>
+<summary>6. 토큰은 유효하나 계정이 WITHDRAWN (탈퇴)</summary>
+
+**Request**
+```
+token=소프트 탈퇴(WITHDRAWN)한 사람이 받은 token 
+```
+**Response** `200`
+```json
+{
+"valid": false
+}
+```
+</details>

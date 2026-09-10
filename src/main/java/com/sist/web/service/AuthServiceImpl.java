@@ -18,6 +18,7 @@ import com.sist.web.dto.LoginRequest;
 import com.sist.web.dto.LoginResponse;
 import com.sist.web.dto.NicknameCheckResponse;
 import com.sist.web.dto.PasswordResetLinkRequest;
+import com.sist.web.dto.PasswordResetValidateResponse;
 import com.sist.web.dto.ReissueResponse;
 import com.sist.web.dto.SignupRequest;
 import com.sist.web.dto.SignupResponse;
@@ -306,6 +307,29 @@ public class AuthServiceImpl implements AuthService {
 			throw new AuthException("MAIL_SEND_FAILED", "일시적인 오류로 메일 전송에 실패했습니다. 잠시 후 다시 시도해주세요.",
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	// [비밀번호 재설정 링크 유효성 검증]
+	@Override
+	public PasswordResetValidateResponse validatePasswordResetToken(String token) {
+		// 1. token 파라미터 누락
+		if (token == null || token.isBlank()) {
+			throw new AuthException("MISSING_TOKEN", "잘못된 접근입니다.", HttpStatus.BAD_REQUEST);
+		}
+
+		PasswordResetValidateResponse response = new PasswordResetValidateResponse();
+
+		// 2. Redis pwReset:{token} 조회 (삭제하지 않음)
+		String userIdValue = redisTemplate.opsForValue().get("pwReset:" + token);
+		if (userIdValue == null) {
+			response.setValid(false);
+			return response;
+		}
+
+		// 3. 계정 상태 재확인 (ACTIVE일 때만 valid: true)
+		UsersVO user = authMapper.findUserStatusById(Integer.parseInt(userIdValue));
+		response.setValid(user != null && "ACTIVE".equals(user.getStatus()));
+		return response;
 	}
 
 	// [기존 활성 토큰 무효화 후 신규 비밀번호 재설정 토큰 발급]

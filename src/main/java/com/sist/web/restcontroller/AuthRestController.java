@@ -23,6 +23,7 @@ import com.sist.web.dto.LoginRequest;
 import com.sist.web.dto.LoginResponse;
 import com.sist.web.dto.NicknameCheckResponse;
 import com.sist.web.dto.PasswordResetLinkRequest;
+import com.sist.web.dto.PasswordResetValidateResponse;
 import com.sist.web.dto.ReissueResponse;
 import com.sist.web.dto.SignupRequest;
 import com.sist.web.dto.SignupResponse;
@@ -128,5 +129,12 @@ public class AuthRestController {
 	public ResponseEntity<Map<String, String>> requestPasswordReset(@RequestBody PasswordResetLinkRequest request) {
 		authService.requestPasswordReset(request);
 		return ResponseEntity.ok(Map.of("message", "입력하신 이메일로 안내 메일을 전송했습니다."));
+	}
+
+	// [비밀번호 재설정 링크 유효성 검증]
+	@GetMapping("/password/reset/validate")
+	public PasswordResetValidateResponse validatePasswordResetToken(
+			@RequestParam(value = "token", required = false) String token) {
+		return authService.validatePasswordResetToken(token);
 	}
 }

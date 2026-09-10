@@ -5,6 +5,7 @@ import com.sist.web.dto.LoginRequest;
 import com.sist.web.dto.LoginResponse;
 import com.sist.web.dto.NicknameCheckResponse;
 import com.sist.web.dto.PasswordResetLinkRequest;
+import com.sist.web.dto.PasswordResetValidateResponse;
 import com.sist.web.dto.ReissueResponse;
 import com.sist.web.dto.SignupRequest;
 import com.sist.web.dto.SignupResponse;
@@ -31,4 +32,7 @@ public interface AuthService {
 
 	// [비밀번호 재설정 링크 요청]
 	void requestPasswordReset(PasswordResetLinkRequest request);
+
+	// [비밀번호 재설정 링크 유효성 검증]
+	PasswordResetValidateResponse validatePasswordResetToken(String token);
 }
