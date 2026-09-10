@@ -22,6 +22,7 @@ import com.sist.web.dto.EmailCheckResponse;
 import com.sist.web.dto.LoginRequest;
 import com.sist.web.dto.LoginResponse;
 import com.sist.web.dto.NicknameCheckResponse;
+import com.sist.web.dto.PasswordResetLinkRequest;
 import com.sist.web.dto.ReissueResponse;
 import com.sist.web.dto.SignupRequest;
 import com.sist.web.dto.SignupResponse;
@@ -120,5 +121,12 @@ public class AuthRestController {
 				.build();
 
 		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(response);
+	}
+
+	// [비밀번호 재설정 링크 요청]
+	@PostMapping("/password/reset-request")
+	public ResponseEntity<Map<String, String>> requestPasswordReset(@RequestBody PasswordResetLinkRequest request) {
+		authService.requestPasswordReset(request);
+		return ResponseEntity.ok(Map.of("message", "입력하신 이메일로 안내 메일을 전송했습니다."));
 	}
 }

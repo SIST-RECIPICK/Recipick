@@ -4,8 +4,11 @@ import java.time.Duration;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.MailException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +17,7 @@ import com.sist.web.dto.EmailCheckResponse;
 import com.sist.web.dto.LoginRequest;
 import com.sist.web.dto.LoginResponse;
 import com.sist.web.dto.NicknameCheckResponse;
+import com.sist.web.dto.PasswordResetLinkRequest;
 import com.sist.web.dto.ReissueResponse;
 import com.sist.web.dto.SignupRequest;
 import com.sist.web.dto.SignupResponse;
@@ -21,11 +25,13 @@ import com.sist.web.exception.AuthException;
 import com.sist.web.mapper.AuthMapper;
 import com.sist.web.security.JwtTokenProvider;
 import com.sist.web.security.JwtUser;
+import com.sist.web.util.PasswordResetMailSender;
 import com.sist.web.vo.LocalAccountVO;
 import com.sist.web.vo.UsersVO;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -36,11 +42,17 @@ public class AuthServiceImpl implements AuthService {
 			.compile("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{}|;:,.<>?]).{8,20}$");
 	private static final String ACCOUNT_STATUS_WITHDRAWN = "WITHDRAWN";
 	private static final Duration RECOVERY_TOKEN_TTL = Duration.ofMinutes(5);
+	private static final Duration PASSWORD_RESET_TOKEN_TTL = Duration.ofMinutes(30);
+	private static final Duration PASSWORD_RESET_REQUEST_LIMIT_TTL = Duration.ofSeconds(60);
 
 	private final AuthMapper authMapper;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final StringRedisTemplate redisTemplate;
+	private final PasswordResetMailSender mailSender;
+
+	@Value("${app.password-reset-url}")
+	private String passwordResetUrl;
 
 	// [이메일 중복 검사]
 	@Override
@@ -254,5 +266,58 @@ public class AuthServiceImpl implements AuthService {
 		response.setAccessToken(newAccessToken);
 		response.setRefreshToken(newRefreshToken);
 		return response;
+	}
+
+	// [비밀번호 재설정 링크 요청]
+	@Override
+	public void requestPasswordReset(PasswordResetLinkRequest request) {
+		String email = request.getEmail();
+
+		// 1. 이메일 형식 검증
+		if (email == null || !EMAIL_PATTERN.matcher(email).matches()) {
+			throw new AuthException("INVALID_EMAIL_FORMAT", "올바른 이메일 형식을 입력해주세요.");
+		}
+
+		// 2. 요청 주기 제한 (계정 존재 여부 확인 이전에 설정 - 존재 유무 비노출)
+		boolean firstRequest = Boolean.TRUE.equals(redisTemplate.opsForValue()
+				.setIfAbsent("pwResetLimit:" + email, "1", PASSWORD_RESET_REQUEST_LIMIT_TTL));
+		if (!firstRequest) {
+			throw new AuthException("TOO_MANY_REQUESTS", "요청이 너무 많습니다. 잠시 후 다시 시도해주세요.", HttpStatus.TOO_MANY_REQUESTS);
+		}
+
+		// 3. 가입 여부 확인
+		UsersVO user = authMapper.findUserByEmail(email);
+		if (user == null) {
+			// 미가입 - 토큰 생성/메일 발송 없이 동일한 성공 응답
+			return;
+		}
+
+		// 4. 로컬/소셜 가입 여부 확인 후 메일 발송
+		try {
+			LocalAccountVO localAccount = authMapper.findLocalAccountByUserId(user.getId());
+			if (localAccount == null) {
+				mailSender.sendSocialAccountGuideMail(email);
+			} else {
+				String token = rotatePasswordResetToken(user.getId());
+				mailSender.sendPasswordResetMail(email, passwordResetUrl + "?token=" + token);
+			}
+		} catch (MailException e) {
+			log.error("비밀번호 재설정 메일 발송 실패", e);
+			throw new AuthException("MAIL_SEND_FAILED", "일시적인 오류로 메일 전송에 실패했습니다. 잠시 후 다시 시도해주세요.",
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	// [기존 활성 토큰 무효화 후 신규 비밀번호 재설정 토큰 발급]
+	private String rotatePasswordResetToken(int userId) {
+		String oldToken = redisTemplate.opsForValue().get("pwResetUser:" + userId);
+		if (oldToken != null) {
+			redisTemplate.delete("pwReset:" + oldToken);
+		}
+
+		String token = UUID.randomUUID().toString();
+		redisTemplate.opsForValue().set("pwReset:" + token, String.valueOf(userId), PASSWORD_RESET_TOKEN_TTL);
+		redisTemplate.opsForValue().set("pwResetUser:" + userId, token, PASSWORD_RESET_TOKEN_TTL);
+		return token;
 	}
 }

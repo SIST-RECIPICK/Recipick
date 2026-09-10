@@ -4,6 +4,7 @@ import com.sist.web.dto.EmailCheckResponse;
 import com.sist.web.dto.LoginRequest;
 import com.sist.web.dto.LoginResponse;
 import com.sist.web.dto.NicknameCheckResponse;
+import com.sist.web.dto.PasswordResetLinkRequest;
 import com.sist.web.dto.ReissueResponse;
 import com.sist.web.dto.SignupRequest;
 import com.sist.web.dto.SignupResponse;
@@ -27,4 +28,7 @@ public interface AuthService {
 
 	// [토큰 재발급]
 	ReissueResponse reissue(String refreshToken);
+
+	// [비밀번호 재설정 링크 요청]
+	void requestPasswordReset(PasswordResetLinkRequest request);
 }

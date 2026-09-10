@@ -147,3 +147,129 @@ com.sist.web.util.MailSender (or MailService)
 ## 5. 열린 이슈
 
 없음 (재요청 시 이전 토큰 무효화 방식, 요청 주기 제한(60초/이메일) 포함 여부, 메일 발송 시스템 오류 시 별도 안내 방식 모두 확정됨)
+
+---
+
+## 6. 테스트 기록
+
+### 요약
+| # | 케이스                 | 상태  | errorCode           |
+|---|---------------------|-----|---------------------|
+| 1 | 성공 (메일 전송)          | 200 | -                   |
+| 2 | 미가입 이메일 (DB에 없는 메일) | 200 | -                   |
+| 3 | 형식 오류               | 400 | INVALID_EMAIL_FORMAT |
+| 4 | 잦은 요청 (60초)         | 429 | TOO_MANY_REQUESTS   |
+| 5 | 제한 해제 후 재요청 (성공)    | 200 | -                   |
+| 6 | 이전 토큰 무효화 확인           | -   |                     |
+| 7 | 메일 발송 시스템 오류           | 500 | MAIL_SEND_FAILED |
+
+- 테스트 도구: Swagger UI
+- 테스트 일자: 2026-09-10
+
+### 상세
+
+<details>
+<summary>1. 성공 (메일 전송)</summary>
+
+**Request**
+```json
+{
+  "email": "DB에 저장되어 있는 이메일"
+}
+```
+**Response** `200`
+```json
+{
+   "message": "입력하신 이메일로 안내 메일을 전송했습니다."
+}
+```
+</details>
+<details>
+<summary>2. 미가입 이메일 (DB에 없는 메일)</summary>
+
+**Request**
+```json
+{
+  "email": "DB에 없는 메일"
+}
+```
+**Response** `200`
+- 완료 메시지는 뜨지만, 실제 메일 전송은 안함.
+```json
+{
+   "message": "입력하신 이메일로 안내 메일을 전송했습니다."
+}
+```
+</details>
+<details>
+<summary>3. 형식 오류</summary>
+
+**Request**
+```json
+{
+  "email": "잘못된 이메일 형식"
+}
+```
+**Response** `400`
+```json
+{
+   "errorCode": "INVALID_EMAIL_FORMAT",
+   "message": "올바른 이메일 형식을 입력해주세요."
+}
+```
+</details>
+<details>
+<summary>4. 잦은 요청 (60초)</summary>
+
+**Request**
+```json
+{
+  "email": "DB에 저장되어 있는 이메일"
+}
+```
+**Response** `429`
+```json
+{
+   "errorCode": "TOO_MANY_REQUESTS",
+   "message": "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."
+}
+```
+</details>
+<details>
+<summary>5. 제한 해제 후 재요청 (성공)</summary>
+
+**Request**
+```json
+{
+  "email": "DB에 저장되어 있는 이메일"
+}
+```
+**Response** `200`
+```json
+{
+   "message": "입력하신 이메일로 안내 메일을 전송했습니다."
+}
+```
+</details>
+<details>
+<summary>6. 이전 토큰 무효화 확인</summary>
+
+```
+받은 메일 확인 후, token= 뒤에 문자가 매번 달라지는것 확인 
+```
+</details>
+<details>
+<summary>7. 메일 발송 시스템 오류</summary>
+
+**Request**
+```
+잘못된 요청
+```
+**Response** `500`
+```json
+{
+   "errorCode": "MAIL_SEND_FAILED",
+   "message": "일시적인 오류로 메일 전송에 실패했습니다. 잠시 후 다시 시도해주세요."
+}
+```
+</details>
