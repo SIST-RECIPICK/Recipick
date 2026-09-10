@@ -129,17 +129,98 @@ com.sist.web.security.JwtTokenProvider
 ### Mapper 예시 (SQL)
 
 ```xml
-<select id="findUserStatusById" resultType="String" parameterType="long">
-    SELECT status
+<select id="findUserStatusById" parameterType="int" resultType="com.sist.web.vo.UsersVO">
+    SELECT id, status, role
     FROM users
     WHERE id = #{id}
 </select>
 ```
 
-> 참고: `status`만 필요하므로 `UsersVO` 전체를 조회하지 않고 단일 컬럼만 조회하는 별도 쿼리를 사용합니다.
+> 참고: 신규 Access Token 발급 시 `role` claim이 필요하므로, `status` 단일 컬럼이 아닌 `status`와 `role`을 함께 조회합니다. `UsersVO` 전체 컬럼을 조회하지 않고 필요한 컬럼(`id`, `status`, `role`)만 선택하는 별도 쿼리를 사용합니다.
 
 ---
 
 ## 5. 열린 이슈
 
 없음 (TTL 정책은 Rolling 방식으로, Refresh Token 재사용 탐지는 이번 스콥 제외로, WITHDRAWN 발견 시 처리는 단순 강제 로그아웃(recoveryToken 미발급)으로 모두 확정됨)
+
+---
+
+## 6. 테스트 기록
+
+### 요약
+| # | 케이스                      | 상태  | errorCode               |
+|---|--------------------------|-----|-------------------------|
+| 1 | 성공(정상 재발급)               | 200 | -                       |
+| 2 | Refresh Token 쿠키 없음      | 401 | INVALID_REFRESH_TOKEN   |
+| 3 | Refresh Token 삭제 후 재사용   | 401 | INVALID_REFRESH_TOKEN   |
+| 4 | 존재하지 않는/조작된 토큰           | 401 | INVALID_REFRESH_TOKEN   |
+| 5 | 계정이 WITHDRAWN(소프트 탈퇴) 상태 | 401 | ⚠️ 소프트 탈퇴 구현 후 테스트 예정   |
+
+- 테스트 도구: Swagger UI
+- 테스트 일자: 2026-09-10
+- 결과: 명세서와 100% 일치, 별도 수정 없음
+### 상세
+
+<details>
+<summary>1. 성공(정상 재발급)</summary>
+
+**Request**
+```
+refreshToken: "91c6034e-d8.."
+```
+**Response** `201`
+- refreshToken 재발급
+```json
+{
+   "accessToken": "eyJhb..."
+}
+```
+</details>
+<details>
+<summary>2. Refresh Token 쿠키 없음</summary>
+
+**Request**
+```
+없음
+```
+**Response** `401`
+```json
+{
+   "errorCode": "INVALID_REFRESH_TOKEN",
+   "message": "세션이 만료되었습니다. 다시 로그인해주세요."
+}
+```
+</details>
+<details>
+<summary>3. Refresh Token 삭제 후 재사용</summary>
+
+**Request**
+```
+refreshToken: "91c6034e-d8.."
+(쿠키에서 삭제한 RefreshToken 재사용)
+```
+**Response** `401`
+```json
+{
+   "errorCode": "INVALID_REFRESH_TOKEN",
+   "message": "세션이 만료되었습니다. 다시 로그인해주세요."
+}
+```
+</details>
+<details>
+<summary>4. 존재하지 않는/조작된 토큰</summary>
+
+**Request**
+```
+refreshToken: "아무런 문자"
+(존재하지 않는 RefreshToken)
+```
+**Response** `401`
+```json
+{
+   "errorCode": "INVALID_REFRESH_TOKEN",
+   "message": "세션이 만료되었습니다. 다시 로그인해주세요."
+}
+```
+</details>

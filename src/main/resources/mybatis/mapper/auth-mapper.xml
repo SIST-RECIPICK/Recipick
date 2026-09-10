@@ -29,6 +29,13 @@
     WHERE user_id = #{user_id}
   </select>
 
+  <!-- userId로 계정 상태/역할 재조회 (토큰 재발급 시 사용) -->
+  <select id="findUserStatusById" parameterType="int" resultType="com.sist.web.vo.UsersVO">
+    SELECT id, status, role
+    FROM users
+    WHERE id = #{id}
+  </select>
+
   <!-- users 레코드 생성 (데이터 DB에 추가) -->
   <insert id="insertUser" parameterType="com.sist.web.vo.UsersVO">
     <selectKey keyProperty="id" resultType="int" order="BEFORE">

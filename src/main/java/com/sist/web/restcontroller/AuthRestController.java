@@ -22,6 +22,7 @@ import com.sist.web.dto.EmailCheckResponse;
 import com.sist.web.dto.LoginRequest;
 import com.sist.web.dto.LoginResponse;
 import com.sist.web.dto.NicknameCheckResponse;
+import com.sist.web.dto.ReissueResponse;
 import com.sist.web.dto.SignupRequest;
 import com.sist.web.dto.SignupResponse;
 import com.sist.web.security.JwtTokenProvider;
@@ -102,5 +103,22 @@ public class AuthRestController {
 		return ResponseEntity.ok()
 				.header(HttpHeaders.SET_COOKIE, cookie.toString())
 				.body(Map.of("message", "로그아웃되었습니다."));
+	}
+
+	// [토큰 재발급]
+	@PostMapping("/reissue")
+	public ResponseEntity<ReissueResponse> reissue(
+			@CookieValue(value = "refreshToken", required = false) String refreshToken) {
+		ReissueResponse response = authService.reissue(refreshToken);
+
+		ResponseCookie cookie = ResponseCookie.from("refreshToken", response.getRefreshToken())
+				.httpOnly(true)
+				.secure(true)
+				.path("/")
+				.sameSite("Strict")
+				.maxAge(Duration.ofMillis(jwtTokenProvider.getRefreshTokenExpiration()))
+				.build();
+
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(response);
 	}
 }

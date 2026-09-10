@@ -14,6 +14,7 @@ import com.sist.web.dto.EmailCheckResponse;
 import com.sist.web.dto.LoginRequest;
 import com.sist.web.dto.LoginResponse;
 import com.sist.web.dto.NicknameCheckResponse;
+import com.sist.web.dto.ReissueResponse;
 import com.sist.web.dto.SignupRequest;
 import com.sist.web.dto.SignupResponse;
 import com.sist.web.exception.AuthException;
@@ -214,5 +215,44 @@ public class AuthServiceImpl implements AuthService {
 		String accessToken = authHeader.substring("Bearer ".length());
 		long remainingExpiration = jwtTokenProvider.getRemainingExpiration(accessToken);
 		redisTemplate.opsForValue().set("blacklist:" + accessToken, "true", Duration.ofMillis(remainingExpiration));
+	}
+
+	// [토큰 재발급]
+	@Override
+	public ReissueResponse reissue(String refreshToken) {
+		// 1. 쿠키 자체가 없음
+		if (refreshToken == null) {
+			throw new AuthException("INVALID_REFRESH_TOKEN", "세션이 만료되었습니다. 다시 로그인해주세요.", HttpStatus.UNAUTHORIZED);
+		}
+
+		// 2. Redis에서 Refresh Token 조회 (조회 결과가 곧 유효성 검증)
+		String userIdValue = redisTemplate.opsForValue().get("refresh:" + refreshToken);
+		if (userIdValue == null) {
+			throw new AuthException("INVALID_REFRESH_TOKEN", "세션이 만료되었습니다. 다시 로그인해주세요.", HttpStatus.UNAUTHORIZED);
+		}
+		int userId = Integer.parseInt(userIdValue);
+
+		// 3. 계정 상태 재조회 (Refresh Token 발급 이후 소프트탈퇴됐을 수 있음)
+		UsersVO user = authMapper.findUserStatusById(userId);
+		if (ACCOUNT_STATUS_WITHDRAWN.equals(user.getStatus())) {
+			redisTemplate.delete("refresh:" + refreshToken);
+			throw new AuthException("ACCOUNT_WITHDRAWN", "탈퇴한 계정입니다. 다시 로그인해주세요.", HttpStatus.UNAUTHORIZED);
+		}
+
+		// 4. 기존 Refresh Token 삭제 (Rotation)
+		redisTemplate.delete("refresh:" + refreshToken);
+
+		// 5. 신규 Access Token 발급
+		String newAccessToken = jwtTokenProvider.createAccessToken(userId, user.getRole());
+
+		// 6. 신규 Refresh Token 발급 (Rolling 방식 - TTL 14일로 재설정)
+		String newRefreshToken = UUID.randomUUID().toString();
+		redisTemplate.opsForValue().set("refresh:" + newRefreshToken, String.valueOf(userId),
+				Duration.ofMillis(jwtTokenProvider.getRefreshTokenExpiration()));
+
+		ReissueResponse response = new ReissueResponse();
+		response.setAccessToken(newAccessToken);
+		response.setRefreshToken(newRefreshToken);
+		return response;
 	}
 }

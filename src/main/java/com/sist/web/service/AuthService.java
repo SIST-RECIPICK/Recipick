@@ -4,6 +4,7 @@ import com.sist.web.dto.EmailCheckResponse;
 import com.sist.web.dto.LoginRequest;
 import com.sist.web.dto.LoginResponse;
 import com.sist.web.dto.NicknameCheckResponse;
+import com.sist.web.dto.ReissueResponse;
 import com.sist.web.dto.SignupRequest;
 import com.sist.web.dto.SignupResponse;
 import com.sist.web.security.JwtUser;
@@ -23,4 +24,7 @@ public interface AuthService {
 
 	// [로그아웃]
 	void logout(JwtUser jwtUser, String refreshToken, String authHeader);
+
+	// [토큰 재발급]
+	ReissueResponse reissue(String refreshToken);
 }

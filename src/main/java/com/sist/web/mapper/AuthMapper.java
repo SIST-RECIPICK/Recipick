@@ -23,6 +23,9 @@ public interface AuthMapper {
 	// userId로 로컬 계정 조회 (비밀번호 포함, 로그인 검증용)
 	public LocalAccountVO findLocalAccountWithPasswordByUserId(@Param("user_id") int user_id);
 
+	// userId로 계정 상태/역할 재조회 (토큰 재발급 시 사용)
+	public UsersVO findUserStatusById(@Param("id") int id);
+
 	// users 레코드 생성 (데이터 추가)
 	public int insertUser(UsersVO user);
 
