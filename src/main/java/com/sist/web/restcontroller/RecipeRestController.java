@@ -41,14 +41,16 @@ public class RecipeRestController {
 		map.put("sort", sort);
 
 		try {
-			List<RecipeListVO> list = rService.recipeListData(map);
-			int[] pages = rService.pages(page);
+		    List<RecipeListVO> list = rService.recipeListData(map);
+		    int[] pages = rService.pages(page);
+		    int totalCount = rService.recipeTotalCount();
 
-			resultMap.put("list", list);
-			resultMap.put("pages", pages);
+		    resultMap.put("list", list);
+		    resultMap.put("pages", pages);
+		    resultMap.put("totalCount", totalCount);
 
 		} catch (Exception ex) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 		return ResponseEntity.ok(resultMap);
 	}
@@ -93,6 +95,7 @@ public class RecipeRestController {
 	}
 	
 	// 좋아요 토글 버튼
+	// post : 서버에 있는 데이터를 새로 추가하거나 변경시키기 때문
 	@PostMapping("/recipe/like")
 	public ResponseEntity<?> recipe_like(@RequestParam("user_id") int user_id,
 	        @RequestParam("recipe_id") int recipe_id)
@@ -111,5 +114,86 @@ public class RecipeRestController {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 	    }
 	    return ResponseEntity.ok(resultMap);
+	}
+	
+	// 키워드 검색 조회(레시피명 + 해시태그 + 재료정보)
+	@GetMapping("/recipe/keyword")
+	public ResponseEntity<?> recipe_keyword(@RequestParam("keyword") String keyword,
+			@RequestParam("page") int page,
+	        @RequestParam(value = "sort", required = false, defaultValue = "latest") String sort)
+	{
+		// 1. resultMap, map 그릇 만들기
+		Map<String, Object> resultMap = new HashMap<>(); // 클라이언트 응답용
+		Map map = new HashMap(); // keyword, page, start, sort 담을 파라미터용 그릇
+
+		// 2. start 계산
+		int start = (page - 1) * 12;
+
+		// 3. map에 keyword, page, start, sort 채우기
+		map.put("keyword", keyword);
+		map.put("page", page);
+		map.put("start", start);
+		map.put("sort", sort);
+
+		try {
+			// 4. rService.recipeSearchData(map), rService.search_pages(map) 호출
+			List<RecipeListVO> list = rService.recipeSearchData(map);
+			int[] pages = rService.search_pages(map);
+            
+			// 카테고리 별 총 페이지
+			int totalCount = rService.searchTotalCount(map);
+			resultMap.put("totalCount", totalCount);
+			
+			// 5. resultMap에 list, pages 담기
+			resultMap.put("list", list);
+			resultMap.put("pages", pages);
+
+		} catch (Exception ex) {
+			// 6. catch, return
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		return ResponseEntity.ok(resultMap);
+	}
+	
+	// 카테고리 + 키워드 통합 조회
+	@GetMapping("/recipe/filter")
+	public ResponseEntity<?> recipe_filter(
+	        @RequestParam(value = "main_category", required = false) String main_category,
+	        @RequestParam(value = "keyword", required = false) String keyword,
+	        @RequestParam("page") int page,
+	        @RequestParam(value = "sort", required = false, defaultValue = "latest") String sort)
+	{
+		// 1. resultMap, map 그릇 만들기
+		Map<String, Object> resultMap = new HashMap<>(); // 클라이언트 응답용
+		Map map = new HashMap(); // main_category, keyword, page, start, sort 담을 파라미터용 그릇
+
+		// 2. start 계산
+		int start = (page - 1) * 12;
+
+		// 3. map에 main_category, keyword, page, start, sort 채우기
+		map.put("main_category", main_category);
+		map.put("keyword", keyword);
+		map.put("page", page);
+		map.put("start", start);
+		map.put("sort", sort);
+
+		try {
+			// 4. rService.recipeFilterData(map), rService.filter_pages(map) 호출
+			List<RecipeListVO> list = rService.recipeFilterData(map);
+			int[] pages = rService.filter_pages(map);
+            
+			// 카테고리별 총 페이지
+			int totalCount = rService.filterTotalCount(map);
+			resultMap.put("totalCount", totalCount);
+			
+			// 5. resultMap에 list, pages 담기
+			resultMap.put("list", list);
+			resultMap.put("pages", pages);
+
+		} catch (Exception ex) {
+			// 6. catch, return
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		return ResponseEntity.ok(resultMap);
 	}
 }
