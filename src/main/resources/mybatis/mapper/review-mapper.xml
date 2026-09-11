@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sist.web.mapper.ReviewMapper">
+		
+	<select id="ReviewBoardListData" parameterType="map" resultType="Review_BoardVO">
+    	SELECT
+        rb.id AS id,
+        rb.subject AS subject,
+        rb.created_at AS created_at,
+        rb.hit AS hit,
+        rb.image_url AS image_url,
+        rb.rcp_seq AS rcp_seq,
+        
+        u1.id AS writer_id,
+        u1.nickname AS writer_nickname,
+        u1.profile_image_url AS writer_profile_image,
+        
+        rec.rcp_nm AS rcp_nm,
+        rec.att_file_no_main AS att_file_no_main,
+        
+        u2.id AS chef_id,
+        u2.nickname AS chef_nickname,
+        u2.profile_image_url AS chef_profile_image
+    	
+    	FROM review_board rb
+	    LEFT OUTER JOIN users u1 ON rb.users_id = u1.id
+	    LEFT OUTER JOIN recipe rec ON rb.rcp_seq = rec.rcp_seq
+	    LEFT OUTER JOIN users u2 ON rec.user_id = u2.id
+	    <where>
+	        <if test="keyword != null and keyword != ''">
+	            <choose>
+	                <when test="type == 'content'">
+	                    UPPER(rb.content) LIKE '%' || UPPER(#{keyword}) || '%'
+	                </when>
+	                <when test="type == 'writer'">
+	                    UPPER(u1.nickname) LIKE '%' || UPPER(#{keyword}) || '%'
+	                </when>
+	                <otherwise>
+	                    UPPER(rb.subject) LIKE '%' || UPPER(#{keyword}) || '%'
+	                </otherwise>
+	            </choose>
+	        </if>
+	    </where>
+	    ORDER BY rb.id DESC
+	    OFFSET #{start} ROWS FETCH NEXT 12 ROWS ONLY
+	</select>
+	
+	<select id="reviewBoardTotalpage" parameterType="String" resultType="int">
+	    SELECT CEIL(COUNT(*) / 12.0) 
+	    FROM review_board rb
+	    LEFT OUTER JOIN users u1 ON rb.users_id = u1.id
+	    <where>
+	        <if test="keyword != null and keyword != ''">
+	            <choose>
+	                <when test="type == 'content'">
+	                    UPPER(rb.content) LIKE '%' || UPPER(#{keyword}) || '%'
+	                </when>
+	                <when test="type == 'writer'">
+	                    UPPER(u1.nickname) LIKE '%' || UPPER(#{keyword}) || '%'
+	                </when>
+	                <otherwise>
+	                    UPPER(rb.subject) LIKE '%' || UPPER(#{keyword}) || '%'
+	                </otherwise>
+	            </choose>
+	        </if>
+	    </where>
+	</select>
+	
+	<select id="boardDetailData" parameterType="int" resultType="Review_BoardVO">
+		SELECT
+		rb.id AS id,
+		rb.subject AS subject,
+		rb.content AS content,
+		rb.created_at AS created_at,
+		rb.hit AS hit,
+		rb.image_url AS image_url,
+		rb.image_size AS image_size,
+		rb.rcp_seq AS rcp_seq,
+
+		u.id AS writer_id,
+		u.nickname AS writer_nickname,
+		u.profile_image_url AS writer_profile_image
+		
+		FROM review_board rb
+		LEFT OUTER JOIN users u ON rb.users_id = u.id
+		WHERE rb.id = #{id}
+	</select>
+	
+	<select id="writerOtherReviews" parameterType="map" resultType="Review_BoardVO">
+    	SELECT id, subject, image_url, created_at
+    	FROM review_board
+    	WHERE users_id = #{users_id} AND id != #{id}
+    	ORDER BY id DESC
+    	OFFSET 0 ROWS FETCH NEXT 4 ROWS ONLY
+	</select>
+	
+	<select id="recipeOtherReviews" parameterType="map" resultType="Review_BoardVO">
+    	SELECT id, subject, image_url
+		FROM review_board
+		WHERE rcp_seq = #{rcp_seq} AND id != #{id}
+		ORDER BY id DESC
+		OFFSET 0 ROWS FETCH NEXT 4 ROWS ONLY
+	</select>
+
+	<select id="boardReplyList" parameterType="int" resultType="Review_Board_ReplyVO">
+	    SELECT
+		r.id AS id,
+		r.review_board_id AS review_board_id,
+		r.users_id AS users_id,
+		r.content AS content,
+		r.created_at AS created_at,
+			
+		u.nickname AS writer_nickname,
+		u.profile_image_url AS writer_profile_image
+			
+		FROM review_board_reply r
+		LEFT OUTER JOIN users u ON r.users_id = u.id
+		WHERE r.review_board_id = #{review_board_id}
+		ORDER BY r.id ASC
+	</select>
+	
+	<update id="boardHitUpdate" parameterType="int">
+		UPDATE review_board
+		SET hit = hit+1
+		WHERE id=#{id} 
+	</update>
+	
+	
+	
+	<insert id="reviewInsert" parameterType="Review_BoardVO">
+	    INSERT INTO review_board (
+	        id, subject, content, image_url, image_size, rcp_seq, users_id, hit, created_at
+	    ) VALUES (
+	        seq_review_board.NEXTVAL,
+	        #{subject},
+	        #{content},
+	        #{image_url, jdbcType=VARCHAR},
+	        #{image_size, jdbcType=DOUBLE},
+	        #{rcp_seq},
+	        #{users_id},
+	        0,
+	        SYSDATE
+	    )
+	</insert>
+	
+	<update id="reviewUpdate" parameterType="com.sist.web.vo.Review_BoardVO">
+	    UPDATE review_board
+	    SET subject = #{subject},
+	        content = #{content},
+	        image_url = #{image_url, jdbcType=VARCHAR}
+	    WHERE id = #{id}
+	</update>
+	
+	<delete id="reviewReplyAllDelete" parameterType="int">
+	    DELETE FROM review_board_reply
+	    WHERE review_board_id = #{review_board_id}
+	</delete>
+	
+	<delete id="reviewDelete" parameterType="int">
+	    DELETE FROM review_board
+	    WHERE id = #{id}
+	</delete>
+	
+	
+	
+	<insert id="reviewReplyInsert" parameterType="com.sist.web.vo.Review_Board_ReplyVO">
+	    INSERT INTO review_board_reply (
+	        id, review_board_id, users_id, content, created_at
+	    ) VALUES (
+	        seq_review_board_reply.NEXTVAL,
+	        #{review_board_id},
+	        #{users_id},
+	        #{content},
+	        SYSDATE
+	    )
+	</insert>
+	
+	<delete id="reviewReplyDelete" parameterType="int">
+	    DELETE FROM review_board_reply
+	    WHERE id = #{id}
+	</delete>
+	
+
+</mapper>

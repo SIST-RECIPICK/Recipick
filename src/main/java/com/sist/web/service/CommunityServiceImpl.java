@@ -1,0 +1,85 @@
+package com.sist.web.service;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import com.sist.web.mapper.CommunityMapper;
+import com.sist.web.vo.CurationDetailVO;
+import com.sist.web.vo.CurationVO;
+import com.sist.web.vo.IngredientGroupVO;
+import com.sist.web.vo.RecipeVO;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class CommunityServiceImpl implements CommunityService {
+
+	private final CommunityMapper communityMapper;
+	private final int LIST_SIZE = 15;
+	private final int PAGE_BLOCK = 10;
+	
+	@Override
+	public int[] pages(int page) {
+		
+		int totalpage = communityMapper.totalPageCount();
+		// 화면에 몇 개의 페이지를 보여줄 건지 정하는 부분
+		int startpage = ((page - 1) / PAGE_BLOCK * PAGE_BLOCK) + 1;
+		int endpage = ((page - 1) / PAGE_BLOCK * PAGE_BLOCK) + PAGE_BLOCK;
+		if (endpage > totalpage)
+			endpage = totalpage;
+		int[] pages = { page, totalpage, startpage, endpage };
+		return pages;
+	}
+
+	@Override
+	public List<CurationVO> curation_list(int page) {
+		int start = (page - 1) * LIST_SIZE;
+		return communityMapper.selectCurationList(start);
+	}
+
+	@Override
+	public CurationVO selectCurationDetail(int id) {
+		
+		communityMapper.updateCurationHit(id);
+		
+		CurationVO curation = communityMapper.selectCurationHeader(id);
+		
+		List<CurationDetailVO> detailList = communityMapper.selectCurationDetail(id);
+		
+		Map<String, IngredientGroupVO> map = new LinkedHashMap<>();
+		
+		for(CurationDetailVO detail : detailList) {
+			String name = detail.getIngredient_name();
+			// 처음 나오는 재료라면
+			if(!map.containsKey(name)) {
+				
+				IngredientGroupVO ingredients = new IngredientGroupVO();
+				
+				ingredients.setIngredient_name(name);
+				ingredients.setIngredient_id(detail.getIngredient_id());
+				ingredients.setSort_order(detail.getSort_order());
+				
+				map.put(name, ingredients);
+				
+			}
+
+			RecipeVO recipe = new RecipeVO();
+			recipe.setRcp_seq(detail.getRcp_seq());
+			recipe.setRcp_nm(detail.getRcp_nm());
+			recipe.setAtt_file_no_main(detail.getAtt_file_no_main());
+			recipe.setHit(detail.getHit());
+			
+			map.get(name).getRecipes().add(recipe);
+		}
+		
+		curation.setGroup(new ArrayList<>(map.values()));
+		
+		return curation;
+	}
+
+}

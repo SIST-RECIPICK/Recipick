@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import com.sist.web.vo.RecipePreviewVO;
 import com.sist.web.vo.RecipeSearchVO;
 
 @Mapper
@@ -28,5 +29,11 @@ public interface RecipeSearchMapper {
 	public List<RecipeSearchVO> selectRecipeSearch(
 			@Param("keyword") String keyword,
 			@Param("user_id") int user_id
+	);
+	/*
+	 * select id="selectRecipePreview" resultMap="recipePreviewMap"
+	 */
+	public RecipePreviewVO  selectRecipePreview (
+		@Param("rcp_seq") int rcp_seq
 	);
 }

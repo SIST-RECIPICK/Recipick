@@ -7,7 +7,10 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +18,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sist.web.service.AdminService;
+import com.sist.web.service.SeasonalIngredientRecommender;
+import com.sist.web.vo.CurationCreateVO;
+import com.sist.web.vo.CurationVO;
+import com.sist.web.vo.RecIngredientVO;
+import com.sist.web.vo.RecipeVO;
 import com.sist.web.vo.UsersVO;
 
 import lombok.RequiredArgsConstructor;
@@ -26,14 +34,15 @@ import lombok.RequiredArgsConstructor;
 public class AdminRestController {
 
 	private final AdminService adminService;
+	private final SeasonalIngredientRecommender recommander;
 
-	@GetMapping("/user/list")
+	@GetMapping("/user")
 	public ResponseEntity<Map<String, Object>> memberList(@RequestParam(value = "page", defaultValue = "1") int page) {
 		Map<String, Object> map = new HashMap<>();
 		try {
 
 			List<UsersVO> list = adminService.usersList(page);
-			int[] pages = adminService.pages(page);
+			int[] pages = adminService.pages(page, "users");
 
 			map.put("list", list);
 			map.put("curpage", pages[0]);
@@ -59,9 +68,9 @@ public class AdminRestController {
 
 		return ResponseEntity.ok().build();
 	}
-	
+
 	@PutMapping("/user/status")
-	public ResponseEntity<?> status_update(@RequestBody UsersVO vo){
+	public ResponseEntity<?> status_update(@RequestBody UsersVO vo) {
 		try {
 			adminService.userStatusUpdate(vo.getId(), vo.getStatus());
 		} catch (Exception e) {
@@ -70,4 +79,115 @@ public class AdminRestController {
 		return ResponseEntity.ok().build();
 	}
 
+	@GetMapping("/curation")
+	public ResponseEntity<Map<String, Object>> curation_list(
+			@RequestParam(value = "page", defaultValue = "1") int page) {
+
+		Map<String, Object> map = new HashMap<>();
+		try {
+			List<CurationVO> list = adminService.curation_list(page);
+			int[] pages = adminService.pages(page, "curation");
+
+			map.put("list", list);
+			map.put("curpage", pages[0]);
+			map.put("totalpage", pages[1]);
+			map.put("startpage", pages[2]);
+			map.put("endpage", pages[3]);
+
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		return ResponseEntity.ok(map);
+	}
+
+	@GetMapping("/curation/{id}")
+	public ResponseEntity<?> curation_detail(@PathVariable("id") int id) {
+		CurationVO curation = null;
+		try {
+			curation = adminService.selectCurationDetail(id);
+
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+
+		return ResponseEntity.ok(curation);
+	}
+	
+	@DeleteMapping("/curation/{id}")
+	public ResponseEntity<?> curation_delete(@PathVariable("id") int id){
+		
+		try {
+			adminService.deleteCuration(id);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		return ResponseEntity.ok().build();
+	}
+	
+	@GetMapping("/curation/recommend")
+	public ResponseEntity<List<RecIngredientVO>> recommand(@RequestParam("year") int year, @RequestParam("month") int month){
+		long startTime = System.currentTimeMillis();
+		
+		List<RecIngredientVO> list = null;
+		try {
+			list = recommander.recommand(year, month);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+			
+		}
+		long endTime = System.currentTimeMillis();
+		long duration = endTime - startTime;
+
+		System.out.println("Execution Time :: " + duration + " ms");
+		return ResponseEntity.ok(list);
+	}
+	
+	@GetMapping("/curation/recipeTop3")
+	public ResponseEntity<?> recipeTop3(@RequestParam("ids") List<Integer> ids) {
+		
+		try {
+			Map<String, List<RecipeVO>> map = adminService.selectRecipeTop3(ids);
+			return ResponseEntity.ok(map);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+	
+	@GetMapping("/curation/title/recommend")
+	public ResponseEntity<String> titleRecommand(@RequestParam("month") int month, @RequestParam("ids") List<String> ids){
+		try {
+			String title = recommander.recommandTitle(month, ids);
+			return ResponseEntity.ok(title);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+
+	}
+	
+	@PostMapping("/curation")
+	public ResponseEntity<?> insert_curation(@RequestBody CurationCreateVO vo){
+		try {
+			adminService.insertCuration(vo);
+			return ResponseEntity.ok().build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+	
+	@PutMapping("/curation/{id}")
+	public ResponseEntity<?> update_curation(@RequestBody CurationCreateVO vo, @PathVariable("id") int id){
+		try {
+			adminService.updateCuration(vo, id);
+			return ResponseEntity.ok().build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+	
 }

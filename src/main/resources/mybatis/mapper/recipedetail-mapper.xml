@@ -1,17 +1,142 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sist.web.mapper.RecipeDetailMapper">
+	
+	<!-- 레시피 상세정보 -->
 	<select id="recipeDetailData" resultType="com.sist.web.vo.RecipeVO" parameterType="int">
 		SELECT rcp_seq,rcp_nm,rcp_way2,rcp_pat2,info_wgt,info_eng,info_car,info_pro,info_fat,
-		info_na,hash_tag,att_file_no_main,att_file_no_main,att_file_no_mk,rcp_parts_dtls,rcp_na_tip,user_id,hit
-		FROM recipe
+		info_na,hash_tag,att_file_no_main,att_file_no_main,att_file_no_mk,rcp_parts_dtls,rcp_na_tip,
+		user_id,nickname,hit
+		FROM recipe r
+		JOIN users u
+		ON r.user_id = u.id
 		WHERE rcp_seq=#{rcp_seq}
 	</select>
 	
+	<!-- 레시피 상세 재료 -->
+	<select id="ingredientUnitList" resultType="com.sist.web.vo.IngredientUnitVO" parameterType="int">
+		SELECT recipe_id,name,amount,unit,amount_text,original,NVL(category_name,'기타') as category_name
+		FROM Ingredient_unit
+		LEFT JOIN ingredient
+		ON name = Ingredient_name
+		WHERE recipe_id=#{rcp_seq}
+	</select>
+	
+	<!-- 레시피 순서 -->
 	<select id="recipeHowList" resultType="com.sist.web.vo.RecipeManualVO" parameterType="int">
 		SELECT rcp_seq,step_no,manual_desc,manual_img
 		FROM recipe_manual
 		WHERE rcp_seq=#{rcp_seq}
 		ORDER BY step_no ASC
+	</select>
+	
+	<!-- 좋아요 유무 -->
+	<select id="recipeDetailLikeExist" resultType="int" parameterType="com.sist.web.vo.RecipeLikeVO">
+		SELECT COUNT(*)
+		FROM recipe_like
+		WHERE recipe_id=#{recipe_id} AND user_id=#{user_id}
+	</select>
+	
+	<!-- 좋아요 추가 -->
+	<insert id="recipeDetailLikeInsert" parameterType="com.sist.web.vo.RecipeLikeVO">
+		INSERT INTO recipe_like(like_id,recipe_id,user_id) 
+		VALUES(recipe_like_seq.nextval,#{recipe_id},#{user_id})
+	</insert>
+	
+	<!-- 좋아요 삭제 -->
+	<delete id="recipeDetailLikeDelete" parameterType="com.sist.web.vo.RecipeLikeVO">
+		DELETE FROM recipe_like
+		WHERE recipe_id=#{recipe_id} AND user_id=#{user_id}
+	</delete>
+	
+	<!-- 북마크 유무 -->
+	<select id="recipeDetailBookmarkExist" resultType="int" parameterType="com.sist.web.vo.RecipeBookMarkVO">
+		SELECT COUNT(*)
+		FROM recipe_bookmark
+		WHERE recipe_id=#{recipe_id} AND user_id=#{user_id}
+	</select>
+	
+	<!-- 북마크 추가 -->
+	<insert id="recipeDetailBookmarkInsert" parameterType="com.sist.web.vo.RecipeBookMarkVO">
+		INSERT INTO recipe_bookmark(bookmark_id,recipe_id,user_id) 
+		VALUES(recipe_bm_seq.nextval,#{recipe_id},#{user_id})
+	</insert>
+	
+	<!-- 북마크 삭제 -->
+	<delete id="recipeDetailBookmarkDelete" parameterType="com.sist.web.vo.RecipeBookMarkVO">
+		DELETE FROM recipe_bookmark
+		WHERE recipe_id=#{recipe_id} AND user_id=#{user_id}
+	</delete>
+	
+	<!-- 좋아요 리스트 -->
+	<select id="userLikeList" resultType="com.sist.web.vo.MyListVO" parameterType="int">
+		SELECT rcp_seq,rcp_nm,att_file_no_main,hit,nickname,
+		(
+       		SELECT COUNT(*)
+       		FROM recipe_like r
+       		WHERE r.recipe_id = rcp_seq
+		) AS count
+		FROM recipe r
+		join recipe_like l
+		on r.rcp_seq = l.recipe_id 
+		join users u
+		on r.user_id = u.id
+		WHERE l.user_id = #{user_id}
+		ORDER BY l.create_at DESC
+		OFFSET #{start} ROWS FETCH NEXT 12 ROWS ONLY
+	</select>
+	
+	<!-- 좋아요 리스트 총 갯수 -->
+	<select id="userLikeListCount" resultType="int" parameterType="int">
+		SELECT COUNT(*) FROM recipe_like
+		WHERE user_id = #{user_id}
+	</select>
+	
+	<!-- 북마크 리스트 -->
+	<select id="userMarkList" resultType="com.sist.web.vo.MyListVO" parameterType="int">
+		SELECT rcp_seq,rcp_nm,att_file_no_main,hit,nickname,
+		(
+       		SELECT COUNT(*)
+       		FROM recipe_bookmark r
+       		WHERE r.recipe_id = rcp_seq
+		) AS count
+		FROM recipe r
+		join recipe_bookmark l
+		on r.rcp_seq = l.recipe_id 
+		join users u
+		on r.user_id = u.id
+		WHERE l.user_id = #{user_id}
+		ORDER BY l.create_at DESC
+		OFFSET #{start} ROWS FETCH NEXT 12 ROWS ONLY
+	</select>
+	
+	<!-- 북마크 리스트 총 갯수 -->
+	<select id="userMarkListCount" resultType="int" parameterType="int">
+		SELECT COUNT(*) FROM recipe_bookmark
+		WHERE user_id = #{user_id}
+	</select>
+	
+	<!-- 연관 레시피 3개 출력-->
+	<select id="relationRecipeIdList" resultType="com.sist.web.vo.IngredientUnitVO" parameterType="int">
+		SELECT recipe_id
+		FROM ingredient_unit
+		WHERE recipe_id != #{recipe_id}
+	    AND name 
+	    IN (
+		     SELECT name
+		     FROM ingredient_unit
+		     WHERE recipe_id = #{recipe_id}
+		)
+		GROUP BY recipe_id
+		ORDER BY COUNT(DISTINCT name) DESC
+		OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY
+	</select>
+	
+	<!-- 레시피 리뷰-->   
+	<select id="recipeReviewList" resultType="com.sist.web.vo.Review_BoardVO" parameterType="int">
+		SELECT id,users_id,subject,content,image_url,rcp_seq,created_at
+		FROM review_board
+		WHERE rcp_seq=#{rcp_seq}
+		ORDER BY created_at DESC
 	</select>
 </mapper>

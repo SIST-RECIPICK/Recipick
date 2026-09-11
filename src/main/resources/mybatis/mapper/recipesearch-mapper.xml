@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sist.web.mapper.RecipeSearchMapper">
+	<!-- 음식 1개 재료 여러개기때문에 Map으로 재료를 List로 저장해야해서 resultMap 사용
+		기존에는 1ㄷ1 매핑으로 쓸 이유 없었음
+	  -->
+	<resultMap id="recipePreviewMap" type="com.sist.web.vo.RecipePreviewVO">
+        <id property="rcp_seq" column="rcp_seq"/>
+        <result property="rcp_nm" column="rcp_nm"/>
+        <result property="info_eng" column="info_eng"/>
+        <result property="info_pro" column="info_pro"/>
+        <result property="hash_tag" column="hash_tag"/>
+        <collection property="ingredients" ofType="String">
+            <result column="ingredient_name"/>
+        </collection>
+    </resultMap>
   <select id="selectRecipeSearch" resultType="com.sist.web.vo.RecipeSearchVO">
     SELECT r.RCP_SEQ as rcp_seq,
     	   r.RCP_NM as rcp_nm,
@@ -13,5 +26,17 @@
    	ON r.RCP_SEQ = b.RECIPE_ID AND b.user_id =#{user_id}
    	WHERE r.RCP_NM LIKE '%'||#{keyword}||'%'
     ORDER BY is_bookmark DESC, r.RCP_SEQ
+  </select>
+  <select id="selectRecipePreview" resultMap="recipePreviewMap">
+    SELECT r.RCP_SEQ AS rcp_seq,
+    	   r.RCP_NM AS rcp_nm,
+           r.INFO_ENG AS info_eng,
+           r.INFO_PRO AS info_pro,
+           r.HASH_TAG AS hash_tag,
+           i.ingredient_name AS ingredient_name
+    FROM RECIPE r
+    LEFT JOIN ingredient_detail id ON id.RCP_SEQ = r.RCP_SEQ
+    LEFT JOIN ingredient i ON id.ingredient_id = i.id
+    WHERE r.RCP_SEQ = #{rcp_seq}
   </select>
 </mapper>

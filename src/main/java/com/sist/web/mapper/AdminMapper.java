@@ -2,12 +2,18 @@ package com.sist.web.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
+import com.sist.web.vo.CurationDetailVO;
+import com.sist.web.vo.CurationVO;
+import com.sist.web.vo.IngredientGroupVO;
+import com.sist.web.vo.RecIngredientVO;
+import com.sist.web.vo.RecipeVO;
 import com.sist.web.vo.UsersVO;
 
 @Mapper
@@ -20,8 +26,8 @@ public interface AdminMapper {
 	public List<UsersVO> usersList(@Param("start") int start);
 	
 	@Select("SELECT CEIL(COUNT(*)/10.0) "
-			+ "FROM users ")
-	public int userTotalCount();
+			+ "FROM ${tablename} ")
+	public int totalPageCount(String tablename);
 	
 	@Update("UPDATE users "
 			+ "SET role = #{role} "
@@ -32,5 +38,32 @@ public interface AdminMapper {
 			+ "SET status = #{status} "
 			+ "WHERE id = #{id}")
 	public void userStatusUpdate(@Param("id") int id, @Param("status") String status);
+	
+	public List<CurationVO> selectCurationList(@Param("start") int start);
+	
+	@Select("SELECT id, title, year, month, year || '년 '|| month ||'월' as targetday, created_at "
+			+ "FROM curation "
+			+ "WHERE id = #{id}")
+	public CurationVO selectCurationHeader(@Param("id") int id);
+	
+	public List<CurationDetailVO> selectCurationDetail(@Param("curation_id") int curation_id);
+
+	@Delete("DELETE FROM CURATION WHERE id = #{id}")
+	public void deleteCuration(int id);
+	
+	@Delete("DELETE FROM CURATION_DETAIL WHERE curation_id = #{id}")
+	public void deleteCurationDetail(int id);
+	
+	public List<RecIngredientVO> findIngNameUsedInRecipes();
+	
+	public String selectIngredientName(int id);
+
+	public List<RecipeVO> selectRecipeTop3(int id);
+	
+	public void createCuration(CurationVO vo);
+	
+	public void createCurationDetail(CurationDetailVO vo);
+	
+	public void updateCuration(CurationVO vo);
 	
 }
