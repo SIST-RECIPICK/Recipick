@@ -132,4 +132,11 @@
 		OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY
 	</select>
 	
+	<!-- 레시피 리뷰-->   
+	<select id="recipeReviewList" resultType="com.sist.web.vo.Review_BoardVO" parameterType="int">
+		SELECT id,users_id,subject,content,image_url,rcp_seq,created_at
+		FROM review_board
+		WHERE rcp_seq=#{rcp_seq}
+		ORDER BY created_at DESC
+	</select>
 </mapper>

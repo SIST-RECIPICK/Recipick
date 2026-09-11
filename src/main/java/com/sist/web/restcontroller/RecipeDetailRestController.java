@@ -2,6 +2,7 @@ package com.sist.web.restcontroller;
 
 import java.io.Console;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import com.sist.web.vo.MyListVO;
 import com.sist.web.vo.RecipeLikeVO;
 import com.sist.web.vo.RecipeManualVO;
 import com.sist.web.vo.RecipeVO;
+import com.sist.web.vo.Review_BoardVO;
 import com.sist.web.vo.UsersVO;
 
 import jakarta.servlet.http.Cookie;
@@ -71,6 +73,8 @@ public class RecipeDetailRestController {
 			        
 			    }
 			}
+			Collections.reverse(cookieList);
+			
 			//좋아요 유무
 			int likeExist = service.recipeDetailLikeExist(rcp_seq,user_id);
 			
@@ -89,6 +93,9 @@ public class RecipeDetailRestController {
 			//연관 리스트 
 			List<RecipeVO> relationList = service.relationRecipeList(rcp_seq);
 			
+			//리뷰 리스트
+			List<Review_BoardVO> reviewList = service.recipeReviewList(rcp_seq);
+			
 			map.put("recipeData", recipeData);
 			map.put("manualList", manualList);
 			map.put("ingredientUnitList", ingredientUnitList);
@@ -96,6 +103,7 @@ public class RecipeDetailRestController {
 			map.put("likeExist", likeExist);
 			map.put("markExist", markExist);
 			map.put("relationList", relationList);
+			map.put("reviewList", reviewList);
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();
