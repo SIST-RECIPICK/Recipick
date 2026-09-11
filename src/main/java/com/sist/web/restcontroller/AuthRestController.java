@@ -25,6 +25,7 @@ import com.sist.web.dto.NicknameCheckResponse;
 import com.sist.web.dto.PasswordResetLinkRequest;
 import com.sist.web.dto.PasswordResetRequest;
 import com.sist.web.dto.PasswordResetValidateResponse;
+import com.sist.web.dto.RecoverRequest;
 import com.sist.web.dto.ReissueResponse;
 import com.sist.web.dto.SignupRequest;
 import com.sist.web.dto.SignupResponse;
@@ -148,6 +149,22 @@ public class AuthRestController {
 		return ResponseEntity.ok()
 				.header(HttpHeaders.SET_COOKIE, cookie.toString())
 				.body(Map.of("message", "탈퇴가 완료되었습니다."));
+	}
+
+	// [계정 복구]
+	@PostMapping("/recover")
+	public ResponseEntity<LoginResponse> recover(@RequestBody RecoverRequest request) {
+		LoginResponse response = authService.recover(request.getRecoveryToken());
+
+		ResponseCookie cookie = ResponseCookie.from("refreshToken", response.getRefreshToken())
+				.httpOnly(true)
+				.secure(true)
+				.path("/")
+				.sameSite("Strict")
+				.maxAge(Duration.ofMillis(jwtTokenProvider.getRefreshTokenExpiration()))
+				.build();
+
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(response);
 	}
 
 	// [비밀번호 재설정 링크 요청]

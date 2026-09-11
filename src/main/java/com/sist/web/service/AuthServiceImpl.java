@@ -311,6 +311,55 @@ public class AuthServiceImpl implements AuthService {
 		blacklistAccessToken(authHeader);
 	}
 
+	// [계정 복구]
+	@Override
+	public LoginResponse recover(String recoveryToken) {
+		// 1. recoveryToken 파라미터 존재 확인
+		// - recoveryToken: 탈퇴한 사용자가 로그인 시도 시 발급 (유효시간 5분)
+		if (recoveryToken == null || recoveryToken.isBlank()) {
+			throw new AuthException("MISSING_RECOVERY_TOKEN", "잘못된 접근입니다.", HttpStatus.BAD_REQUEST);
+		}
+
+		// 2. Redis에서 recovery:{recoveryToken} 조회 - 없으면 만료/무효
+		String userIdValue = redisTemplate.opsForValue().get("recovery:" + recoveryToken);
+		if (userIdValue == null) {
+			throw new AuthException("INVALID_RECOVERY_TOKEN", "복구 요청이 만료되었습니다. 다시 로그인해주세요.", HttpStatus.GONE);
+		}
+		int userId = Integer.parseInt(userIdValue);
+
+		// 3. 계정 상태 재확인 (WITHDRAWN이 아니면 이미 복구됐거나 다른 상태)
+		UsersVO user = authMapper.findUserStatusById(userId);
+		if (user == null || !ACCOUNT_STATUS_WITHDRAWN.equals(user.getStatus())) {
+			throw new AuthException("INVALID_RECOVERY_TOKEN", "복구 요청이 만료되었습니다. 다시 로그인해주세요.", HttpStatus.GONE);
+		}
+
+		// TODO: 레시피 등 사용자 작성 데이터 is_visible 복원 지점.
+		// recipes 테이블에 is_visible 컬럼이 없고 레시피 도메인은 다른 팀원 담당 - 협의 후 별도 반영 (withdraw()의 TODO와 동일 사유).
+
+		// 4. DB 반영 (단일 UPDATE - MyBatis auto-commit으로 실행 즉시 커밋)
+		authMapper.recoverUser(userId);
+
+		// 5. 신규 토큰 발급
+		String newAccessToken = jwtTokenProvider.createAccessToken(userId, user.getRole());
+		String newRefreshToken = UUID.randomUUID().toString();
+		redisTemplate.opsForValue().set("refresh:" + newRefreshToken, String.valueOf(userId),
+				Duration.ofMillis(jwtTokenProvider.getRefreshTokenExpiration()));
+
+		// 6. recoveryToken 삭제 (1회용 소비)
+		redisTemplate.delete("recovery:" + recoveryToken);
+
+		// 7. 응답 구성
+		LoginResponse response = new LoginResponse();
+		response.setAccessToken(newAccessToken);
+		response.setAccountStatus("ACTIVE");
+		response.setUserId(userId);
+		response.setNickname(user.getNickname());
+		response.setRole(user.getRole());
+		response.setMessage("계정이 복구되었습니다.");
+		response.setRefreshToken(newRefreshToken);
+		return response;
+	}
+
 	// [비밀번호 재설정 링크 요청]
 	@Override
 	public void requestPasswordReset(PasswordResetLinkRequest request) {

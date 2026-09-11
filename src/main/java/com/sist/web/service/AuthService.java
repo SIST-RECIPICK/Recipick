@@ -34,6 +34,9 @@ public interface AuthService {
 	// [회원탈퇴(소프트)]
 	void withdraw(JwtUser jwtUser, String password, String refreshToken, String authHeader);
 
+	// [계정 복구]
+	LoginResponse recover(String recoveryToken);
+
 	// [비밀번호 재설정 링크 요청]
 	void requestPasswordReset(PasswordResetLinkRequest request);
 

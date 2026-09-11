@@ -163,7 +163,7 @@ com.sist.web.vo.UsersVO, LocalAccountVO
 | 2 | 이메일/비밀번호 불일치 | 401 | INVALID_CREDENTIALS  |
 | 3 | 존재하지 않는 이메일 | 401 | INVALID_CREDENTIALS  |
 | 4 | 소셜 전용 계정 | -   | ⚠️ 소셜 계정 구현 후 테스트 예정 |
-| 5 | 소프트탈퇴 계정 | -   | ⚠️ 소셜 계정 구현 후 테스트 예정  |
+| 5 | 소프트탈퇴 계정 | 200 | -                    |
 
 
 - 테스트 도구: Swagger UI
@@ -229,6 +229,29 @@ com.sist.web.vo.UsersVO, LocalAccountVO
 {
   "errorCode": "INVALID_CREDENTIALS",
   "message": "이메일 또는 비밀번호가 올바르지 않습니다."
+}
+```
+</details>
+<details>
+<summary>5. 소프트탈퇴 계정</summary>
+
+**Request**
+```json
+{
+   "email": "rmawl8600@naver.com",
+   "password": "password1234!"
+}
+```
+**Response** `200`
+```json
+{
+   "accessToken": null,
+   "accountStatus": "WITHDRAWN",
+   "message": "탈퇴한 계정입니다. 계정을 복구하시겠습니까?",
+   "nickname": null,
+   "recoveryToken": "f6a62b41-c9fe-41e8-a1c2-1c933325b09f",
+   "role": null,
+   "userId": null
 }
 ```
 </details>

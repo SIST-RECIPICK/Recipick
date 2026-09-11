@@ -32,6 +32,9 @@ public interface AuthMapper {
 	// userId 계정 소프트탈퇴 처리 (status = WITHDRAWN, withdrawn_at 기록)
 	public int withdrawUser(@Param("id") int id);
 
+	// userId 계정 복구 처리 (status = ACTIVE, withdrawn_at 초기화)
+	public int recoverUser(@Param("id") int id);
+
 	// users 레코드 생성 (데이터 추가)
 	public int insertUser(UsersVO user);
 

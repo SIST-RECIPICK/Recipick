@@ -151,3 +151,112 @@ com.sist.web.security.JwtTokenProvider
 
 1. **`is_visible` 복원 — 이번 스콥 제외 (withdraw-soft.md와 동일 사유).** 레시피 담당 팀원과 컬럼/처리 방식 협의가 끝나면 소프트탈퇴의 `is_visible=false` 처리와 함께 이 API의 복원 로직도 같이 추가한다.
 2. **소셜 계정 복구 실제 테스트는 소셜 로그인 구현 이후 가능.** API 로직 자체는 계정 유형과 무관하게 동작하도록 설계했으나, 소셜 로그인 미구현으로 현재는 일반 계정 기준으로만 테스트 가능하다.
+
+---
+
+## 6. 테스트 기록
+
+### 요약
+| # | 케이스                            | 상태  | errorCode          |
+|---|--------------------------------|-----|--------------------|
+| 1 | 정상 복구                          | 200 | -                  |
+| 2 | recoveryToken 파라미터 누락          | 400 | MISSING_RECOVERY_TOKEN  |
+| 3 | 존재하지 않는/조작된 토큰                 | 410 | INVALID_RECOVERY_TOKEN |
+| 4 | 만료된 토큰                         | 410 | INVALID_RECOVERY_TOKEN |
+| 5 | 이미 소비된 토큰 재사용(status = ACTIVE) | 410 | INVALID_RECOVERY_TOKEN    |
+
+- 테스트 도구: Swagger UI
+- 테스트 일자: 2026-09-11
+-
+### 상세
+
+<details>
+<summary>1. 정상 복구</summary>
+
+**Request**
+```json
+{
+   "recoveryToken": "f6a62b41-c9fe-41e8-a1c2-1c933325b09f"
+}
+```
+**Response** `200`
+```json
+{
+   "accessToken": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMDAzIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3ODkxMTAyNzEsImV4cCI6MTc4OTExMjA3MX0.qmO4FKkhsRX-yzMvmjYt9XuSywCJI5P1vHqWJG0KJR8",
+   "accountStatus": "ACTIVE",
+   "message": "계정이 복구되었습니다.",
+   "nickname": "안녕하세여",
+   "recoveryToken": null,
+   "role": "USER",
+   "userId": 1003
+}
+```
+</details>
+<details>
+<summary>2. recoveryToken 파라미터 누락</summary>
+
+**Request**
+```json
+{
+   "recoveryToken": ""
+}
+```
+**Response** `400`
+```json
+{
+   "errorCode": "MISSING_RECOVERY_TOKEN",
+   "message": "잘못된 접근입니다."
+}
+```
+</details>
+<details>
+<summary>3. 존재하지 않는/조작된 토큰</summary>
+
+**Request**
+```json
+{
+   "recoveryToken": "존재하지 않는 토큰"
+}
+```
+**Response** `410`
+```json
+{
+   "errorCode": "INVALID_RECOVERY_TOKEN",
+   "message": "복구 요청이 만료되었습니다. 다시 로그인해주세요."
+}
+```
+</details>
+<details>
+<summary>4. 만료된 토큰</summary>
+
+**Request**
+```json
+{
+   "recoveryToken": "만료된 토큰"
+}
+```
+**Response** `410`
+```json
+{
+   "errorCode": "INVALID_RECOVERY_TOKEN",
+   "message": "복구 요청이 만료되었습니다. 다시 로그인해주세요."
+}
+```
+</details>
+<details>
+<summary>5. 이미 소비된 토큰 재사용</summary>
+
+**Request**
+```json
+{
+   "recoveryToken": "처음에 정상 복구에서 사용한 토큰"
+}
+```
+**Response** `410`
+```json
+{
+   "errorCode": "INVALID_RECOVERY_TOKEN",
+   "message": "복구 요청이 만료되었습니다. 다시 로그인해주세요."
+}
+```
+</details>
