@@ -176,21 +176,21 @@ public class RecipeDetailRestController {
 			if(type.equals("like"))
 			{
 				List<MyListVO> myLikeList = service.userLikeList(user_id, page);
-				int[] pages = service.pages(user_id, page);
+				int[] pages = service.pages(user_id, page,type);
 				map.put("myLikeList", myLikeList);
 				map.put("curpage", pages[0]);
-				map.put("totalPage", pages[1]);
+				map.put("totalpage", pages[1]);
 				map.put("startPage", pages[2]);
 				map.put("endPage", pages[3]);
 				
 			}else
 			{
 				List<MyListVO> myMarkList = service.userMarkList(user_id, page);
-				int[] pages = service.pages(user_id, page);
+				int[] pages = service.pages(user_id, page,type);
 				
 				map.put("myMarkList", myMarkList);
 				map.put("curpage", pages[0]);
-				map.put("totalPage", pages[1]);
+				map.put("totalpage", pages[1]);
 				map.put("startPage", pages[2]);
 				map.put("endPage", pages[3]);
 			}

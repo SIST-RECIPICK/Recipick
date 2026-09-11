@@ -137,12 +137,7 @@ public interface RecipeDetailMapper {
 	//북마크 리스트
 	/*
 	<select id="userMarkList" resultType="com.sist.web.vo.MyListVO" parameterType="int">
-		SELECT rcp_seq,rcp_nm,att_file_no_main,hit,nickname,
-		(
-       		SELECT COUNT(*)
-       		FROM recipe_bookmark r
-       		WHERE r.recipe_id = rcp_seq
-		) AS count
+		SELECT rcp_seq,rcp_nm,att_file_no_main,hit,nickname
 		FROM recipe r
 		join recipe_bookmark l
 		on r.rcp_seq = l.recipe_id 
