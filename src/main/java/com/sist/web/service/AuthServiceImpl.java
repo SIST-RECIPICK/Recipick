@@ -225,7 +225,12 @@ public class AuthServiceImpl implements AuthService {
 			redisTemplate.delete("refresh:" + refreshToken);
 		}
 
-		// 3. Access Token 블랙리스트 등록 (남은 유효기간만큼 TTL 설정)
+		// 3. Access Token 블랙리스트 등록
+		blacklistAccessToken(authHeader);
+	}
+
+	// [Access Token 블랙리스트 등록] - 남은 유효기간만큼 TTL 설정 (logout, withdraw 공용)
+	private void blacklistAccessToken(String authHeader) {
 		String accessToken = authHeader.substring("Bearer ".length());
 		long remainingExpiration = jwtTokenProvider.getRemainingExpiration(accessToken);
 		redisTemplate.opsForValue().set("blacklist:" + accessToken, "true", Duration.ofMillis(remainingExpiration));
@@ -268,6 +273,42 @@ public class AuthServiceImpl implements AuthService {
 		response.setAccessToken(newAccessToken);
 		response.setRefreshToken(newRefreshToken);
 		return response;
+	}
+
+	// [회원탈퇴(소프트)]
+	@Override
+	public void withdraw(JwtUser jwtUser, String password, String refreshToken, String authHeader) {
+		// 1. 인증 여부 확인
+		if (jwtUser == null) {
+			throw new AuthException("UNAUTHORIZED", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED);
+		}
+
+		int userId = jwtUser.getUserId();
+
+		// 2. 본인 확인 (일반 가입자: 비밀번호 필수+검증 / 소셜 전용: 생략)
+		LocalAccountVO localAccount = authMapper.findLocalAccountWithPasswordByUserId(userId);
+		if (localAccount != null) {
+			if (password == null || password.isBlank()) {
+				throw new AuthException("PASSWORD_REQUIRED", "본인 확인을 위해 비밀번호를 입력해주세요.", HttpStatus.BAD_REQUEST);
+			}
+			if (!passwordEncoder.matches(password, localAccount.getPassword())) {
+				throw new AuthException("INVALID_PASSWORD", "비밀번호가 일치하지 않습니다.", HttpStatus.FORBIDDEN);
+			}
+		}
+
+		// TODO: 소셜 계정(social_accounts)인 경우 여기서 Google 연동 해제(revoke) 호출 지점.
+		// 소셜 로그인 기능 자체가 아직 미구현이라 실제 로직은 없음 - 추후 담당자가 구현 시 이어붙일 것.
+		// TODO: 레시피 등 사용자 작성 데이터 is_visible 일괄 처리 지점.
+		// recipes 테이블에 is_visible 컬럼이 없고 레시피 도메인은 다른 팀원 담당 - 협의 후 별도 반영.
+
+		// 3. DB 반영 (단일 UPDATE - MyBatis auto-commit으로 실행 즉시 커밋)
+		authMapper.withdrawUser(userId);
+
+		// 4. DB 반영 성공 후에만 도달 - 토큰 정리 (Refresh Token 삭제 + Access Token 블랙리스트 등록)
+		if (refreshToken != null) {
+			redisTemplate.delete("refresh:" + refreshToken);
+		}
+		blacklistAccessToken(authHeader);
 	}
 
 	// [비밀번호 재설정 링크 요청]

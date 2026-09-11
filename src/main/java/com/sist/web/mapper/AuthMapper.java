@@ -29,6 +29,9 @@ public interface AuthMapper {
 	// userId의 로컬 계정 비밀번호 변경 (비밀번호 재설정 시 사용)
 	public int updatePassword(@Param("user_id") int user_id, @Param("password") String password);
 
+	// userId 계정 소프트탈퇴 처리 (status = WITHDRAWN, withdrawn_at 기록)
+	public int withdrawUser(@Param("id") int id);
+
 	// users 레코드 생성 (데이터 추가)
 	public int insertUser(UsersVO user);
 

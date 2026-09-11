@@ -31,6 +31,9 @@ public interface AuthService {
 	// [토큰 재발급]
 	ReissueResponse reissue(String refreshToken);
 
+	// [회원탈퇴(소프트)]
+	void withdraw(JwtUser jwtUser, String password, String refreshToken, String authHeader);
+
 	// [비밀번호 재설정 링크 요청]
 	void requestPasswordReset(PasswordResetLinkRequest request);
 

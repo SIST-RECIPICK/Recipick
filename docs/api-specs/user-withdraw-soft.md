@@ -145,3 +145,127 @@ com.sist.web.security.JwtUser, JwtTokenProvider
 
 1. **구글 연동 해제(Google Revoke) — 이번 스콥 제외.** 소셜 로그인 자체가 아직 구현되지 않았고 담당 범위 밖이므로, 실제 Revoke API 호출 및 Google 토큰 저장 설계는 하지 않는다. 서비스 레이어에 TODO 주석으로 호출 지점만 남겨두며, 추후 소셜 로그인 담당자가 구현할 때 이어붙인다.
 2. **레시피 `is_visible` 일괄 변경 — 이번 스콥 제외.** 현재 `recipes` 테이블에 `is_visible` 컬럼이 없고, 레시피 도메인은 다른 팀원 담당이라 임의로 스키마/로직을 추가하면 충돌 위험이 있음. 레시피 담당 팀원과 컬럼 설계 및 처리 방식(직접 UPDATE vs. 다른 방식)을 협의한 뒤 별도로 반영한다.
+
+---
+
+## 6. 테스트 기록
+
+### 요약
+| # | 케이스                | 상태  | errorCode          |
+|---|--------------------|-----|--------------------|
+| 1 | 정상 탈퇴 (일반 가입자)     | 200 | -                  |
+| 2 | 비밀번호 누락 (일반 가입자)   | 400 | PASSWORD_REQUIRED  |
+| 3 | 비밀번호 불일치           | 403 | INVALID_PASSWORD   |
+| 4 | Access Token 없음/무효 | 401 | UNAUTHORIZED       |
+| 5 | 탈퇴한 사용자 재요청        | 200 | -                  |
+| 6 | 정상 탈퇴 (소셜 가입자)     | -   | ⚠️ 소셜 로그인 구현 후 테스트 |
+
+- 테스트 도구: Swagger UI
+- 테스트 일자: 2026-09-11
+- 
+### 상세
+
+<details>
+<summary>1. 정상 탈퇴 (일반 가입자)</summary>
+
+**Request**
+```
+refreshToken: "1f01b480-29b3.."
+Authorization: "eyJhbGciOi.."
+```
+```json
+{
+   "password": "password1234!"
+}
+```
+**Response** `200`
+```json
+{
+   "message": "탈퇴가 완료되었습니다."
+}
+```
+</details>
+<details>
+<summary>2. 비밀번호 누락 (일반 가입자)</summary>
+
+**Request**
+```
+refreshToken: "1f01b480-29b3.."
+Authorization: "eyJhbGciOi.."
+```
+```json
+{
+   "password": ""
+}
+```
+**Response** `400`
+```json
+{
+   "errorCode": "PASSWORD_REQUIRED",
+   "message": "본인 확인을 위해 비밀번호를 입력해주세요."
+}
+```
+</details>
+<details>
+<summary>3. 비밀번호 불일치</summary>
+
+**Request**
+```
+refreshToken: "1f01b480-29b3.."
+Authorization: "eyJhbGciOi.."
+```
+```json
+{
+   "password": "틀린비밀번호"
+}
+```
+**Response** `403`
+```json
+{
+   "errorCode": "INVALID_PASSWORD",
+   "message": "비밀번호가 일치하지 않습니다."
+}
+```
+</details>
+<details>
+<summary>4. Access Token 없음/무효</summary>
+
+**Request**
+```
+refreshToken: "75bb4198-3e70-428e-8893-6dac403a53a3"
+Authorization: "공백 또는 틀린값"
+```
+```json
+{
+   "password": "password1234!"
+}
+```
+**Response** `401`
+```json
+{
+   "errorCode": "UNAUTHORIZED",
+   "message": "로그인이 필요합니다."
+}
+```
+</details>
+<details>
+<summary>5. 탈퇴한 사용자 재요청</summary>
+
+**Request**
+```
+refreshToken: "75bb4198-3e70-428e-8893-6dac403a53a3"
+Authorization: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMDAxIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3ODkxMDQ4MzcsImV4cCI6MTc4OTEwNjYzN30.6yVwzofdqNNj2Vu6rLCCWwCnoPEL5j1JCNvfctqSri0"
+```
+```json
+{
+   "password": "password123!"
+}
+```
+**Response** `401`
+```json
+{
+   "errorCode": "UNAUTHORIZED",
+   "message": "로그인이 필요합니다."
+}
+```
+</details>

@@ -28,6 +28,7 @@ import com.sist.web.dto.PasswordResetValidateResponse;
 import com.sist.web.dto.ReissueResponse;
 import com.sist.web.dto.SignupRequest;
 import com.sist.web.dto.SignupResponse;
+import com.sist.web.dto.WithdrawRequest;
 import com.sist.web.security.JwtTokenProvider;
 import com.sist.web.security.JwtUser;
 import com.sist.web.service.AuthService;
@@ -123,6 +124,30 @@ public class AuthRestController {
 				.build();
 
 		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(response);
+	}
+
+	// [회원탈퇴(소프트)]
+	@PostMapping("/withdraw")
+	public ResponseEntity<Map<String, String>> withdraw(
+			@AuthenticationPrincipal JwtUser jwtUser,
+			@CookieValue(value = "refreshToken", required = false) String refreshToken,
+			@RequestHeader(value = "Authorization", required = false) String authHeader,
+			@RequestBody(required = false) WithdrawRequest request) {
+
+		String password = request != null ? request.getPassword() : null;
+		authService.withdraw(jwtUser, password, refreshToken, authHeader);
+
+		ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
+				.httpOnly(true)
+				.secure(true)
+				.path("/")
+				.sameSite("Strict")
+				.maxAge(0)
+				.build();
+
+		return ResponseEntity.ok()
+				.header(HttpHeaders.SET_COOKIE, cookie.toString())
+				.body(Map.of("message", "탈퇴가 완료되었습니다."));
 	}
 
 	// [비밀번호 재설정 링크 요청]

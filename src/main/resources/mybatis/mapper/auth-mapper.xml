@@ -43,6 +43,14 @@
     WHERE user_id = #{user_id}
   </update>
 
+  <!-- userId 계정 소프트탈퇴 처리 (status = WITHDRAWN, withdrawn_at 기록) -->
+  <update id="withdrawUser" parameterType="int">
+    UPDATE users
+    SET status = 'WITHDRAWN',
+        withdrawn_at = SYSTIMESTAMP
+    WHERE id = #{id}
+  </update>
+
   <!-- users 레코드 생성 (데이터 DB에 추가) -->
   <insert id="insertUser" parameterType="com.sist.web.vo.UsersVO">
     <selectKey keyProperty="id" resultType="int" order="BEFORE">
