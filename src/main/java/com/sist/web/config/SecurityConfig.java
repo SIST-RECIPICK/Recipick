@@ -34,6 +34,9 @@ public class SecurityConfig {
 			)
 			.formLogin(form -> form.disable())
 			.authorizeHttpRequests(auth -> auth
+				.requestMatchers("/login", "/signup").permitAll()
+			    .requestMatchers("/admin/**").hasRole("ADMIN")
+			    .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
 				.anyRequest().permitAll()
 			)
 			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTemplate), UsernamePasswordAuthenticationFilter.class);

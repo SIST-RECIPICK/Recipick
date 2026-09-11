@@ -100,12 +100,19 @@ public class RecipeDetailServiceImpl implements RecipeDetailService{
 	}
 
 	@Override
-	public int[] pages(int user_id, int page) {
+	public int[] pages(int user_id, int page,String type) {
 		
+		int totalpage = 0;
 		int curpage = page;
-		int totalpage =  (int)(Math.ceil(userLikeListCount(user_id)/12.0));
-		int startPage = ((page/5)*5)+1;
-		int endPage = ((page/5)*5)*5;
+		if(type.equals("like"))
+		{
+			totalpage =  (int)(Math.ceil(userLikeListCount(user_id)/12.0));
+		}else
+		{
+			totalpage =  (int)(Math.ceil(userMarkListCount(user_id)/12.0));
+		}
+		int startPage = ((page/10)*10)+1;
+		int endPage = ((page/10)*10)+10;
 		if(endPage > totalpage)
 		{
 			endPage = totalpage;

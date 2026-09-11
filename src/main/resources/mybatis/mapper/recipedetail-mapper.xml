@@ -94,10 +94,10 @@
 	
 	<!-- 북마크 리스트 -->
 	<select id="userMarkList" resultType="com.sist.web.vo.MyListVO" parameterType="int">
-		SELECT rcp_seq,rcp_nm,att_file_no_main,hit,nickname,
+		SELECT rcp_seq,rcp_nm,att_file_no_main,hit,nickname,rcp_way2,rcp_pat2,
 		(
        		SELECT COUNT(*)
-       		FROM recipe_bookmark r
+       		FROM recipe_like r
        		WHERE r.recipe_id = rcp_seq
 		) AS count
 		FROM recipe r
