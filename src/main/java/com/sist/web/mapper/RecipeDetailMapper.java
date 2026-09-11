@@ -11,6 +11,7 @@ import com.sist.web.vo.MyListVO;
 import com.sist.web.vo.RecipeLikeVO;
 import com.sist.web.vo.RecipeManualVO;
 import com.sist.web.vo.RecipeVO;
+import com.sist.web.vo.Review_BoardVO;
 
 @Mapper
 @Repository
@@ -181,4 +182,15 @@ public interface RecipeDetailMapper {
 	</select>
 	 */
 	public List<IngredientUnitVO> relationRecipeIdList(int recipe_id);
+	
+	//레시피 리뷰
+	/*
+	 <select id="recipeReviewList" resultType="com.sist.web.vo.Review_BoardVO" parameterType="int">
+		SELECT id,users_id,subject,content,image_url,rcp_seq,created_at
+		FROM review_board
+		WHERE rcp_seq=#{rcp_seq}
+		ORDER BY created_at DESC
+	 </select>
+	 */
+	public List<Review_BoardVO> recipeReviewList(int rcp_seq);
 }

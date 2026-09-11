@@ -11,6 +11,7 @@ import com.sist.web.vo.MyListVO;
 import com.sist.web.vo.RecipeLikeVO;
 import com.sist.web.vo.RecipeManualVO;
 import com.sist.web.vo.RecipeVO;
+import com.sist.web.vo.Review_BoardVO;
 import com.sist.web.vo.ShopLinkVO;
 
 import lombok.RequiredArgsConstructor;
@@ -149,5 +150,11 @@ public class RecipeDetailServiceImpl implements RecipeDetailService{
 		}
 		
 		return list;
+	}
+
+	@Override
+	public List<Review_BoardVO> recipeReviewList(int rcp_seq) {
+		
+		return mapper.recipeReviewList(rcp_seq);
 	}
 }
