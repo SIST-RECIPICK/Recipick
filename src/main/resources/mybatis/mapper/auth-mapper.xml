@@ -59,6 +59,31 @@
     WHERE id = #{id}
   </update>
 
+  <!-- 하드탈퇴 대상 조회 (status = WITHDRAWN, withdrawn_at이 cutoffDate 이전) -->
+  <select id="findHardDeleteCandidates" parameterType="java.time.LocalDateTime" resultType="int">
+    SELECT id
+    FROM users
+    WHERE status = 'WITHDRAWN'
+      AND withdrawn_at &lt;= #{cutoffDate}
+  </select>
+
+  <!-- 하드탈퇴 - users 익명화 처리 (email/nickname 대체, 개인정보 컬럼 NULL, status = DELETE) -->
+  <update id="anonymizeUser">
+    UPDATE users
+    SET email = #{email},
+        nickname = #{nickname},
+        profile_image_url = NULL,
+        introduction = NULL,
+        status = 'DELETE'
+    WHERE id = #{userId}
+  </update>
+
+  <!-- 하드탈퇴 - local_accounts 행 완전 삭제 -->
+  <delete id="deleteLocalAccount" parameterType="int">
+    DELETE FROM local_accounts
+    WHERE user_id = #{user_id}
+  </delete>
+
   <!-- users 레코드 생성 (데이터 DB에 추가) -->
   <insert id="insertUser" parameterType="com.sist.web.vo.UsersVO">
     <selectKey keyProperty="id" resultType="int" order="BEFORE">

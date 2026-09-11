@@ -360,6 +360,33 @@ public class AuthServiceImpl implements AuthService {
 		return response;
 	}
 
+	// [하드탈퇴 - 유저 1건 익명화 처리] - 스케줄러가 별도 빈(this)의 메서드를 호출해야 @Transactional 프록시가 적용됨
+	@Override
+	@Transactional
+	public boolean anonymizeUser(int userId) {
+		// 1. 처리 직전 재검증 (조회 시점과 처리 시점 사이 사용자 계정이 복구됐을 수 있음)
+		UsersVO user = authMapper.findUserStatusById(userId);
+		if (user == null || !ACCOUNT_STATUS_WITHDRAWN.equals(user.getStatus())) {
+			return false; // 하드탈퇴 건너뛰기
+		}
+
+		// Access/Refresh Token 잔재 제거
+		// Refresh Token 최대 TTL(14일)이 하드탈퇴 유예기간(30일)보다 짧아 이 시점엔 이미 자연 만료됨.
+		// 현재 Redis 키 구조(refresh:{token} -> userId)로는 userId 기준 역조회도 불가능.
+
+		// 2. 익명화 값 생성
+		String email = "deleted_" + userId + "@withdrawn.recipick";
+		String nickname = "탈퇴회원" + userId;
+
+		// 3. users 익명화 (행은 유지 - 레시피 등 참조 무결성 보존)
+		authMapper.anonymizeUser(userId, email, nickname);
+
+		// 4. local_accounts 완전 삭제 (참조되지 않는 인증 전용 테이블)
+		authMapper.deleteLocalAccount(userId);
+
+		return true;
+	}
+
 	// [비밀번호 재설정 링크 요청]
 	@Override
 	public void requestPasswordReset(PasswordResetLinkRequest request) {

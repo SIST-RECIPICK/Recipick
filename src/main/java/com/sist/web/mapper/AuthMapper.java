@@ -1,5 +1,8 @@
 package com.sist.web.mapper;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -34,6 +37,16 @@ public interface AuthMapper {
 
 	// userId 계정 복구 처리 (status = ACTIVE, withdrawn_at 초기화)
 	public int recoverUser(@Param("id") int id);
+
+	// 하드탈퇴 대상 조회 (status = WITHDRAWN, withdrawn_at이 cutoffDate 이전)
+	public List<Integer> findHardDeleteCandidates(@Param("cutoffDate") LocalDateTime cutoffDate);
+
+	// 하드탈퇴 - users 익명화 처리 (email/nickname 대체, 개인정보 컬럼 NULL, status = DELETE)
+	public int anonymizeUser(@Param("userId") int userId, @Param("email") String email,
+			@Param("nickname") String nickname);
+
+	// 하드탈퇴 - local_accounts 행 완전 삭제
+	public int deleteLocalAccount(@Param("user_id") int user_id);
 
 	// users 레코드 생성 (데이터 추가)
 	public int insertUser(UsersVO user);

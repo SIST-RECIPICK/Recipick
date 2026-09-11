@@ -37,6 +37,9 @@ public interface AuthService {
 	// [계정 복구]
 	LoginResponse recover(String recoveryToken);
 
+	// [하드탈퇴 - 유저 1건 익명화 처리] - 처리 완료 true / 그 사이 복구되어 skip false
+	boolean anonymizeUser(int userId);
+
 	// [비밀번호 재설정 링크 요청]
 	void requestPasswordReset(PasswordResetLinkRequest request);
 

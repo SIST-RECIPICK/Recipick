@@ -137,3 +137,56 @@ com.sist.web.vo.UsersVO
 ## 5. 열린 이슈
 
 없음 (익명화 값의 유니크 보장 방식, `local_accounts` 행 완전 삭제, Token 잔재 제거 단계 no-op 처리, 실행 결과 기록 방식(애플리케이션 로그) 모두 확정됨)
+
+---
+
+## 6. 테스트 기록
+
+### 요약
+| # | 케이스            | 상태  | errorCode          |
+|---|----------------|-----|--------------------|
+| 1 | 정상 탈퇴(하드)      | 200 | -                  |
+| 2 | 소프트 삭제 30일 미경과 | 200 | -                  |
+
+- 테스트 도구: Swagger UI
+- 테스트 일자: 2026-09-11
+
+### 상세
+
+<details>
+<summary>1. 정상 탈퇴</summary>
+
+**Request**
+```
+소프트 탈퇴한지 30일 지난 계정 준비
+```
+**Response** `200`
+```json
+{
+   "message": "하드탈퇴 배치를 실행했습니다. 결과는 애플리케이션 로그를 확인하세요."
+}
+```
+```
+하드탈퇴 배치 완료 - processedCount: 1, skippedCount: 0, failedUserIds: [
+```
+</details>
+<details>
+<summary>2. 소프트 삭제 30일 미경과</summary>
+
+**Request**
+```
+소프트 탈퇴한지 30일 안지난 계정 준비
+<DB 확인>
+- nickname: 탈퇴회원1001
+- email: deleted_1001@withdrawn.recipick
+```
+**Response** `200`
+```json
+{
+   "message": "하드탈퇴 배치를 실행했습니다. 결과는 애플리케이션 로그를 확인하세요."
+}
+```
+```
+하드탈퇴 배치 완료 - processedCount: 0, skippedCount: 0, failedUserIds: []
+```
+</details>
