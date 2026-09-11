@@ -23,4 +23,6 @@ public interface RecipeDetailService {
 	public List<MyListVO> userMarkList(int user_id,int start);
 	public int userMarkListCount(int user_id);
 	public int[] pages(int user_id, int page);
+	public List<IngredientUnitVO> relationRecipeIdList(int recipe_id);
+	public List<RecipeVO> relationRecipeList(int recipe_id);
 }

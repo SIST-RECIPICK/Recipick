@@ -1,5 +1,6 @@
 package com.sist.web.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -126,5 +127,27 @@ public class RecipeDetailServiceImpl implements RecipeDetailService{
 	public int userMarkListCount(int user_id) {
 		
 		return mapper.userMarkListCount(user_id);
+	}
+
+	@Override
+	public List<IngredientUnitVO> relationRecipeIdList(int recipe_id) {
+		
+		return mapper.relationRecipeIdList(recipe_id);
+	}
+
+	@Override
+	public List<RecipeVO> relationRecipeList(int recipe_id) {
+		
+		List<IngredientUnitVO> idList = relationRecipeIdList(recipe_id);
+		
+		List<RecipeVO> list = new ArrayList<RecipeVO>();
+		
+		for(IngredientUnitVO vo : idList)
+		{
+			RecipeVO rvo = recipeDetailData(vo.getRecipe_id());
+			list.add(rvo);
+		}
+		
+		return list;
 	}
 }

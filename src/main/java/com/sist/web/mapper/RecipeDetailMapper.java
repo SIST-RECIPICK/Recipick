@@ -162,4 +162,23 @@ public interface RecipeDetailMapper {
 	</select>
 	*/
 	public int userMarkListCount(int user_id);
+	
+	//연관 레시피 3개 출력
+	/*
+	<select id="relationRecipeIdList" resultType="com.sist.web.vo.IngredientUnitVO" parameterType="int">
+		SELECT recipe_id
+		FROM ingredient_unit
+		WHERE recipe_id != #{recipe_id}
+	    AND name 
+	    IN (
+		     SELECT name
+		     FROM ingredient_unit
+		     WHERE recipe_id = #{recipe_id}
+		)
+		GROUP BY recipe_id
+		ORDER BY COUNT(DISTINCT name) DESC
+		OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY
+	</select>
+	 */
+	public List<IngredientUnitVO> relationRecipeIdList(int recipe_id);
 }

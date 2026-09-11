@@ -85,13 +85,17 @@ public class RecipeDetailRestController {
 			
 			//레시피 재료 리스트
 			List<IngredientUnitVO> ingredientUnitList = service.ingredientUnitList(rcp_seq);
-
+			
+			//연관 리스트 
+			List<RecipeVO> relationList = service.relationRecipeList(rcp_seq);
+			
 			map.put("recipeData", recipeData);
 			map.put("manualList", manualList);
 			map.put("ingredientUnitList", ingredientUnitList);
 			map.put("cookieList", cookieList);
 			map.put("likeExist", likeExist);
 			map.put("markExist", markExist);
+			map.put("relationList", relationList);
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();
