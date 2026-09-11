@@ -155,7 +155,7 @@ com.sist.web.security.JwtTokenProvider
 | 2 | Refresh Token 쿠키 없음      | 401 | INVALID_REFRESH_TOKEN   |
 | 3 | Refresh Token 삭제 후 재사용   | 401 | INVALID_REFRESH_TOKEN   |
 | 4 | 존재하지 않는/조작된 토큰           | 401 | INVALID_REFRESH_TOKEN   |
-| 5 | 계정이 WITHDRAWN(소프트 탈퇴) 상태 | 401 | ⚠️ 소프트 탈퇴 구현 후 테스트 예정   |
+| 5 | 계정이 WITHDRAWN(소프트 탈퇴) 상태 | 401 | INVALID_REFRESH_TOKEN   |
 
 - 테스트 도구: Swagger UI
 - 테스트 일자: 2026-09-10
@@ -215,6 +215,20 @@ refreshToken: "91c6034e-d8.."
 ```
 refreshToken: "아무런 문자"
 (존재하지 않는 RefreshToken)
+```
+**Response** `401`
+```json
+{
+   "errorCode": "INVALID_REFRESH_TOKEN",
+   "message": "세션이 만료되었습니다. 다시 로그인해주세요."
+}
+```
+</details>
+<summary>5. 계정이 WITHDRAWN(소프트 탈퇴) 상태</summary>
+
+**Request**
+```
+refreshToken: "소프트 탈퇴한 사용자의 refreshToken"
 ```
 **Response** `401`
 ```json
