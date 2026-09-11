@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import com.sist.web.vo.IngredientUnitVO;
+import com.sist.web.vo.MyListVO;
 import com.sist.web.vo.RecipeLikeVO;
 import com.sist.web.vo.RecipeManualVO;
 import com.sist.web.vo.RecipeVO;
@@ -101,4 +102,83 @@ public interface RecipeDetailMapper {
 	</delete>
 	*/
 	public void recipeDetailBookmarkDelete(@Param("recipe_id") int recipe_id,@Param("user_id") int user_id);
+	
+	//레시피 좋아요 목록
+	/*
+	<select id="userLikeList" resultType="com.sist.web.vo.MyListVO" parameterType="int">
+		SELECT rcp_seq,rcp_nm,att_file_no_main,hit,nickname,
+			(
+        		SELECT COUNT(*)
+        		FROM recipe_like r
+        		WHERE rl.recipe_id = rcp_seq
+		    ) AS count
+		FROM recipe r
+		join recipe_like l
+		on r.rcp_seq = l.recipe_id 
+		join users u
+		on r.user_id = u.id
+		WHERE l.user_id = #{user_id}
+		ORDER BY l.create_at DESC
+		OFFSET #{start} ROWS FETCH NEXT 12 ROWS ONLY
+	</select>
+	 */
+	public List<MyListVO> userLikeList(@Param("user_id")int user_id,@Param("start") int start);
+	
+	//레시피 좋아요 개수
+	/*
+	<select id="userLikeListCount" resultType="int" parameterType="int">
+		SELECT COUNT(*) FROM recipe_like
+		WHERE user_id = #{user_id}
+	</select>
+	 */
+	public int userLikeListCount(int user_id);
+	
+	//북마크 리스트
+	/*
+	<select id="userMarkList" resultType="com.sist.web.vo.MyListVO" parameterType="int">
+		SELECT rcp_seq,rcp_nm,att_file_no_main,hit,nickname,
+		(
+       		SELECT COUNT(*)
+       		FROM recipe_bookmark r
+       		WHERE r.recipe_id = rcp_seq
+		) AS count
+		FROM recipe r
+		join recipe_bookmark l
+		on r.rcp_seq = l.recipe_id 
+		join users u
+		on r.user_id = u.id
+		WHERE l.user_id = #{user_id}
+		ORDER BY l.create_at DESC
+		OFFSET #{start} ROWS FETCH NEXT 12 ROWS ONLY
+	</select>
+	*/
+	public List<MyListVO> userMarkList(@Param("user_id")int user_id,@Param("start") int start);
+	
+	//북마크 리스트 총 갯수
+	/*
+	<select id="userMarkListCount" resultType="int" parameterType="int">
+		SELECT COUNT(*) FROM recipe_bookmark
+		WHERE user_id = #{user_id}
+	</select>
+	*/
+	public int userMarkListCount(int user_id);
+	
+	//연관 레시피 3개 출력
+	/*
+	<select id="relationRecipeIdList" resultType="com.sist.web.vo.IngredientUnitVO" parameterType="int">
+		SELECT recipe_id
+		FROM ingredient_unit
+		WHERE recipe_id != #{recipe_id}
+	    AND name 
+	    IN (
+		     SELECT name
+		     FROM ingredient_unit
+		     WHERE recipe_id = #{recipe_id}
+		)
+		GROUP BY recipe_id
+		ORDER BY COUNT(DISTINCT name) DESC
+		OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY
+	</select>
+	 */
+	public List<IngredientUnitVO> relationRecipeIdList(int recipe_id);
 }

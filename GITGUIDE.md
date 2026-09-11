@@ -21,14 +21,14 @@
 |---|---|
 | **브랜치(branch)** | 작업을 담는 독립된 줄기. 서로 영향을 주지 않고 따로 작업 가능 |
 | **main** | 최종 완성/배포용 브랜치. 함부로 건드리지 않음 |
-| **develop** | 개발 통합용 브랜치. 팀원들의 기능이 여기로 모임 |
+| **dev** | 개발 통합용 브랜치. 팀원들의 기능이 여기로 모임 |
 | **feature/○○** | 각자 기능을 개발하는 작업용 브랜치 (예: `feature/login`) |
 | **원격(origin)** | GitHub에 올라가 있는 저장소 (모두가 공유) |
 | **로컬(local)** | 내 컴퓨터에 있는 저장소 |
 | **PR (Pull Request)** | "내 브랜치를 다른 브랜치에 합쳐주세요" 하고 요청하는 것 |
 
 **전체 그림 한 줄 요약**
-> 개발자는 `develop`에서 `feature`를 따서 작업 → 완성되면 PR로 `develop`에 합침 → 팀장이 `develop`을 `main`으로 배포
+> 개발자는 `dev`에서 `feature`를 따서 작업 → 완성되면 PR로 `dev`에 합침 → 팀장이 `dev`을 `main`으로 배포
 
 ---
 
@@ -53,7 +53,7 @@
 **⚠️ 자주 헷갈리는 포인트**
 - `pull` = 내려받기 ⬇️ / `push` = 올리기 ⬆️ (방향 반대!)
 - `pull`은 **지금 내가 서 있는 브랜치**로 코드가 들어옵니다.
-- `origin`은 원격 저장소 이름입니다. `git pull develop`(❌) → `git pull origin develop`(✅)
+- `origin`은 원격 저장소 이름입니다. `git pull dev`(❌) → `git pull origin dev`(✅)
 
 ---
 
@@ -63,11 +63,11 @@
 main ●─────────────────────────────────────────● (v1.0.0 배포)
       \                                        ↑
        \                                   PR merge
-        \                                (develop → main)
-         ●──────●──────────●──────────────●  develop
+        \                                (dev → main)
+         ●──────●──────────●──────────────●  dev
           \      \          ↑              ↑
            \      \      PR merge       PR merge
-            \      \   (feature → develop)
+            \      \   (feature → dev)
              \      \
               \      ●──●──●  feature/recipe   (개발자 B)
                \
@@ -75,8 +75,8 @@ main ●────────────────────────
 
 ────────────────────────────────────────────────────
 방향 정리
-  develop ─→ feature : 최신 코드 받아오기 (작업 중, 로컬)   ⬇️
-  feature ─→ develop : 완성한 기능 올리기 (완료 시, PR)     ⬆️
+  dev ─→ feature : 최신 코드 받아오기 (작업 중, 로컬)   ⬇️
+  feature ─→ dev : 완성한 기능 올리기 (완료 시, PR)     ⬆️
 ```
 
 ---
@@ -86,17 +86,17 @@ main ●────────────────────────
 ### 0단계 · 초기 세팅
 
 ```bash
-# [팀장] main에서 develop 생성 후 원격에 올리기
+# [팀장] main에서 dev 생성 후 원격에 올리기
 git switch main            # main으로 이동
-git switch -c develop      # develop 생성 + 이동 (main 복사됨)
-git push origin develop    # 원격에 develop 올리기
+git switch -c dev      # dev 생성 + 이동 (main 복사됨)
+git push origin dev    # 원격에 dev 올리기
 ```
 
 ```bash
-# [개발자] 저장소 받아서 develop 최신화
+# [개발자] 저장소 받아서 dev 최신화
 git clone https://github.com/SIST-RECIPICK/Recipick.git      # 저장소 복제 (맨처음 1번 → 이미 했으면 안해도 됨)
-git switch develop         # develop으로 이동
-git pull origin develop    # develop 최신 상태로 받기
+git switch dev         # dev으로 이동
+git pull origin dev    # dev 최신 상태로 받기
 ```
 
 ---
@@ -104,20 +104,20 @@ git pull origin develop    # develop 최신 상태로 받기
 ### 1단계 · feature 브랜치 생성
 
 ```bash
-# [개발자 A] develop 최신 받고 → 로그인 브랜치 따기
-git switch develop
-git pull origin develop
+# [개발자 A] dev 최신 받고 → 로그인 브랜치 따기
+git switch dev
+git pull origin dev
 git switch -c feature/login
 ```
 
 ```bash
-# [개발자 B] develop 최신 받고 → 레시피 브랜치 따기
-git switch develop
-git pull origin develop
+# [개발자 B] dev 최신 받고 → 레시피 브랜치 따기
+git switch dev
+git pull origin dev
 git switch -c feature/recipe
 ```
 
-> ✅ **feature는 항상 최신 develop에서 따세요.** (pull first!)
+> ✅ **feature는 항상 최신 dev에서 따세요.** (pull first!)
 
 ---
 
@@ -130,58 +130,65 @@ git commit -m "로그인 기능 구현"    # 기록
 git push origin feature/login      # 원격에 올리기
 ```
 
-> 💡 커밋은 **지금 선 브랜치에만** 쌓입니다. push해도 develop/main과 자동으로 합쳐지지 않습니다. (합쳐지는 건 오직 merge 때!)
+> 💡 커밋은 **지금 선 브랜치에만** 쌓입니다. push해도 dev/main과 자동으로 합쳐지지 않습니다. (합쳐지는 건 오직 merge 때!)
+> ### ⚠️ 절대 하면 안 되는 실수
+
+| 실수 | 왜 문제인가 |
+| --- | --- |
+| dev또는 main에서 직접 작업 | dev와 main은 항상 오류 없는 상태여야 합니다 |
+| push만 하고 PR 안 하기 | push는 내 브랜치까지만 갑니다. PR + Merge를 해야 dev에 반영됩니다 |
+| 작업 시작 전 pull 안 하기 | 최신화 안 된 채로 작업하면 나중에 충돌이 커집니다 |
 
 ---
 
-### 3단계 · 작업 중 develop 최신화 (매일 아침 권장)
+### 3단계 · 작업 중 dev 최신화 (매일 아침 권장)
 
-> **목적:** `develop → 내 feature`로 최신 코드 **받아오기**. 충돌 미리 예방.
+> **목적:** `dev → 내 feature`로 최신 코드 **받아오기**. 충돌 미리 예방.
 > 아래 **방법 ① 또는 ② 중 하나만** 하면 됩니다. (결과 동일)
 
 **방법 ① — 짧게 (feature에서 바로 당기기)**
 ```bash
 # [개발자]
 git switch feature/login      # 내 브랜치에 선다
-git pull origin develop       # 내 브랜치로 origin develop을 당겨 바로 합침
+git pull origin dev       # 내 브랜치로 origin dev을 당겨 바로 합침
 ```
 
-**방법 ② — 단계별 (develop 갱신 후 merge)**
+**방법 ② — 단계별 (dev 갱신 후 merge)**
 ```bash
 # [개발자]
-git switch develop
-git pull origin develop       # develop을 최신으로
+git switch dev
+git pull origin dev       # dev을 최신으로
 git switch feature/login
-git merge develop             # develop을 내 브랜치에 합침
+git merge dev             # dev을 내 브랜치에 합침
 ```
 
-> ⚠️ **왜 develop만 받으면 안 되나요?**
-> `pull`은 현재 선 브랜치로 들어옵니다. develop만 최신화하면 정작 내 feature에는 최신 코드가 없습니다. 그래서 **내 feature에 develop을 합쳐야** 합니다.
+> ⚠️ **왜 dev만 받으면 안 되나요?**
+> `pull`은 현재 선 브랜치로 들어옵니다. dev만 최신화하면 정작 내 feature에는 최신 코드가 없습니다. 그래서 **내 feature에 dev을 합쳐야** 합니다.
 >
 > 👉 충돌이 나면 → [5. 충돌 해결법](#5-충돌conflict-해결법)
 
 ---
 
-### 4단계 · 기능 완성 → PR로 develop에 올리기
+### 4단계 · 기능 완성 → PR로 dev에 올리기
 
-> **목적:** `feature → develop`으로 완성품 **올리기** (3단계와 방향 반대 ⬆️)
+> **목적:** `feature → dev`으로 완성품 **올리기** (3단계와 방향 반대 ⬆️)
 
 ```
 [개발자]
 1. GitHub 접속
-2. feature/login → develop 으로 PR(Pull Request) 생성
+2. feature/login → dev 으로 PR(Pull Request) 생성
 3. 팀 리뷰 후 Merge 버튼 클릭
 ```
 
 ---
 
-### 5단계 · develop → main 배포
+### 5단계 · dev → main 배포
 
 ```bash
-# [팀장] develop을 main으로 병합 후 배포
+# [팀장] dev을 main으로 병합 후 배포
 git switch main
 git pull origin main
-git merge develop
+git merge dev
 git push origin main
 ```
 
@@ -191,7 +198,7 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-> ✅ **권장:** 5단계도 GitHub에서 `develop → main` PR로 처리하면 이력이 남아 관리에 좋습니다.
+> ✅ **권장:** 5단계도 GitHub에서 `dev → main` PR로 처리하면 이력이 남아 관리에 좋습니다.
 
 ---
 
@@ -211,14 +218,14 @@ Automatic merge failed; fix conflicts and then commit the result.
 <<<<<<< HEAD
 const timeout = 3000;        // 내가 쓴 코드
 =======
-const timeout = 5000;        // develop에 있던(상대) 코드
->>>>>>> develop
+const timeout = 5000;        // dev에 있던(상대) 코드
+>>>>>>> dev
 ```
 
 | 기호 | 의미 |
 |---|---|
 | `<<<<<<< HEAD` ~ `=======` | 내 코드 |
-| `=======` ~ `>>>>>>> develop` | 상대 코드 |
+| `=======` ~ `>>>>>>> dev` | 상대 코드 |
 
 ### 해결 순서
 1. 어떤 코드를 남길지 **직접 판단**해서 하나로 정리
@@ -232,7 +239,7 @@ const timeout = 5000;
 3. 정리 후 마무리 커밋
 ```bash
 git add .
-git commit -m "develop 병합 충돌 해결"
+git commit -m "dev 병합 충돌 해결"
 git push origin feature/login
 ```
 
@@ -249,7 +256,7 @@ git push origin feature/login
 
 ### 기본 형식
 ```
-타입: 작업 내용
+[이름] 타입: 작업 내용
 ```
 - 타입과 내용 사이에 `:` + 한 칸 띄우기
 - 내용은 **무엇을 했는지 한 줄로 간결하게**
@@ -278,25 +285,25 @@ git push origin feature/login
 
 ### 실제 사용
 ```bash
-git commit -m "기능: 로그인 화면 구현"
+git commit -m "[홍길동] 기능: 로그인 화면 구현"
 ```
 
 ---
 
 ### ☀️ 매일 루틴
 ```bash
-# 1. 아침: develop 최신화 (방법 ① 추천)
+# 1. 아침: dev 최신화 (방법 ① 추천)
 git switch feature/login
-git pull origin develop
+git pull origin dev
 
 # 2. 작업 → 커밋 → 올리기
 git add .
 git commit -m "작업 내용"
 git push origin feature/login
 
-# 3. 기능 완료 → GitHub에서 PR → develop merge
+# 3. 기능 완료 → GitHub에서 PR → dev merge
 ```
 
 ### 🧭 두 방향 merge, 헷갈릴 때 이것만!
-- **develop → feature** = 받기 (작업 중 · 로컬 · 3단계) ⬇️
-- **feature → develop** = 올리기 (완료 · PR · 4단계) ⬆️
+- **dev → feature** = 받기 (작업 중 · 로컬 · 3단계) ⬇️
+- **feature → dev** = 올리기 (완료 · PR · 4단계) ⬆️
