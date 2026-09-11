@@ -10,6 +10,10 @@ spring:
     username: ${sist_username}
     password: ${sist_password}
     driver-class-name: oracle.jdbc.driver.OracleDriver
+  data:
+    redis:
+      host: localhost
+      port: 6379
   jpa:
     database: oracle
     properties:
@@ -32,6 +36,23 @@ spring:
             model: gemini-3.6-flash
             temperature: 0.3
             thinking-level: MINIMAL
+  mail:
+    host: smtp.naver.com
+    port: 587
+    username: ${mail_username}
+    password: ${mail_password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+jwt:
+  secret: ${jwt_secret}
+  access-token-expiration: 1800000       # 30분
+  refresh-token-expiration: 1209600000   # 14일
+app:
+  password-reset-url: http://localhost:5173/reset-password
 mybatis:
   type-aliases-package: com.sist.web.vo
   mapper-locations: mybatis/mapper/*.xml
