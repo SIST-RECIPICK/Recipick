@@ -43,4 +43,30 @@ public interface RecipeService {
 
 	// 카테고리+키워드 통합 조회 결과 총 개수
 	public int filterTotalCount(Map map);
+	
+	// 나의 레시피 목록 조회
+	public List<RecipeListVO> myRecipeListData(Map map); 
+	
+	// 나의 레시피 총페이지 수 구하기
+	public int myTotalPage(Map map);
+	
+	// 나의 레시피 페이지 블록 계산
+	public int[] myPages(Map map);
+	
+	// 나의 레시피 총 개수 구하기
+	public int myTotalCount(Map map);
+	
+	// 레시피 등록 (레시피 본문 1건 + 조리순서 여러 건을 한 번에 저장)
+	// 등록 성공하면 새로 만들어진 레시피 번호(rcp_seq)를 돌려줌
+	public int recipeInsert(RecipeInsertVO vo);
+	
+	
+	// 레시피 삭제
+	// 내부적으로 좋아요/북마크/조리순서까지 함께 정리한 뒤 레시피 원본을 삭제함
+	public int deleteRecipe(int rcp_seq);
+	
+	// 레시피 수정
+	// 내부적으로 recipe 본문 UPDATE + 조리순서(recipe_manual) 삭제 후 재삽입까지 한 번에 처리
+	// 이미지 업로드 부분 때문에 예외처리 삽입
+	public void recipeUpdate(RecipeInsertVO vo) throws Exception;
 }
