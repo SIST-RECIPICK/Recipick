@@ -13,13 +13,14 @@ import com.sist.web.vo.UsersVO;
 @Repository
 public interface MypageMapper {
 
-    public UsersVO mypageSideProfile(@Param("userId") int userId);
+    public UsersVO mypageProfile(@Param("id") int id);
 
-    public Map<String, Object> mypageMainCount(@Param("userId") int userId);
+    public Map<String, Object> mypageMainCount(@Param("id") int id);
     
-    public List<Review_BoardVO> myReviewList(@Param("userId") int userId, @Param("start") int start);    
-    public List<Review_Board_ReplyVO> myReviewReplyList(@Param("userId") int userId, @Param("start") int start);
-    public void deleteMyReviews(@Param("userId") int userId, @Param("idList") List<Integer> idList);
-    public void deleteMyReviewReplies(@Param("userId") int userId, @Param("idList") List<Integer> idList);
+    public List<Review_BoardVO> myReviewList(@Param("id") int id, @Param("start") int start);    
+    public List<Review_Board_ReplyVO> myReviewReplyList(@Param("id") int id, @Param("start") int start);
+
+    public void deleteMyReviews(@Param("id") int id, @Param("deleteReviewList") List<Integer> deleteReviewList);
+    public void deleteMyReviewReplies(@Param("id") int id, @Param("deleteReplyList") List<Integer> deleteReplyList);
     
 }

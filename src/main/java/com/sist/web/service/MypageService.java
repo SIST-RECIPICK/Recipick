@@ -1,11 +1,17 @@
 package com.sist.web.service;
 
-import java.util.Map;
-import com.sist.web.vo.UsersVO;
+import java.util.*;
+import com.sist.web.vo.*;
 
 public interface MypageService {
 
-    public UsersVO mypageSideProfile(int userId);    
-    
-    public Map<String, Object> mypageMainCount(int userId);
+	public UsersVO mypageProfile(int id);
+
+    public Map<String, Object> mypageMainCount(int id);
+
+    public List<Review_BoardVO> myReviewList(int id, int page);
+    public List<Review_Board_ReplyVO> myReviewReplyList(int id, int page);
+
+    public void deleteMyReviews(int id, List<Integer> deleteReviewList);
+    public void deleteMyReviewReplies(int id, List<Integer> deleteReplyList);
 }
