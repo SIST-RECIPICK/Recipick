@@ -29,11 +29,16 @@ public class RefridgeServiceImpl implements RefridgeService {
 
 	@Override
 	public void registerData(List<RefridgeVO> volist) {
-		// TODO Auto-generated method stub
-		for (RefridgeVO vo : volist) {
-			System.out.println("vo = " + vo);
-			rMapper.registerData(vo);
-		}
+	    for (RefridgeVO vo : volist) {
+	        // 이미 등록된 재료인지 확인
+	        List<RefridgeVO> existing = rMapper.fridgeData(vo.getUsers_id());
+	        boolean alreadyExists = existing.stream()
+	            .anyMatch(e -> e.getIngredient_id() == vo.getIngredient_id());
+	        
+	        if (!alreadyExists) {
+	            rMapper.registerData(vo);
+	        }
+	    }
 	}
 
 	@Override
@@ -51,6 +56,7 @@ public class RefridgeServiceImpl implements RefridgeService {
 
 		// 검색 문장 생성
 		String queryText = createQueryText(ingredients);
+		System.out.println("queryText :: " + queryText);
 
 		// 검색 문장 embedding 으로 변환
 		float[] vector = eModel.embed(queryText);

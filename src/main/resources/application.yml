@@ -7,6 +7,7 @@ spring:
     import: 
       - classpath:db.properties
       - classpath:postgres.properties
+      - classpath:Ai.properties
   datasource:
     oracle:
       jdbc-url: ${sist_url}
@@ -18,6 +19,10 @@ spring:
       username: ${post_username}
       password: ${post_password}
       driver-class-name: org.postgresql.Driver
+      hikari:
+        connection-timeout: 3000
+        initialization-fail-timeout: -1
+        validation-timeout: 5000
   data:
     redis:
       host: localhost
@@ -67,7 +72,7 @@ spring:
           auth: true
           starttls:
             enable: true
-jwt:
+jwt: 
   secret: ${jwt_secret}
   access-token-expiration: 1800000       # 30분
   refresh-token-expiration: 1209600000   # 14일
