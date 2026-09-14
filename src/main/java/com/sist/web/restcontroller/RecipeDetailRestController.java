@@ -2,6 +2,7 @@ package com.sist.web.restcontroller;
 
 import java.io.Console;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,9 +18,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.sist.web.service.RecipeDetailService;
 import com.sist.web.vo.IngredientUnitVO;
+import com.sist.web.vo.MyListVO;
 import com.sist.web.vo.RecipeLikeVO;
 import com.sist.web.vo.RecipeManualVO;
 import com.sist.web.vo.RecipeVO;
+import com.sist.web.vo.Review_BoardVO;
 import com.sist.web.vo.UsersVO;
 
 import jakarta.servlet.http.Cookie;
@@ -41,38 +44,22 @@ public class RecipeDetailRestController {
 	public ResponseEntity<Map> recipe_detail(
 			@RequestParam("user_id") int user_id,
 			@RequestParam("rcp_seq") int rcp_seq,
-			HttpServletResponse response,
-			HttpServletRequest request
+			HttpServletResponse response
 		) 
 	{
+		long start = System.currentTimeMillis();
+
+		
 		//상세보기 입장시 쿠키 저장
 		Cookie cookie = new Cookie("recipe_detail_" + rcp_seq, String.valueOf(rcp_seq));
 		cookie.setPath("/");
 		cookie.setMaxAge(60 * 60 * 24); //1일
 		response.addCookie(cookie);
 		
-		Cookie[] cookies = request.getCookies();
-		int cookieNo = 1;
 		Map map = new HashMap();
 		
-		List<RecipeVO> cookieList = new ArrayList<RecipeVO>();
-		
 		try {
-	
-			if (cookies != null) {
-			    for (Cookie getCookie : cookies) {
-			        if (getCookie.getName().startsWith("recipe_detail_")) {
-			        	
-			        	RecipeVO cookieData = service.recipeDetailData(Integer.parseInt(getCookie.getValue()));
-			        	cookieList.add(cookieData);
-			        	cookieNo++; //방문 기록은 6개까지만 보여준다
-			        }
-			        if(cookieNo > 6)
-		        	{
-		        		break;
-		        	}
-			    }
-			}
+			
 			//좋아요 유무
 			int likeExist = service.recipeDetailLikeExist(rcp_seq,user_id);
 			
@@ -87,13 +74,73 @@ public class RecipeDetailRestController {
 			
 			//레시피 재료 리스트
 			List<IngredientUnitVO> ingredientUnitList = service.ingredientUnitList(rcp_seq);
-
+			
 			map.put("recipeData", recipeData);
 			map.put("manualList", manualList);
 			map.put("ingredientUnitList", ingredientUnitList);
-			map.put("cookieList", cookieList);
 			map.put("likeExist", likeExist);
 			map.put("markExist", markExist);
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		long end = System.currentTimeMillis();
+
+		System.out.println("걸린 시간: " + (end - start) + "ms");
+		return ResponseEntity.ok(map);
+	}
+	
+	@GetMapping("/recipe/cookie")
+	public ResponseEntity<Map> recipe_cookie(HttpServletRequest request) 
+	{
+		
+		Cookie[] cookies = request.getCookies();
+		
+		Map map = new HashMap();
+		
+		List<RecipeVO> cookieList = new ArrayList<RecipeVO>();
+		
+		try {
+	
+			if (cookies != null) {
+			    for (Cookie getCookie : cookies) {
+			        if (getCookie.getName().startsWith("recipe_detail_")) {
+			        	
+			        	RecipeVO cookieData = service.recipeDetailData(Integer.parseInt(getCookie.getValue()));
+			        	if(cookieData != null)	 
+			        		cookieList.add(cookieData);
+			        }
+			        
+			    }
+			}
+			Collections.reverse(cookieList);
+
+			map.put("cookieList", cookieList);
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+
+		return ResponseEntity.ok(map);
+	}
+	
+	@GetMapping("/recipe/detail_sub")
+	public ResponseEntity<Map> recipe_detail_sub(@RequestParam("rcp_seq") int rcp_seq) 
+	{
+		Map map = new HashMap();
+		
+		try {
+			
+			//연관 리스트 
+			List<RecipeVO> relationList = service.relationRecipeList(rcp_seq);
+			
+			//리뷰 리스트
+			List<Review_BoardVO> reviewList = service.recipeReviewList(rcp_seq);
+			
+			map.put("relationList", relationList);
+			map.put("reviewList", reviewList);
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -146,5 +193,51 @@ public class RecipeDetailRestController {
 		}
 		
 		return ResponseEntity.ok().build();
+	}
+	
+	
+	@GetMapping("/recipe/my-list")
+	public ResponseEntity<Map> recipe_my_list(
+		@RequestParam("user_id") int user_id,
+		@RequestParam("page") int page,	
+		@RequestParam(value = "type",required = false) String type		
+	) 
+	{	
+		if(type == null)
+			type ="like";
+		
+		Map map = new HashMap();
+		
+		try 
+		{
+			if(type.equals("like"))
+			{
+				List<MyListVO> myLikeList = service.userLikeList(user_id, page);
+				int[] pages = service.pages(user_id, page,type);
+				map.put("myLikeList", myLikeList);
+				map.put("curpage", pages[0]);
+				map.put("totalpage", pages[1]);
+				map.put("startPage", pages[2]);
+				map.put("endPage", pages[3]);
+				
+			}else
+			{
+				List<MyListVO> myMarkList = service.userMarkList(user_id, page);
+				int[] pages = service.pages(user_id, page,type);
+				
+				map.put("myMarkList", myMarkList);
+				map.put("curpage", pages[0]);
+				map.put("totalpage", pages[1]);
+				map.put("startPage", pages[2]);
+				map.put("endPage", pages[3]);
+			}
+						
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		
+		return ResponseEntity.ok(map);
 	}
 }
