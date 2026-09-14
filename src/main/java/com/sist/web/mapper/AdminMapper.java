@@ -41,7 +41,7 @@ public interface AdminMapper {
 	
 	public List<CurationVO> selectCurationList(@Param("start") int start);
 	
-	@Select("SELECT id, title, year || '년 '|| month ||'월' as targetday, created_at "
+	@Select("SELECT id, title, year, month, year || '년 '|| month ||'월' as targetday, created_at "
 			+ "FROM curation "
 			+ "WHERE id = #{id}")
 	public CurationVO selectCurationHeader(@Param("id") int id);
@@ -64,5 +64,6 @@ public interface AdminMapper {
 	
 	public void createCurationDetail(CurationDetailVO vo);
 	
+	public void updateCuration(CurationVO vo);
 	
 }

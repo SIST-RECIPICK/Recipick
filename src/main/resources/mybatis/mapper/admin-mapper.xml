@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sist.web.mapper.AdminMapper">
 	<select id="selectCurationList" resultType="CurationVO" parameterType="int">
-		SELECT ROW_NUMBER() OVER (ORDER BY c.created_at asc) AS rn, id, title, year || '년 '|| month ||'월' as targetday, 
+		SELECT ROW_NUMBER() OVER (ORDER BY c.year asc, c.month asc, c.created_at asc) AS rn, id, title, year || '년 '|| month ||'월' as targetday, hit,
 			(SELECT LISTAGG(ingredient_name, ', ') WITHIN GROUP (ORDER BY ingredient_name) AS ingredients
 			 FROM (SELECT DISTINCT i.ingredient_name
 	  				FROM curation_detail d JOIN ingredient i 
@@ -10,7 +10,7 @@
 	  			   WHERE d.curation_id = c.id
 			)) as incredient_list  
 		FROM curation c
-		ORDER BY c.created_at desc
+		ORDER BY c.year desc, c.month desc, c.created_at desc
 		OFFSET #{start} ROWS FETCH NEXT 15 ROWS ONLY
 	</select>
 	
@@ -63,4 +63,11 @@
 		INSERT INTO curation_detail(id, sort_order, curation_id, rcp_seq, ingredient_id)
 		VALUES (cur_detail_id_seq.nextval, #{sort_order}, #{curation_id}, #{rcp_seq}, #{ingredient_id})
 	</insert>
+	
+	<update id="updateCuration" parameterType="com.sist.web.vo.CurationVO">
+		UPDATE curation 
+		 SET title = #{title}, year = #{year}, month = #{month}, created_at = SYSDATE
+		WHERE id = #{id}
+	</update>
+	
 </mapper>

@@ -25,5 +25,7 @@ public interface AdminService {
 
 	public Map<String, List<RecipeVO>> selectRecipeTop3(List<Integer> ids);
 
-	public void createCuration(CurationCreateVO vo);
+	public void insertCuration(CurationCreateVO vo);
+
+	public void updateCuration(CurationCreateVO vo, int id);
 }

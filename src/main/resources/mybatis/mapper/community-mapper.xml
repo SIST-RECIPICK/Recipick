@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sist.web.mapper.CommunityMapper">
+	<select id="selectCurationList" resultType="CurationVO" parameterType="int">
+		SELECT ROW_NUMBER() OVER (ORDER BY c.year asc, c.month asc, c.created_at asc) AS rn, id, title, year || '년 '|| month ||'월' as targetday, hit,
+			(SELECT LISTAGG(ingredient_name, ', ') WITHIN GROUP (ORDER BY ingredient_name) AS ingredients
+			 FROM (SELECT DISTINCT i.ingredient_name
+	  				FROM curation_detail d JOIN ingredient i 
+	  				 ON d.ingredient_id = i.id
+	  			   WHERE d.curation_id = c.id
+			)) as incredient_list  
+		FROM curation c
+		ORDER BY c.year desc, c.month desc, c.created_at desc
+		OFFSET #{start} ROWS FETCH NEXT 15 ROWS ONLY
+	</select>
+	
+	<select id="selectCurationDetail" resultType="CurationDetailVO" parameterType="int">
+		SELECT d.id, d.sort_order, d.curation_id, d.ingredient_id, i.ingredient_name, r.rcp_seq, r.rcp_nm, r.att_file_no_main, r.hit
+		 FROM curation_detail d
+		 JOIN ingredient i ON d.ingredient_id = i.id
+		 JOIN recipe r ON d.rcp_seq = r.rcp_seq
+		 WHERE d.curation_id = #{curation_id}
+		ORDER BY d.sort_order asc, r.hit desc
+	</select>
+	
+</mapper>
