@@ -20,10 +20,11 @@ public class OracleMyBatisConfig {
 		SqlSessionFactoryBean factory=new SqlSessionFactoryBean();
 		
 		factory.setDataSource(datasource);
+		factory.setTypeAliasesPackage("com.sist.web.vo");
 		
 		PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 		
-		factory.setMapperLocations(resolver.getResources("classpath*:/mapper/*.xml"));
+		factory.setMapperLocations(resolver.getResources("classpath*:/mybatis/mapper/**/*.xml"));
 		return factory.getObject();
 	}
 	

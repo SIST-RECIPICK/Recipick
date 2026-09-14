@@ -9,12 +9,12 @@ spring:
       - classpath:postgres.properties
   datasource:
     oracle:
-      url: ${sist_url}
+      jdbc-url: ${sist_url}
       username: ${sist_username}
       password: ${sist_password}
       driver-class-name: oracle.jdbc.driver.OracleDriver
     postgres:
-      url: ${post_url}
+      jdbc-url: ${post_url}
       username: ${post_username}
       password: ${post_password}
       driver-class-name: org.postgresql.Driver
