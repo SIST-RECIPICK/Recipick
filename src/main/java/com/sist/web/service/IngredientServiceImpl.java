@@ -19,4 +19,10 @@ public class IngredientServiceImpl implements IngredientService{
 		return iMapper.searchData(keyword);
 	}
 
+	@Override
+	public List<IngredientVO> findAll() {
+		// TODO Auto-generated method stub
+		return iMapper.findAll();
+	}
+
 }

@@ -18,5 +18,6 @@ public class RefridgeVO {
     private int ingredient_id;
     private Date created_at;
     private String dbday;
+    private IngredientVO ingredient;
     
 }

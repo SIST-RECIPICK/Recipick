@@ -39,6 +39,7 @@ public class RecipeServiceImpl implements RecipeService {
 		int[] pages = { page, totalpage, startpage, endpage };
 		return pages;
 	}
+	
 
 	@Override
 	public List<RecipeListVO> recipeCategoryData(Map map) {
