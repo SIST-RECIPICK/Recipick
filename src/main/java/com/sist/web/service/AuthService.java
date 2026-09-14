@@ -1,0 +1,51 @@
+package com.sist.web.service;
+
+import com.sist.web.dto.EmailCheckResponse;
+import com.sist.web.dto.LoginRequest;
+import com.sist.web.dto.LoginResponse;
+import com.sist.web.dto.NicknameCheckResponse;
+import com.sist.web.dto.PasswordResetLinkRequest;
+import com.sist.web.dto.PasswordResetRequest;
+import com.sist.web.dto.PasswordResetValidateResponse;
+import com.sist.web.dto.ReissueResponse;
+import com.sist.web.dto.SignupRequest;
+import com.sist.web.dto.SignupResponse;
+import com.sist.web.security.JwtUser;
+
+public interface AuthService {
+	// [이메일 중복 검사]
+	EmailCheckResponse checkEmailDuplicate(String email);
+
+	// [닉네임 중복 검사]
+	NicknameCheckResponse checkNicknameDuplicate(String nickname);
+
+	// [회원가입]
+	SignupResponse signup(SignupRequest request);
+
+	// [로그인]
+	LoginResponse login(LoginRequest request);
+
+	// [로그아웃]
+	void logout(JwtUser jwtUser, String refreshToken, String authHeader);
+
+	// [토큰 재발급]
+	ReissueResponse reissue(String refreshToken);
+
+	// [회원탈퇴(소프트)]
+	void withdraw(JwtUser jwtUser, String password, String refreshToken, String authHeader);
+
+	// [계정 복구]
+	LoginResponse recover(String recoveryToken);
+
+	// [하드탈퇴 - 유저 1건 익명화 처리] - 처리 완료 true / 그 사이 복구되어 skip false
+	boolean anonymizeUser(int userId);
+
+	// [비밀번호 재설정 링크 요청]
+	void requestPasswordReset(PasswordResetLinkRequest request);
+
+	// [비밀번호 재설정 링크 유효성 검증]
+	PasswordResetValidateResponse validatePasswordResetToken(String token);
+
+	// [비밀번호 재설정]
+	void resetPassword(PasswordResetRequest request);
+}

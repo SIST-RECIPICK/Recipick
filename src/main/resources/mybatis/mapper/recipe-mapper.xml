@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sist.web.mapper.RecipeMapper">
+ <!-- 레시피 총 개수 구하기 => 화면 출력 위함-->
+<select id="recipeTotalCount" resultType="int">
+ SELECT COUNT(rcp_nm) FROM recipe
+</select>
+
 <!-- 레시피 목록 출력, 페이징, 정렬 -->
  <select id="recipeListData" resultType="com.sist.web.vo.RecipeListVO" parameterType="hashmap">
   SELECT rcp_seq,rcp_nm,rcp_pat2,info_eng,user_id,att_file_no_main,hit,hash_tag,users.nickname,
@@ -78,4 +83,227 @@
 	    DELETE FROM recipe_like
 	    WHERE user_id = #{user_id} AND recipe_id = #{recipe_id}
 	</delete>
+	
+	 <!-- 레시피 키워드 검색 (제목+해시태그+재료) -->
+ <select id="recipeSearchData" resultType="com.sist.web.vo.RecipeListVO" parameterType="hashmap">
+  SELECT rcp_seq,rcp_nm,rcp_pat2,info_eng,user_id,att_file_no_main,hit,hash_tag,users.nickname,
+   (SELECT COUNT(*) FROM recipe_like 
+                     WHERE recipe_like.recipe_id = recipe.rcp_seq) AS like_count
+  FROM recipe
+  JOIN users
+  ON recipe.user_id = users.id
+  WHERE (rcp_nm LIKE '%' || #{keyword} || '%'
+     OR hash_tag LIKE '%' || #{keyword} || '%'
+     OR rcp_parts_dtls LIKE '%' || #{keyword} || '%')
+  ORDER BY
+  <choose>
+    <when test="sort == 'hit'">
+        hit DESC
+    </when>
+    <otherwise>
+        rcp_seq DESC
+    </otherwise>
+  </choose>
+  OFFSET #{start} ROWS FETCH NEXT 12 ROWS ONLY
+ </select>
+
+ <!-- 키워드 검색용 총페이지 -->
+ <select id="searchTotalPage" resultType="int" parameterType="hashmap">
+  SELECT CEIL(COUNT(*)/12.0) FROM recipe
+  WHERE (rcp_nm LIKE '%' || #{keyword} || '%'
+     OR hash_tag LIKE '%' || #{keyword} || '%'
+     OR rcp_parts_dtls LIKE '%' || #{keyword} || '%')
+ </select>
+ 
+ <!-- 
+  카테고리 + 키워드 통합 조회 => 화면ui에서 키워드 검색 시 카테고리 이동하면 해당 키워드와 관련된 목록조회 하기 위해
+  - 카테고리만 있으면: 카테고리 조건만 적용
+  - 키워드만 있으면: 키워드 조건만 적용
+  - 둘 다 있으면: 카테고리 AND 키워드 둘 다 적용
+  - 둘 다 없으면: 조건 없이 전체 조회
+  <if>로 값이 있을 때만 조건을 SQL에 끼워넣고, <where>가 WHERE/AND를 자동으로 정리해줌
+-->
+<select id="recipeFilterData" resultType="com.sist.web.vo.RecipeListVO" parameterType="hashmap">
+ SELECT rcp_seq,rcp_nm,rcp_pat2,info_eng,user_id,att_file_no_main,hit,hash_tag,users.nickname,
+  (SELECT COUNT(*) FROM recipe_like 
+                    WHERE recipe_like.recipe_id = recipe.rcp_seq) AS like_count
+ FROM recipe
+ JOIN users
+ ON recipe.user_id = users.id
+ <where>
+   <!-- main_category 값이 있고, "전체"가 아닐 때만 카테고리 조건 추가 -->
+   <if test="main_category != null and main_category != '' and main_category != '전체'">
+       AND rcp_pat2 = #{main_category}
+   </if>
+   <!-- keyword 값이 있을 때만 키워드 OR 조건(레시피명+해시태그+재료) 추가 -->
+   <if test="keyword != null and keyword != ''">
+       AND (rcp_nm LIKE '%' || #{keyword} || '%'
+          OR hash_tag LIKE '%' || #{keyword} || '%'
+          OR rcp_parts_dtls LIKE '%' || #{keyword} || '%')
+   </if>
+ </where>
+ ORDER BY
+ <!-- 정렬 기준: sort 값에 따라 컬럼명 자체를 갈아끼움 (#{}는 컬럼명에 못 씀, 따옴표 붙어서 문법오류 남) -->
+ <choose>
+   <when test="sort == 'hit'">
+       hit DESC
+   </when>
+   <otherwise>
+       rcp_seq DESC
+   </otherwise>
+ </choose>
+ OFFSET #{start} ROWS FETCH NEXT 12 ROWS ONLY
+</select>
+
+<!-- 
+  카테고리 + 키워드 통합 조회용 총페이지 계산
+  위 recipeFilterData와 동일한 WHERE 조건을 그대로 사용 (개수만 셈)
+-->
+<select id="filterTotalPage" resultType="int" parameterType="hashmap">
+ SELECT CEIL(COUNT(*)/12.0) FROM recipe
+ <where>
+   <if test="main_category != null and main_category != '' and main_category != '전체'">
+       AND rcp_pat2 = #{main_category}
+   </if>
+   <if test="keyword != null and keyword != ''">
+       AND (rcp_nm LIKE '%' || #{keyword} || '%'
+          OR hash_tag LIKE '%' || #{keyword} || '%'
+          OR rcp_parts_dtls LIKE '%' || #{keyword} || '%')
+   </if>
+ </where>
+</select>
+<!-- 키워드 검색 결과 총 개수 (totalCount 표시용) -->
+<select id="searchTotalCount" resultType="int" parameterType="hashmap">
+ SELECT COUNT(*) FROM recipe
+ WHERE (rcp_nm LIKE '%' || #{keyword} || '%'
+    OR hash_tag LIKE '%' || #{keyword} || '%'
+    OR rcp_parts_dtls LIKE '%' || #{keyword} || '%')
+</select>
+
+<!-- 카테고리+키워드 통합 조회 결과 총 개수 (totalCount 표시용) -->
+<select id="filterTotalCount" resultType="int" parameterType="hashmap">
+ SELECT COUNT(*) FROM recipe
+ <where>
+   <if test="main_category != null and main_category != '' and main_category != '전체'">
+       AND rcp_pat2 = #{main_category}
+   </if>
+   <if test="keyword != null and keyword != ''">
+       AND (rcp_nm LIKE '%' || #{keyword} || '%'
+          OR hash_tag LIKE '%' || #{keyword} || '%'
+          OR rcp_parts_dtls LIKE '%' || #{keyword} || '%')
+   </if>
+ </where>
+</select>
+
+<!-- 나의 레시피 목록 조회-->
+ <select id="myRecipeListData" resultType="com.sist.web.vo.RecipeListVO" parameterType="hashmap">
+  SELECT rcp_seq,rcp_nm,rcp_pat2,info_eng,user_id,att_file_no_main,hit,hash_tag,users.nickname,
+   (SELECT COUNT(*) FROM recipe_like 
+                     WHERE recipe_like.recipe_id = recipe.rcp_seq) AS like_count
+  FROM recipe
+  JOIN users
+  ON recipe.user_id = users.id
+  WHERE user_id=#{user_id}
+  ORDER BY rcp_seq DESC
+  OFFSET #{start} ROWS FETCH NEXT 12 ROWS ONLY
+ </select>
+ 
+ <!-- 나의 레시피 총페이지 수 구하기 -->
+<select id="myTotalPage" resultType="int" parameterType="hashmap">
+ SELECT CEIL(COUNT(*)/12.0) FROM recipe
+ WHERE user_id = #{user_id}
+</select>
+
+<!-- 나의 레시피 총 개수 구하기 (totalCount 표시용) -->
+<select id="myTotalCount" resultType="int" parameterType="hashmap">
+ SELECT COUNT(*) FROM recipe
+ WHERE user_id = #{user_id}
+</select>
+
+<!-- 레시피 등록 -->
+<!-- 조리순서 저장 시 rcp_seq를 재사용해야 해서, INSERT 전에 번호를 미리 뽑음 -->
+<insert id="recipeInsert" parameterType="com.sist.web.vo.RecipeInsertVO">
+    <selectKey keyProperty="rcp_seq" order="BEFORE" resultType="int">
+        SELECT RECIPE_SEQ.NEXTVAL FROM DUAL
+    </selectKey>
+    INSERT INTO recipe
+    (rcp_seq, rcp_nm, rcp_way2, rcp_pat2, info_wgt,
+     info_eng, info_car, info_pro, info_fat, info_na,
+     hash_tag, att_file_no_main, att_file_no_mk,
+     rcp_parts_dtls, rcp_na_tip, user_id, hit)
+    VALUES
+    (#{rcp_seq}, #{rcp_nm}, #{rcp_way2}, #{rcp_pat2}, #{info_wgt},
+     #{info_eng}, #{info_car}, #{info_pro}, #{info_fat}, #{info_na},
+     #{hash_tag}, #{att_file_no_main}, #{att_file_no_mk},
+     #{rcp_parts_dtls}, #{rcp_na_tip}, #{user_id}, 0)
+</insert>
+
+<!-- 조리순서 등록 (1단계씩 여러 번 호출) -->
+<insert id="recipeManualInsert" parameterType="com.sist.web.vo.RecipeManualVO">
+    INSERT INTO recipe_manual (rcp_seq, step_no, manual_desc, manual_img)
+    VALUES (#{rcp_seq}, #{step_no}, #{manual_desc}, #{manual_img})
+</insert>
+
+<!-- 레시피 삭제 -->
+<delete id="deleteRecipe" parameterType="int">
+    DELETE FROM recipe
+    WHERE rcp_seq = #{rcp_seq}
+</delete>
+
+<!-- 레시피 삭제 시, 그 레시피에 달린 모든 좋아요 기록 삭제 (기존 deleteRecipeLike는 좋아요 토글 취소용이라 이름 충돌 방지 위해 별도 명명) -->
+<delete id="deleteRecipeLikeByRecipe" parameterType="int">
+    DELETE FROM recipe_like
+    WHERE recipe_id = #{rcp_seq}
+</delete>
+
+<!-- 레시피 삭제 시, 그 레시피에 달린 북마크 기록 삭제 (recipe_bookmark도 공용 테이블) -->
+<delete id="deleteRecipeBookmark" parameterType="int">
+    DELETE FROM recipe_bookmark
+    WHERE recipe_id = #{rcp_seq}
+</delete>
+
+<!-- 레시피 삭제 시, 그 레시피의 조리순서 단계 삭제 -->
+<delete id="deleteRecipeManual" parameterType="int">
+    DELETE FROM recipe_manual
+    WHERE rcp_seq = #{rcp_seq}
+</delete>
+
+<!-- 
+ 레시피 본문 정보만 수정
+  recipe_manual(조리순서)은 여기서 건들지 않음
+-->
+<update id="recipeUpdate" parameterType="com.sist.web.vo.RecipeInsertVO">
+    UPDATE recipe
+    SET
+        rcp_nm = #{rcp_nm},
+        rcp_way2 = #{rcp_way2},
+        rcp_pat2 = #{rcp_pat2},
+        info_eng = #{info_eng},
+        info_car = #{info_car},
+        info_pro = #{info_pro},
+        info_fat = #{info_fat},
+        info_na = #{info_na},
+        info_wgt = #{info_wgt},
+        hash_tag = #{hash_tag},
+        rcp_parts_dtls = #{rcp_parts_dtls},
+        rcp_na_tip = #{rcp_na_tip}
+     
+        <!-- 등록자가 이미지는 안 바꾸고 다른 부분만 수정한 경우 - 기존디비 이미지 유지 -->
+        <if test="att_file_no_main != null">
+            , att_file_no_main = #{att_file_no_main}
+        </if>
+    <!-- 반드시 몇번째 레시피를 고칠지 -->    
+    WHERE rcp_seq = #{rcp_seq}
+</update>
+
+<!-- 
+  기존 조리순서 전체 삭제 (rcp_seq 기준)
+  이유: 단계 개수가 늘거나 줄 수 있어서, 하나씩 비교 수정하는 대신 
+        싹 지우고 새로 받은 걸로 다시 넣는 방식 사용
+-->
+<delete id="recipeManualDeleteByRcpSeq" parameterType="int">
+    DELETE FROM recipe_manual WHERE rcp_seq = #{rcp_seq}
+</delete>
+
+
 </mapper>

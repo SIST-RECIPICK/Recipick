@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sist.web.mapper.AuthMapper">
+  <!-- 이메일로 사용자 찾기 -->
+  <select id="findUserByEmail" parameterType="String" resultType="com.sist.web.vo.UsersVO">
+    SELECT id, email, nickname, status, role
+    FROM users
+    WHERE email = #{email}
+  </select>
+
+  <!-- userId로 로컬 가입 사용자 찾기 -->
+  <select id="findLocalAccountByUserId" parameterType="int" resultType="com.sist.web.vo.LocalAccountVO">
+    SELECT id, user_id
+    FROM local_accounts
+    WHERE user_id = #{user_id}
+  </select>
+
+  <!-- 닉네임으로 사용자 찾기 -->
+  <select id="findUserByNickname" parameterType="String" resultType="com.sist.web.vo.UsersVO">
+    SELECT id, nickname
+    FROM users
+    WHERE nickname = #{nickname}
+  </select>
+
+  <!-- userId로 로컬 계정 조회 (비밀번호 포함, 로그인 검증용) -->
+  <select id="findLocalAccountWithPasswordByUserId" parameterType="int" resultType="com.sist.web.vo.LocalAccountVO">
+    SELECT id, password, user_id
+    FROM local_accounts
+    WHERE user_id = #{user_id}
+  </select>
+
+  <!-- userId로 계정 상태/역할 재조회 (토큰 재발급, 계정 복구 시 사용) -->
+  <select id="findUserStatusById" parameterType="int" resultType="com.sist.web.vo.UsersVO">
+    SELECT id, nickname, status, role
+    FROM users
+    WHERE id = #{id}
+  </select>
+
+  <!-- userId의 로컬 계정 비밀번호 변경 (비밀번호 재설정 시 사용) -->
+  <update id="updatePassword">
+    UPDATE local_accounts
+    SET password = #{password}
+    WHERE user_id = #{user_id}
+  </update>
+
+  <!-- userId 계정 소프트탈퇴 처리 (status = WITHDRAWN, withdrawn_at 기록) -->
+  <update id="withdrawUser" parameterType="int">
+    UPDATE users
+    SET status = 'WITHDRAWN',
+        withdrawn_at = SYSTIMESTAMP
+    WHERE id = #{id}
+  </update>
+
+  <!-- userId 계정 복구 처리 (status = ACTIVE, withdrawn_at 초기화) -->
+  <update id="recoverUser" parameterType="int">
+    UPDATE users
+    SET status = 'ACTIVE',
+        withdrawn_at = NULL
+    WHERE id = #{id}
+  </update>
+
+  <!-- 하드탈퇴 대상 조회 (status = WITHDRAWN, withdrawn_at이 cutoffDate 이전) -->
+  <select id="findHardDeleteCandidates" parameterType="java.time.LocalDateTime" resultType="int">
+    SELECT id
+    FROM users
+    WHERE status = 'WITHDRAWN'
+      AND withdrawn_at &lt;= #{cutoffDate}
+  </select>
+
+  <!-- 하드탈퇴 - users 익명화 처리 (email/nickname 대체, 개인정보 컬럼 NULL, status = DELETE) -->
+  <update id="anonymizeUser">
+    UPDATE users
+    SET email = #{email},
+        nickname = #{nickname},
+        profile_image_url = NULL,
+        introduction = NULL,
+        status = 'DELETE'
+    WHERE id = #{userId}
+  </update>
+
+  <!-- 하드탈퇴 - local_accounts 행 완전 삭제 -->
+  <delete id="deleteLocalAccount" parameterType="int">
+    DELETE FROM local_accounts
+    WHERE user_id = #{user_id}
+  </delete>
+
+  <!-- users 레코드 생성 (데이터 DB에 추가) -->
+  <insert id="insertUser" parameterType="com.sist.web.vo.UsersVO">
+    <selectKey keyProperty="id" resultType="int" order="BEFORE">
+      SELECT USERS_SEQ.NEXTVAL FROM dual
+    </selectKey>
+    INSERT INTO users (id, email, nickname, status, role, created_at, updated_at)
+    VALUES (#{id}, #{email}, #{nickname}, 'ACTIVE', 'USER', SYSTIMESTAMP, SYSTIMESTAMP)
+  </insert>
+
+  <!-- local_accounts 레코드 생성 (데이터 DB에 추가) -->
+  <insert id="insertLocalAccount" parameterType="com.sist.web.vo.LocalAccountVO">
+    <selectKey keyProperty="id" resultType="int" order="BEFORE">
+      SELECT LOCAL_ACCOUNTS_SEQ.NEXTVAL FROM dual
+    </selectKey>
+    INSERT INTO local_accounts (id, password, user_id)
+    VALUES (#{id}, #{password}, #{user_id})
+  </insert>
+</mapper>

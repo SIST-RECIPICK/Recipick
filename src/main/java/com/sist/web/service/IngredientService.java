@@ -7,4 +7,6 @@ import com.sist.web.vo.IngredientVO;
 public interface IngredientService {
 
 	public List<IngredientVO> searchData(String keyword);
+	
+	public List<IngredientVO> findAll();
 }
