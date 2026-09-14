@@ -34,5 +34,6 @@ public class RecipeServiceImpl implements RecipeService {
 		int[] pages = { page, totalpage, startpage, endpage };
 		return pages;
 	}
+	
 
 }

@@ -9,4 +9,8 @@
 		WHERE ingredient_name LIKE '%'||#{keyword}||'%'
 	</select>
 	
+	
+	<select id="findAll" resultType="com.sist.web.vo.IngredientVO">
+    SELECT id, category_name, ingredient_name FROM ingredient
+</select>
 </mapper>

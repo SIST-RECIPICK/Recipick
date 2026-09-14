@@ -4,12 +4,20 @@ server:
     context-path: /
 spring:
   config:
-    import: classpath:db.properties
+    import: 
+      - classpath:db.properties
+      - classpath:postgres.properties
   datasource:
-    url: ${sist_url}
-    username: ${sist_username}
-    password: ${sist_password}
-    driver-class-name: oracle.jdbc.driver.OracleDriver
+    oracle:
+      url: ${sist_url}
+      username: ${sist_username}
+      password: ${sist_password}
+      driver-class-name: oracle.jdbc.driver.OracleDriver
+    postgres:
+      url: ${post_url}
+      username: ${post_username}
+      password: ${post_password}
+      driver-class-name: org.postgresql.Driver
   jpa:
     database: oracle
     properties:
@@ -23,10 +31,21 @@ spring:
     prefix: classpath:templates/
     suffix: .html
     mode: HTML
-  #ai:
-    #google:
-      #genai:
-        #api-key:
+  ai:
+    google:
+      genai:
+        api-key: ${GEN_KEY}
+        project-id: gen-lang-client-0074645742
+        location: us-central1
+        embedding:
+          api-key: ${GEN_KEY}
+          project-id: gen-lang-client-0074645742
+          text: 
+            options:
+              model: gemini-embedding-001
+              dimensions: 768
+  model: 
+    embedding:
 mybatis:
   type-aliases-package: com.sist.web.vo
   mapper-locations: mybatis/mapper/*.xml
