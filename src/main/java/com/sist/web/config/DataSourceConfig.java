@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
+import com.zaxxer.hikari.HikariDataSource;
+
 @Configuration
 public class DataSourceConfig {
 	@Bean(name="oracleDataSource")
@@ -20,6 +22,8 @@ public class DataSourceConfig {
 	@Bean(name="postgresDataSource")
 	@ConfigurationProperties(prefix = "spring.datasource.postgres")
 	public DataSource postgresDataSource() {
-		return DataSourceBuilder.create().build();
-	}
-}
+	    HikariDataSource ds = DataSourceBuilder.create().type(HikariDataSource.class).build();
+	    ds.setConnectionTimeout(60000); // 60초로 늘려서 테스트
+	    ds.setInitializationFailTimeout(-1); // 초기 연결 실패해도 앱 안 죽게 (임시 디버깅용)
+	    return ds;
+	}}
