@@ -39,6 +39,7 @@ out/
 ### properties
 src/main/resources/db.properties
 src/main/resources/postgres.properties
+src/main/resources/Ai.properties
 
 ### claude ###
 .claude/
