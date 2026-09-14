@@ -2,50 +2,33 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sist.web.mapper.MypageMapper">
 	    
-    <select id="mypageSideProfile" resultType="com.sist.web.vo.UsersVO">
-	    SELECT 
-	    u.id, 
-	    u.nickname, 
-	    u.profile_image_url, 
-	    u.created_at,
-	        
-	    la.email
-	    
-	    FROM users u
-	    LEFT OUTER JOIN local_accounts la ON u.id = la.user_id
-	    WHERE u.id = #{userId}
-	</select>
+    <select id="mypageProfile" resultType="com.sist.web.vo.UsersVO">
+    SELECT 
     
-    <select id="mypageMainCount" resultType="map">
-        SELECT 
-            (SELECT COUNT(*) FROM recipe WHERE user_id = #{userId}) AS my_recipe_cnt,
-            (SELECT COUNT(*) FROM recipe_like WHERE user_id = #{userId}) AS like_recipe_cnt,
-            (SELECT COUNT(*) FROM review_board WHERE users_id = #{userId}) AS my_review_cnt,
-            (SELECT COUNT(*) FROM review_board_reply WHERE users_id = #{userId}) AS my_reply_cnt
-        FROM DUAL
-    </select>
+    u.id, 
+    u.nickname, 
+    u.profile_image_url, 
+    u.created_at,
     
-    <select id="myReviewList" resultType="com.sist.web.vo.Review_BoardVO">
-        SELECT 
-            rb.id,
-            rb.subject,
-            rb.content,
-            rb.image_url,
-            rb.hit,
-            rb.created_at,
-            rb.rcp_seq,
-            r.rcp_nm,
-            r.att_file_no_main
-        FROM review_board rb
-        LEFT OUTER JOIN recipe r ON rb.rcp_seq = r.rcp_seq
-        WHERE rb.users_id = #{userId}
-        ORDER BY rb.id DESC
-        OFFSET #{start} ROWS FETCH NEXT 10 ROWS ONLY
-    </select>
+    la.email
     
+    FROM users u
+    LEFT OUTER JOIN local_accounts la ON u.id = la.user_id
+    WHERE u.id = #{id}
+</select>
+
+<select id="mypageMainCount" resultType="map">
+    SELECT 
+        (SELECT COUNT(*) FROM recipe WHERE user_id = #{id}) AS my_recipe_cnt,
+        (SELECT COUNT(*) FROM recipe_like WHERE user_id = #{id}) AS like_recipe_cnt,
+        (SELECT COUNT(*) FROM review_board WHERE users_id = #{id}) AS my_review_cnt,
+        (SELECT COUNT(*) FROM review_board_reply WHERE users_id = #{id}) AS my_reply_cnt
+    FROM DUAL
+</select>
     
     <select id="myReviewList" resultType="com.sist.web.vo.Review_BoardVO">
 		SELECT
+		
 		rb.id,
 		rb.subject,
 		rb.content,
@@ -59,7 +42,7 @@
 		
 		FROM review_board rb
 		LEFT OUTER JOIN recipe r ON rb.rcp_seq = r.rcp_seq
-		WHERE rb.users_id = #{userId}
+		WHERE rb.users_id = #{id}
 		ORDER BY rb.id DESC
 		OFFSET #{start} ROWS FETCH NEXT 10 ROWS ONLY
 	</select>
@@ -67,26 +50,26 @@
     <select id="myReviewReplyList" resultType="com.sist.web.vo.Review_Board_ReplyVO">
 	    SELECT id, review_board_id, content, created_at
 	    FROM review_board_reply
-	    WHERE users_id = #{userId}
+	    WHERE users_id = #{id}
 	    ORDER BY id DESC
 	    OFFSET #{start} ROWS FETCH NEXT 10 ROWS ONLY
 	</select>
 	
 	<delete id="deleteMyReviews">
 	    DELETE FROM review_board
-	    WHERE users_id = #{userId}
-	    AND id IN
-	    <foreach item="id" collection="idList" open="(" separator="," close=")">
-	        #{id}
+	    WHERE users_id = #{id}
+	      AND id IN
+	    <foreach item="reviewId" collection="deleteReviewList" open="(" separator="," close=")">
+	        #{reviewId}
 	    </foreach>
 	</delete>
-
+	
 	<delete id="deleteMyReviewReplies">
 	    DELETE FROM review_board_reply
-	    WHERE users_id = #{userId}
-	    AND id IN
-	    <foreach item="id" collection="idList" open="(" separator="," close=")">
-	        #{id}
+	    WHERE users_id = #{id}
+	      AND id IN
+	    <foreach item="replyId" collection="deleteReplyList" open="(" separator="," close=")">
+	        #{replyId}
 	    </foreach>
 	</delete>
     
