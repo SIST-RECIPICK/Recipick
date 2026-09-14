@@ -15,7 +15,7 @@ spring:
       password: ${sist_password}
       driver-class-name: oracle.jdbc.driver.OracleDriver
     postgres:
-      jdbc-url: ${post_url}
+      jdbc-url: ${sist_post_url}
       username: ${post_username}
       password: ${post_password}
       driver-class-name: org.postgresql.Driver
