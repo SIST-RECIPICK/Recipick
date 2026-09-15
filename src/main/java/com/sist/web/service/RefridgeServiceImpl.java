@@ -16,6 +16,7 @@ import com.sist.web.mapper.RecipeLikeMapper;
 import com.sist.web.mapper.RefridgeMapper;
 import com.sist.web.postgres.PostgresRecipeMapper;
 import com.sist.web.vo.IngredientVO;
+import com.sist.web.vo.RecipeVO;
 import com.sist.web.vo.RefridgeVO;
 
 import lombok.RequiredArgsConstructor;
@@ -38,8 +39,8 @@ public class RefridgeServiceImpl implements RefridgeService {
 	}
 
 	@Override
-	public List<RefridgeVO> fridgeData(int users_id) {
-		return rMapper.fridgeData(users_id);
+	public List<RefridgeVO> fridgeData(int user_id) {
+		return rMapper.fridgeData(user_id);
 	}
 
 	@Override
@@ -253,21 +254,64 @@ public class RefridgeServiceImpl implements RefridgeService {
 	 * 전체 재료 목록(DB)에서 이름이 content에 포함되는지 검사한다.
 	 * allIngredients는 recommandRecipe에서 한 번만 조회해 반복 호출 시 재사용한다.
 	 */
+//	private List<String> extractIngredients(String content, List<IngredientVO> allIngredients) {
+//		if (content == null || content.isEmpty()) {
+//			return Collections.emptyList();
+//		}
+//
+//		Set<String> ingredients = new HashSet<>();
+//
+//		for (IngredientVO vo : allIngredients) {
+//			String name = vo.getIngredient_name();
+//			if (name != null && content.contains(name)) {
+//				ingredients.add(name);
+//			}
+//		}
+//
+//		return new ArrayList<>(ingredients);
+//	}
 	private List<String> extractIngredients(String content, List<IngredientVO> allIngredients) {
 		if (content == null || content.isEmpty()) {
 			return Collections.emptyList();
 		}
 
-		Set<String> ingredients = new HashSet<>();
+		// "주재료:" 라인만 뽑아서 검사 대상으로 삼는다.
+		String mainIngredientsLine = extractValue(content, "주재료");
+
+		if (mainIngredientsLine.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		// 1차: 주재료 라인에 이름이 포함되는 재료를 전부 찾는다.
+		Set<String> matched = new HashSet<>();
 
 		for (IngredientVO vo : allIngredients) {
 			String name = vo.getIngredient_name();
-			if (name != null && content.contains(name)) {
-				ingredients.add(name);
+			if (name != null && name.length() >= 2 && mainIngredientsLine.contains(name)) {
+				matched.add(name);
 			}
 		}
 
-		return new ArrayList<>(ingredients);
+		// 2차: 다른 매칭된 재료명 안에 완전히 포함되는 짧은 재료명은 제거한다.
+		// 예: "김"과 "김치"가 둘 다 매칭됐으면 "김"은 "김치"에 포함되므로 제거.
+		Set<String> filtered = new HashSet<>();
+
+		for (String a : matched) {
+			boolean isSubstringOfAnother = false;
+
+			for (String b : matched) {
+				if (!a.equals(b) && b.contains(a)) {
+					isSubstringOfAnother = true;
+					break;
+				}
+			}
+
+			if (!isSubstringOfAnother) {
+				filtered.add(a);
+			}
+		}
+
+		return new ArrayList<>(filtered);
 	}
 
 	/**
@@ -410,4 +454,11 @@ public class RefridgeServiceImpl implements RefridgeService {
 
 		return steps;
 	}
+
+//	@Override
+//	public RecipeVO oracleRecipeAllData(int rcp_seq) {
+//		
+//		// TODO Auto-generated method stub
+//		return rMapper.oracleRecipeAllData(rcp_seq);
+//	}
 }

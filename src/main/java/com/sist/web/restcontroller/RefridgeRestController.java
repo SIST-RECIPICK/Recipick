@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sist.web.service.RefridgeService;
+import com.sist.web.vo.RecipeVO;
 import com.sist.web.vo.RefridgeVO;
 
 import lombok.RequiredArgsConstructor;
@@ -111,5 +113,13 @@ public class RefridgeRestController {
 	        response.put("recipes", Collections.emptyList());
 	        return response;
 	    }
+	    
+	      
 	}
+	
+//	@GetMapping("/recipe/{rcp_seq}")
+//	public RecipeVO getRecipeDetail(@PathVariable int rcp_seq) {
+//		
+//	    return rfService.oracleRecipeAllData(rcp_seq);
+//	}
 }
