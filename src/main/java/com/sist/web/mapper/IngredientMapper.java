@@ -9,4 +9,6 @@ import com.sist.web.vo.IngredientVO;
 public interface IngredientMapper {
 	
        List<IngredientVO> searchData(String keyword); 
+       
+       public List<IngredientVO> findAll();
 }

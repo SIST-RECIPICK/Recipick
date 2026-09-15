@@ -19,11 +19,11 @@
         </association>
     </resultMap>
   
-  <select id="getMyFridge" parameterType="int" resultMap="refridgeResultMap">
+  <select id="fridgeData" parameterType="int" resultMap="refridgeResultMap">
         SELECT r.id, r.users_id, r.ingredient_id, r.created_at,
                i.id AS ing_id, i.category_name, i.ingredient_name
         FROM Refrigerator r
         JOIN ingredient i ON r.ingredient_id = i.id
-        WHERE r.users_id = #{usersId}
+        WHERE r.users_id = #{users_id}
     </select>
 </mapper>

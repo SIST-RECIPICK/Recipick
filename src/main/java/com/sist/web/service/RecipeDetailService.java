@@ -23,7 +23,7 @@ public interface RecipeDetailService {
 	public int userLikeListCount(int user_id);
 	public List<MyListVO> userMarkList(int user_id,int start);
 	public int userMarkListCount(int user_id);
-	public int[] pages(int user_id, int page);
+	public int[] pages(int user_id, int page,String type);
 	public List<IngredientUnitVO> relationRecipeIdList(int recipe_id);
 	public List<RecipeVO> relationRecipeList(int recipe_id);
 	public List<Review_BoardVO> recipeReviewList(int rcp_seq);
