@@ -23,8 +23,9 @@ public class OracleMyBatisConfig {
 		factory.setTypeAliasesPackage("com.sist.web.vo");
 		
 		PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-		
+
 		factory.setMapperLocations(resolver.getResources("classpath*:/mybatis/mapper/**/*.xml"));
+
 		return factory.getObject();
 	}
 	

@@ -32,7 +32,7 @@ public interface RefridgeMapper {
 	 * 
 	 * 
 	 */
-	public List<RefridgeVO> fridgeData(int users_id);
+	public List<RefridgeVO> fridgeData(int user_id);
 	
 	
 	/*
@@ -42,6 +42,5 @@ public interface RefridgeMapper {
 	   		</select>
 	    * 
 	    */
-		public List<RecipeVO> oracleRecipeAllData();
-	
+		//public RecipeVO oracleRecipeAllData(int rcp_seq);
 }

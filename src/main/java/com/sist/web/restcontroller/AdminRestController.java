@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sist.web.security.JwtUser;
 import com.sist.web.service.AdminService;
 import com.sist.web.service.SeasonalIngredientRecommender;
 import com.sist.web.vo.CurationCreateVO;
@@ -82,7 +84,7 @@ public class AdminRestController {
 	@GetMapping("/curation")
 	public ResponseEntity<Map<String, Object>> curation_list(
 			@RequestParam(value = "page", defaultValue = "1") int page) {
-
+		
 		Map<String, Object> map = new HashMap<>();
 		try {
 			List<CurationVO> list = adminService.curation_list(page);
@@ -169,8 +171,10 @@ public class AdminRestController {
 	}
 	
 	@PostMapping("/curation")
-	public ResponseEntity<?> insert_curation(@RequestBody CurationCreateVO vo){
+	public ResponseEntity<?> insert_curation(@RequestBody CurationCreateVO vo, @AuthenticationPrincipal JwtUser jwtUser){
 		try {
+			int userId = jwtUser.getUserId();
+			vo.setUser_id(userId);
 			adminService.insertCuration(vo);
 			return ResponseEntity.ok().build();
 		} catch (Exception e) {

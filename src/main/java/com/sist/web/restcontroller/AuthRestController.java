@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sist.web.dto.EmailCheckResponse;
 import com.sist.web.dto.LoginRequest;
 import com.sist.web.dto.LoginResponse;
+import com.sist.web.dto.MeResponse;
 import com.sist.web.dto.NicknameCheckResponse;
 import com.sist.web.dto.PasswordResetLinkRequest;
 import com.sist.web.dto.PasswordResetRequest;
@@ -186,5 +187,11 @@ public class AuthRestController {
 	public ResponseEntity<Map<String, String>> resetPassword(@RequestBody PasswordResetRequest request) {
 		authService.resetPassword(request);
 		return ResponseEntity.ok(Map.of("message", "비밀번호가 변경되었습니다."));
+	}
+
+	// [현재 로그인 사용자 정보 조회]
+	@GetMapping("/me")
+	public MeResponse me(@AuthenticationPrincipal JwtUser jwtUser) {
+		return authService.me(jwtUser);
 	}
 }

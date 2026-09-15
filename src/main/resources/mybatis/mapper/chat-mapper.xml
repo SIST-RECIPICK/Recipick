@@ -42,8 +42,8 @@
 		FROM chat_room c
 		JOIN users u
 		ON u.id = CASE
-        	WHEN c.user_id1 = 2 THEN c.user_id2
-        	WHEN c.user_id2 = 2 THEN c.user_id1
+        	WHEN c.user_id1 = #{user_id} THEN c.user_id2
+        	WHEN c.user_id2 = #{user_id} THEN c.user_id1
       	END
 		WHERE user_id1 = #{user_id}
   		OR user_id2 = #{user_id}
