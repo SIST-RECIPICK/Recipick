@@ -8,6 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 @Configuration
 public class DataSourceConfig {
 	@Bean(name="oracleDataSource")
@@ -17,9 +20,11 @@ public class DataSourceConfig {
 		return DataSourceBuilder.create().build();
 	}
 	
+	
 	@Bean(name="postgresDataSource")
 	@ConfigurationProperties(prefix = "spring.datasource.postgres")
 	public DataSource postgresDataSource() {
-		return DataSourceBuilder.create().build();
+	    HikariDataSource ds = DataSourceBuilder.create().type(HikariDataSource.class).build();
+	    return ds;
 	}
 }
