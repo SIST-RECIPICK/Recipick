@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sist.web.security.JwtUser;
 import com.sist.web.service.CalendarService;
 import com.sist.web.vo.CalendarInfoVO;
 import com.sist.web.vo.CalendarItemVO;
@@ -28,7 +30,7 @@ public class CalendarRestController {
 
 	@GetMapping("/calendar/list")
 	public ResponseEntity<List<CalendarItemVO>> calendar_list(
-			@RequestParam("user_id") int user_id,
+			@AuthenticationPrincipal JwtUser jwtUser,
 			@RequestParam("year") String year,
 			@RequestParam("month") String month
 	)
@@ -36,7 +38,7 @@ public class CalendarRestController {
 		List<CalendarItemVO> list;
 		try
 		{
-			list = cService.selectCalendarItems(user_id, year, month);
+			list = cService.selectCalendarItems(jwtUser.getUserId(), year, month);
 		}catch(Exception ex)
 		{
 			ex.printStackTrace();
@@ -46,9 +48,15 @@ public class CalendarRestController {
 	}
 	@PostMapping("/calendar/item")
 	public ResponseEntity<String> calendar_item_upsert(
+			@AuthenticationPrincipal JwtUser jwtUser,
 			@RequestBody CalendarItemVO vo
 	)
 	{		
+		if (jwtUser == null) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	    }
+
+	    vo.setUser_id(jwtUser.getUserId());
 		try
 		{
 			cService.upsertCalendarItem(vo);
@@ -61,7 +69,7 @@ public class CalendarRestController {
 	}
 	@GetMapping("/calendar/info")
 	public ResponseEntity<CalendarInfoVO> calendar_info(
-			@RequestParam("user_id") int user_id,
+			@AuthenticationPrincipal JwtUser jwtUser,
 			@RequestParam("year") String year,
 			@RequestParam("month") String month
 			)
@@ -69,7 +77,7 @@ public class CalendarRestController {
 		CalendarInfoVO info;
 		try
 		{
-			info = cService.selectCalendarInfo(user_id, year, month);
+			info = cService.selectCalendarInfo(jwtUser.getUserId(), year, month);
 		}catch(Exception ex)
 		{
 			ex.printStackTrace();
@@ -79,7 +87,7 @@ public class CalendarRestController {
 	}
 	@DeleteMapping("/calendar/item")
 	public ResponseEntity<Integer> calendar_item_delete(
-			@RequestParam("user_id") int user_id,
+			@AuthenticationPrincipal JwtUser jwtUser,
 			@RequestParam("meal_date") String meal_date,
 			@RequestParam("meal_type") String meal_type
 			)
@@ -87,7 +95,7 @@ public class CalendarRestController {
 		int result;
 		try
 		{
-			result = cService.deleteCalendarItem(user_id, meal_date, meal_type);
+			result = cService.deleteCalendarItem(jwtUser.getUserId(), meal_date, meal_type);
 		}catch(Exception ex)
 		{
 			ex.printStackTrace();
