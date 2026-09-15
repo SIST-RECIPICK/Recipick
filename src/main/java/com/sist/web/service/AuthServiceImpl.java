@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.sist.web.dto.EmailCheckResponse;
 import com.sist.web.dto.LoginRequest;
 import com.sist.web.dto.LoginResponse;
+import com.sist.web.dto.MeResponse;
 import com.sist.web.dto.NicknameCheckResponse;
 import com.sist.web.dto.PasswordResetLinkRequest;
 import com.sist.web.dto.PasswordResetRequest;
@@ -510,5 +511,23 @@ public class AuthServiceImpl implements AuthService {
 	private void invalidatePasswordResetToken(String token, int userId) {
 		redisTemplate.delete("pwReset:" + token);
 		redisTemplate.delete("pwResetUser:" + userId);
+	}
+
+	// [현재 로그인 사용자 정보 조회]
+	@Override
+	public MeResponse me(JwtUser jwtUser) {
+		// 1. 인증 여부 확인
+		if (jwtUser == null) {
+			throw new AuthException("UNAUTHORIZED", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED);
+		}
+
+		// 2. 계정 정보 재조회 (nickname/role은 DB를 최종 소스로 사용)
+		UsersVO user = authMapper.findUserStatusById(jwtUser.getUserId());
+
+		MeResponse response = new MeResponse();
+		response.setUserId(jwtUser.getUserId());
+		response.setNickname(user.getNickname());
+		response.setRole(user.getRole());
+		return response;
 	}
 }
