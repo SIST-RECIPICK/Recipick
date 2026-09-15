@@ -4,12 +4,12 @@
 	<select id="findSimilarRecipes" resultType="hashmap">
     SELECT * FROM (
         SELECT DISTINCT ON (recipe_id) id, recipe_id, content,
-           (embedding &lt;=> CAST(#{embedding} AS vector)) AS distance,
-           ( 1 - (embedding &lt;=> CAST(#{embedding} AS vector)) ) AS similarity
+               (embedding &lt;=> CAST(#{embedding} AS vector)) AS distance,
+               ( 1 - (embedding &lt;=> CAST(#{embedding} AS vector)) ) AS similarity
         FROM recipe_vector
         ORDER BY recipe_id, embedding &lt;=> CAST(#{embedding} AS vector)
     ) sub
-    ORDER BY distance
+    ORDER BY distance ASC
     LIMIT #{limit}
 </select>
 </mapper>
