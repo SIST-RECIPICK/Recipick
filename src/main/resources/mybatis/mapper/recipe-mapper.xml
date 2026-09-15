@@ -268,6 +268,12 @@
     WHERE rcp_seq = #{rcp_seq}
 </delete>
 
+<!-- 레시피 삭제 시, 재료정보 삭제 -->
+<delete id="deleteIngredientUnit" parameterType="int">
+    DELETE FROM ingredient_unit
+    WHERE recipe_id = #{rcp_seq}
+</delete>
+
 <!-- 
  레시피 본문 정보만 수정
   recipe_manual(조리순서)은 여기서 건들지 않음
@@ -305,5 +311,17 @@
     DELETE FROM recipe_manual WHERE rcp_seq = #{rcp_seq}
 </delete>
 
+<!--  레시피 등록 시 재료정보 저장 -->
+<insert id="ingredientInsert" parameterType="com.sist.web.vo.IngredientUnitInsertVO">
+ INSERT INTO ingredient_unit(recipe_id,name,amount,unit,amount_text,original)
+ VALUES(#{recipe_id},#{name},#{amount,},#{unit},#{amount_text,jdbcType=VARCHAR},#{original,jdbcType=VARCHAR})
+</insert>
 
+<!-- 레시피 수정 시 이미지 수정 안 할 경우 기존 이미지 유지 -->
+<select id="manualImageUpdate" resultType="com.sist.web.vo.RecipeManualVO" parameterType="int">
+    SELECT rcp_seq, step_no, manual_desc, manual_img
+    FROM recipe_manual
+    WHERE rcp_seq=#{rcp_seq}
+    ORDER BY step_no ASC
+</select>
 </mapper>

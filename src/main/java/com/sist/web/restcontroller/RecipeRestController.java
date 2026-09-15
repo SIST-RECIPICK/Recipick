@@ -8,6 +8,8 @@ import java.util.*;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sist.web.security.JwtUser;
 import com.sist.web.service.RecipeService;
 import com.sist.web.vo.*;
 
@@ -23,7 +26,9 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(
+		originPatterns = "*",
+	    allowCredentials = "true") 
 public class RecipeRestController {
 
 	private final RecipeService rService;
@@ -89,11 +94,11 @@ public class RecipeRestController {
 	
 	// 좋아요 토글 버튼
 	@PostMapping("/recipe/like")
-	public ResponseEntity<?> recipe_like(@RequestParam("user_id") int user_id,
+	public ResponseEntity<?> recipe_like(@AuthenticationPrincipal JwtUser jwtUser,
 	        @RequestParam("recipe_id") int recipe_id)
 	{
 	    Map<String, Object> map = new HashMap<>();
-	    map.put("user_id", user_id);
+	    map.put("user_id", jwtUser.getUserId());
 	    map.put("recipe_id", recipe_id);
 
 	    Map<String, Object> resultMap = new HashMap<>();
@@ -175,7 +180,7 @@ public class RecipeRestController {
 
 	// 마이페이지 - 나의 레시피 목록 출력
 	@GetMapping("/recipe/mylist")
-	public ResponseEntity<?> recipe_mylist(@RequestParam("user_id") int user_id,
+	public ResponseEntity<?> recipe_mylist(@AuthenticationPrincipal JwtUser jwtUser,
 			@RequestParam("page") int page)
 	{
 		Map<String, Object> resultMap = new HashMap<>();
@@ -183,7 +188,7 @@ public class RecipeRestController {
 
 		int start = (page - 1) * 12;
 
-		map.put("user_id", user_id);
+		map.put("user_id", jwtUser.getUserId());
 		map.put("page", page);
 		map.put("start", start);
 
@@ -202,10 +207,11 @@ public class RecipeRestController {
 		return ResponseEntity.ok(resultMap);
 	}
 	
+	@Transactional
 	// 레시피 등록 (이미지 파일 + 텍스트를 한 번에 받음 -> multipart/form-data)
 	@PostMapping("/recipe/insert")
 	public ResponseEntity<?> recipe_insert(HttpServletRequest request,
-			@RequestParam("user_id") int user_id) throws Exception {
+			@AuthenticationPrincipal JwtUser jwtUser) throws Exception {
 
 		// 1. 이미지 저장 폴더 경로 (고정 경로 사용)
 		String uploadPath = UPLOAD_DIR;
@@ -219,7 +225,7 @@ public class RecipeRestController {
 		vo.setHash_tag(request.getParameter("hash_tag"));
 		vo.setRcp_parts_dtls(request.getParameter("rcp_parts_dtls"));
 		vo.setRcp_na_tip(request.getParameter("rcp_na_tip"));
-		vo.setUser_id(user_id);
+		vo.setUser_id(jwtUser.getUserId());
 
 		// 영양정보: 문자열로 들어오므로 숫자로 변환 (비어있으면 0으로 처리)
 		vo.setInfo_eng(parseDoubleOrZero(request.getParameter("info_eng")));
@@ -249,13 +255,28 @@ public class RecipeRestController {
 			manualList.add(manual);
 		}
 		vo.setManualList(manualList);
-
+		
+		// Vue에서 보낸 재료 여러 줄을, 하나씩 꺼내서 자바 리스트(ingredientList)로 모으는 처리 
+		int ingredientCount = Integer.parseInt(request.getParameter("ingredientCount"));
+		List<IngredientUnitInsertVO> ingredientList = new ArrayList<>();
+		for(int i = 1; i<= ingredientCount; i++)
+		{
+			IngredientUnitInsertVO ingredient = new IngredientUnitInsertVO();
+			ingredient.setName(request.getParameter("ingredient_name_" + i));
+			ingredient.setAmount(Double.parseDouble(request.getParameter("ingredient_amount_"+i)));
+			ingredient.setUnit(request.getParameter("ingredient_unit_"+i));
+			
+			ingredientList.add(ingredient);
+		}
+       vo.setIngredientList(ingredientList);
+       
 		// 5. 저장
 		Map<String, Object> resultMap = new HashMap<>();
 		try {
 			int newRcpSeq = rService.recipeInsert(vo);
 			resultMap.put("rcp_seq", newRcpSeq);
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 		return ResponseEntity.ok(resultMap);
@@ -324,8 +345,9 @@ public class RecipeRestController {
 			vo.setAtt_file_no_main(mainImageName);
 		}
 
-		// 3. 조리순서: 등록 때와 동일하게 전체를 다시 받음
-		//    (기존 것 지우고 재삽입하는 방식이라, 수정 화면에서도 전체 단계를 다시 보내줘야 함)
+		// 3. 조리순서: 기존 데이터 먼저 조회 (새 이미지 없을 때 유지하기 위함)  
+		List<RecipeManualVO> manualImageUpdate = rService.manualImageUpdate(rcp_seq);
+		
 		int stepCount = Integer.parseInt(request.getParameter("stepCount"));
 		List<RecipeManualVO> manualList = new ArrayList<>();
 		for (int i = 1; i <= stepCount; i++) {
@@ -338,8 +360,15 @@ public class RecipeRestController {
 				manual.setManual_img(FileUploadUtil.upload(uploadPath, stepImagePart));
 			}
 			else {
-			    // 새 이미지 없으면 빈 문자열로 저장 (null 대신)
-			    manual.setManual_img("");
+			    // 새 이미지 없으면, 기존 조리순서 목록에서 같은 단계(step_no)를 찾아 그 이미지를 유지
+			    String existingImg = "";
+			    for (RecipeManualVO m : manualImageUpdate) {
+			        if (m.getStep_no() == i) {
+			            existingImg = m.getManual_img();
+			            break;
+			        }
+			    }
+			    manual.setManual_img(existingImg);
 			}
 			manualList.add(manual);
 		}
