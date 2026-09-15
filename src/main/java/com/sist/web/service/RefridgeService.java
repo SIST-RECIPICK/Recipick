@@ -11,7 +11,7 @@ public interface RefridgeService {
 	public List<RefridgeVO> fridgeData(int users_id);
 	
 	
-	public List<Map<String, Object>> recommandRecipe(List<String> ingredients);
+	public List<Map<String, Object>> recommandRecipe(List<String> ingredients,String sort);
 	
 	
 }
