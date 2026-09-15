@@ -26,9 +26,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(
-		originPatterns = "*",
-	    allowCredentials = "true") 
+
 public class RecipeRestController {
 
 	private final RecipeService rService;
