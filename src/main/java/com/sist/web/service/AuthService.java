@@ -3,6 +3,7 @@ package com.sist.web.service;
 import com.sist.web.dto.EmailCheckResponse;
 import com.sist.web.dto.LoginRequest;
 import com.sist.web.dto.LoginResponse;
+import com.sist.web.dto.MeResponse;
 import com.sist.web.dto.NicknameCheckResponse;
 import com.sist.web.dto.PasswordResetLinkRequest;
 import com.sist.web.dto.PasswordResetRequest;
@@ -48,4 +49,7 @@ public interface AuthService {
 
 	// [비밀번호 재설정]
 	void resetPassword(PasswordResetRequest request);
+
+	// [현재 로그인 사용자 정보 조회]
+	MeResponse me(JwtUser jwtUser);
 }
