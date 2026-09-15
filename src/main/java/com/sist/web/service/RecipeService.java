@@ -65,8 +65,17 @@ public interface RecipeService {
 	// 내부적으로 좋아요/북마크/조리순서까지 함께 정리한 뒤 레시피 원본을 삭제함
 	public int deleteRecipe(int rcp_seq);
 	
+	// 재료정보 삭제
+	public int deleteIngredientUnit(int rcp_seq);
+	
 	// 레시피 수정
 	// 내부적으로 recipe 본문 UPDATE + 조리순서(recipe_manual) 삭제 후 재삽입까지 한 번에 처리
 	// 이미지 업로드 부분 때문에 예외처리 삽입
 	public void recipeUpdate(RecipeInsertVO vo) throws Exception;
+	
+	// 레시피 등록 시 재료정보 저장
+	public void ingredientInsert(IngredientUnitInsertVO vo);
+	
+	// 레시피 수정 시 이미지 수정 안 할 경우 기존 이미지 유지
+	public List<RecipeManualVO> manualImageUpdate(int rcp_seq);
 }

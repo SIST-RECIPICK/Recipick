@@ -27,6 +27,9 @@ public class RecipeInsertVO {
 	private double info_na;
 	private int user_id;
 
-	// 조리순서
-	private List<RecipeManualVO> manualList = new ArrayList<>();
+	 // 조리순서 => 1단계,2단계 ....
+    private List<RecipeManualVO> manualList = new ArrayList<>();
+    
+    // 재료 정보 여러줄
+    private List<IngredientUnitInsertVO> ingredientList = new ArrayList<>();
 }
