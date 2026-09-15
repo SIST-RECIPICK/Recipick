@@ -255,6 +255,7 @@ public interface RecipeMapper {
 	public int deleteRecipeLike(int rcp_seq);
 	public int deleteRecipeBookmark(int rcp_seq);
 	public int deleteRecipeManual(int rcp_seq);
+	public int deleteIngredientUnit(int rcp_seq);
 	
 	/*
 	 * <update id="recipeUpdate" parameterType="com.sist.web.vo.RecipeInsertVO">
@@ -288,4 +289,26 @@ public interface RecipeMapper {
 	 */
 	// 조리순서 수정 시, 기존 조리순서 전체 삭제 (재삽입 위해)
 	public int recipeManualDeleteByRcpSeq(int rcp_seq);
+	
+	/*
+	 *  
+		<insert id="ingredientInsert" parameterType="com.sist.web.vo.IngredientUnitInsertVO">
+			 INSERT INTO ingredient_unit(recipe_id,name,amount,unit,amount_text,original)
+			 VALUES(#{recipe_id},#{name},#{amount},#{unit},#{amount_text},#{original})
+		</insert>
+	 */
+	
+	// 레시피 등록 시 재료정보 저장
+	public void ingredientInsert(IngredientUnitInsertVO vo);
+	
+	/*
+	 *  <select id="manualImageUpdate" resultType="com.sist.web.vo.RecipeManualVO" parameterType="int">
+		    SELECT rcp_seq, step_no, manual_desc, manual_img
+		    FROM recipe_manual
+		    WHERE rcp_seq=#{rcp_seq}
+		    ORDER BY step_no ASC
+		</select>
+	 */
+	// 레시피 수정 시 이미지 수정 안 할 경우 기존 이미지 유지
+	public List<RecipeManualVO> manualImageUpdate(int rcp_seq);
 }
