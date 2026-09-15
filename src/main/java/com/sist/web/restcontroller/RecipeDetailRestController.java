@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.sist.web.security.JwtUser;
 import com.sist.web.service.RecipeDetailService;
 import com.sist.web.vo.IngredientUnitVO;
 import com.sist.web.vo.MyListVO;
@@ -32,24 +34,19 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(
-originPatterns = "*",
-allowCredentials = "true"
-)
+
 public class RecipeDetailRestController {
 	private final RecipeDetailService service;
-
+	
 	//레시피 번호를 받아서 상세보기 데이터 전송
 	@GetMapping("/recipe/detail")
 	public ResponseEntity<Map> recipe_detail(
-			@RequestParam("user_id") int user_id,
+			@AuthenticationPrincipal JwtUser jwtUser,
 			@RequestParam("rcp_seq") int rcp_seq,
 			HttpServletResponse response
 		) 
 	{
-		long start = System.currentTimeMillis();
-
-		
+	
 		//상세보기 입장시 쿠키 저장
 		Cookie cookie = new Cookie("recipe_detail_" + rcp_seq, String.valueOf(rcp_seq));
 		cookie.setPath("/");
@@ -57,9 +54,13 @@ public class RecipeDetailRestController {
 		response.addCookie(cookie);
 		
 		Map map = new HashMap();
-		
+		int user_id = 0;
 		try {
-			
+			if(jwtUser != null)
+			{
+				user_id = jwtUser.getUserId();
+			}
+			System.out.println(user_id);
 			//좋아요 유무
 			int likeExist = service.recipeDetailLikeExist(rcp_seq,user_id);
 			
@@ -85,9 +86,7 @@ public class RecipeDetailRestController {
 			ex.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
-		long end = System.currentTimeMillis();
-
-		System.out.println("걸린 시간: " + (end - start) + "ms");
+		
 		return ResponseEntity.ok(map);
 	}
 	
@@ -153,13 +152,18 @@ public class RecipeDetailRestController {
 	//북마크 좋아요 처리
 	@GetMapping("/recipe/interaction")
 	public ResponseEntity<?> recipe_interaction(
-			@RequestParam("user_id") int user_id,
+			@AuthenticationPrincipal JwtUser jwtUser,
 			@RequestParam("rcp_seq") int rcp_seq,
 			@RequestParam("type") String type
 		) 
 	{	
-
+		
+		int user_id = 0;
 		try {
+			if(jwtUser != null)
+			{
+				user_id = jwtUser.getUserId();
+			}
 			
 			if(type.equals("like"))
 			{
@@ -198,7 +202,7 @@ public class RecipeDetailRestController {
 	
 	@GetMapping("/recipe/my-list")
 	public ResponseEntity<Map> recipe_my_list(
-		@RequestParam("user_id") int user_id,
+		@AuthenticationPrincipal JwtUser jwtUser,
 		@RequestParam("page") int page,	
 		@RequestParam(value = "type",required = false) String type		
 	) 
@@ -207,9 +211,13 @@ public class RecipeDetailRestController {
 			type ="like";
 		
 		Map map = new HashMap();
-		
+		int user_id = 0;
 		try 
 		{
+			if(jwtUser != null)
+			{
+				user_id = jwtUser.getUserId();
+			}
 			if(type.equals("like"))
 			{
 				List<MyListVO> myLikeList = service.userLikeList(user_id, page);
