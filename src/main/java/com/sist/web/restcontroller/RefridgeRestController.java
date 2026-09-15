@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sist.web.service.RefridgeService;
+import com.sist.web.vo.RecipeVO;
 import com.sist.web.vo.RefridgeVO;
 
 import lombok.RequiredArgsConstructor;
@@ -54,109 +55,71 @@ public class RefridgeRestController {
 	@ResponseBody
 	public Map<String, Object> recommand(@RequestBody Map<String, Object> request) {
 
-		Map<String, Object> response = new HashMap<>();
+	    Map<String, Object> response = new HashMap<>();
 
-		try {
+	    try {
+	        Object ingredientObject = request.get("ingredients");
 
-			/*
-			 * JSON에서 ingredients 추출
-			 */
-			Object ingredientObject = request.get("ingredients");
+	        if (ingredientObject == null) {
+	            response.put("success", false);
+	            response.put("message", "재료를 선택해주세요.");
+	            response.put("recipes", Collections.emptyList());
+	            return response;
+	        }
 
-			/*
-			 * 재료가 없는 경우
-			 */
-			if (ingredientObject == null) {
+	        List<String> ingredients = new ArrayList<>();
+	        if (ingredientObject instanceof List<?>) {
+	            List<?> list = (List<?>) ingredientObject;
+	            for (Object value : list) {
+	                if (value != null) {
+	                    String ingredient = value.toString().trim();
+	                    if (!ingredient.isEmpty()) {
+	                        ingredients.add(ingredient);
+	                    }
+	                }
+	            }
+	        }
 
-				response.put("success", false);
+	        System.out.println("검색 요청 재료: " + ingredients);   // 위치도 여기로 이동 (실제 채운 뒤에 로그 찍기)
 
-				response.put("message", "재료를 선택해주세요.");
+	        if (ingredients.isEmpty()) {
+	            response.put("success", false);
+	            response.put("message", "재료를 한 개 이상 선택해주세요.");
+	            response.put("recipes", Collections.emptyList());
+	            return response;
+	        }
 
-				response.put("recipes", Collections.emptyList());
+	        // sort 값을 request(body)에서 꺼냄
+	        Object sortObject = request.get("sort");
+	        String sort = (sortObject != null) ? sortObject.toString() : "match";
 
-				return response;
-			}
+	        List<Map<String, Object>> recipes = rfService.recommandRecipe(ingredients, sort);
 
-			/*
-			 * JSON 배열 → List<String>
-			 */
-			List<String> ingredients = new ArrayList<>();
+	        for (Map a : recipes) {
+	            System.out.println("==================>" + a.toString());
+	        }
 
-			if (ingredientObject instanceof List<?>) {
+	        response.put("success", true);
+	        response.put("message", recipes.isEmpty() ? "추천 레시피가 없습니다." : "레시피 추천이 완료되었습니다.");
+	        response.put("recipes", recipes);
+	        response.put("selectedIngredients", ingredients);
 
-				List<?> list = (List<?>) ingredientObject;
+	        return response;
 
-				for (Object value : list) {
-
-					if (value != null) {
-
-						String ingredient = value.toString().trim();
-
-						if (!ingredient.isEmpty()) {
-
-							ingredients.add(ingredient);
-						}
-					}
-				}
-			}
-
-			/*
-			 * 선택 재료가 없는 경우
-			 */
-			if (ingredients.isEmpty()) {
-
-				response.put("success", false);
-
-				response.put("message", "재료를 한 개 이상 선택해주세요.");
-
-				response.put("recipes", Collections.emptyList());
-
-				return response;
-			}
-
-			/*
-			 * ================================================= Vector 검색
-			 * =================================================
-			 */
-			List<Map<String, Object>> recipes = rfService.recommandRecipe(ingredients);
-			
-			for(Map a : recipes) {
-				System.out.println("==================>" +  a.toString());
-			}
-
-			/*
-			 * 정상 응답
-			 */
-			response.put("success", true);
-
-			response.put("message", recipes.isEmpty() ? "추천 레시피가 없습니다." : "레시피 추천이 완료되었습니다.");
-
-			response.put("recipes", recipes);
-
-			/*
-			 * 사용자가 선택한 재료도 반환
-			 */
-			response.put("selectedIngredients", ingredients);
-
-			return response;
-
-		} catch (Exception e) {
-
-			/*
-			 * 서버 로그
-			 */
-			e.printStackTrace();
-
-			/*
-			 * 오류 응답
-			 */
-			response.put("success", false);
-
-			response.put("message", "레시피 검색 중 오류가 발생했습니다.");
-
-			response.put("recipes", Collections.emptyList());
-
-			return response;
-		}
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        response.put("success", false);
+	        response.put("message", "레시피 검색 중 오류가 발생했습니다.");
+	        response.put("recipes", Collections.emptyList());
+	        return response;
+	    }
+	    
+	      
 	}
+	
+//	@GetMapping("/recipe/{rcp_seq}")
+//	public RecipeVO getRecipeDetail(@PathVariable int rcp_seq) {
+//		
+//	    return rfService.oracleRecipeAllData(rcp_seq);
+//	}
 }

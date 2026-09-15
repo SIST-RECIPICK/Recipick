@@ -131,7 +131,7 @@ public class AdminServiceImpl implements AdminService {
 		curation.setYear(vo.getYear());
 		curation.setMonth(vo.getMonth());
 		curation.setStatus("PUBLISHED");
-		curation.setUsers_id(1);
+		curation.setUsers_id(vo.getUser_id());
 		adminMapper.createCuration(curation);
 		
 		int curationId = curation.getId();

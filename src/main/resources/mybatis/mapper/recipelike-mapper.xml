@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sist.web.mapper.RecipeLikeMapper">
+  <select id="countLikesByRecipe" resultType="map">
+    SELECT recipe_id AS "recipe_id", COUNT(*) AS "like_count"
+    FROM recipe_like
+    GROUP BY recipe_id
+</select>
+</mapper>

@@ -10,4 +10,5 @@ public class CurationCreateVO {
 	private int month;
 	private String title;
 	private List<CurationDetailVO> details;
+	private int user_id;
 }

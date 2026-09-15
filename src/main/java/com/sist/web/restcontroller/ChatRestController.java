@@ -8,11 +8,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sist.web.security.JwtUser;
 import com.sist.web.service.ChatService;
 import com.sist.web.service.RecipeDetailService;
 import com.sist.web.vo.ChatVO;
@@ -22,22 +24,17 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(
-originPatterns = "*",
-allowCredentials = "true"
-)
 public class ChatRestController {
 	private final ChatService service;
 	private final RecipeDetailService rService;
 	private final SimpMessagingTemplate template;
-
+	
     @MessageMapping("/chat-send")
     public void getMessage(ChatVO message) {
- 
-        System.out.println("roomId: "+ message.getRoom_id());
+      
+    	System.out.println("roomId: "+ message.getRoom_id());
     	System.out.println("userId: "+ message.getUser_id());
     	System.out.println("message: "+ message.getMessage());
- 	
     	service.chatMessageInsert(message);	
     	
     	template.convertAndSend(
@@ -48,34 +45,40 @@ public class ChatRestController {
     
     @GetMapping("/chat/create")
     public ResponseEntity<Map> chat_create(
-    	@RequestParam("user_id1") int user_id1,
+    	@AuthenticationPrincipal JwtUser jwtUser,
     	@RequestParam("user_id2") int user_id2,
     	@RequestParam("recipe_id") int recipe_id
     )
     {
-    	System.out.println(user_id1);
+    	int user_id = 0;
+    	
+    	System.out.println(user_id);
     	System.out.println(user_id2);
     	Map map = new HashMap();
     	ChatVO vo = new ChatVO();
     	
     	try {
-    		int exist = service.chatRoomExist(user_id1, user_id2);
+    		if(jwtUser != null)
+    		{
+    			user_id = jwtUser.getUserId();
+    		}
+    		int exist = service.chatRoomExist(user_id, user_id2);
     		
     		if(exist < 1)
     		{
     			RecipeVO recipeData = rService.recipeDetailData(recipe_id);
     			
     			System.out.println("생성");
-    			service.chatRoomCreate(user_id1, user_id2);
-    			vo = service.chatRoomData(user_id1, user_id2);
+    			service.chatRoomCreate(user_id, user_id2);
+    			vo = service.chatRoomData(user_id, user_id2);
     	
     			vo.setMessage(recipeData.getNickname()+"님 안녕하세요 ["
     					+ recipeData.getRcp_nm()+"] 레시피 재료 문의 드립니다");
-    			vo.setUser_id(user_id1);
+    			vo.setUser_id(user_id);
     			service.chatMessageInsert(vo);	
     		}else
     		{
-    			vo = service.chatRoomData(user_id1, user_id2);
+    			vo = service.chatRoomData(user_id, user_id2);
     		}
     		 		
     		map.put("vo", vo);
@@ -89,14 +92,18 @@ public class ChatRestController {
     }
     
     @GetMapping("/chat/room_list")
-    public ResponseEntity<Map> chat_room_list(@RequestParam("user_id") int user_id)
+    public ResponseEntity<Map> chat_room_list(@AuthenticationPrincipal JwtUser jwtUser)
     {
     	Map map = new HashMap();
- 	
+    	int user_id = 0;
+    	
     	try {
+    		if(jwtUser != null)
+    		{
+    			user_id = jwtUser.getUserId();
+    		}
     		
     		List<ChatVO> roomList = service.chatRoomList(user_id);
-    		
  
     		map.put("roomList", roomList);
     		
@@ -116,7 +123,6 @@ public class ChatRestController {
     	try {
     		
     		List<ChatVO> messageList = service.chatMessageList(room_id);
-    		
  
     		map.put("messageList", messageList);
     		
