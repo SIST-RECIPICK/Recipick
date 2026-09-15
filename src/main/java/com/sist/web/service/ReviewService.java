@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.sist.web.vo.RecipeListVO;
 import com.sist.web.vo.Review_BoardVO;
 import com.sist.web.vo.Review_Board_ReplyVO;
 
@@ -16,6 +17,9 @@ public interface ReviewService {
 	public List<Review_BoardVO> recipeOtherReviews(Map<String, Object> map);
 	public List<Review_Board_ReplyVO> boardReplyList(int reviewBoardId);
 	public void reviewInsert(Review_BoardVO vo);
+	public List<RecipeListVO> reviewRecipeSearch(String keyword, int page);
+	public int reviewRecipeTotalpage(String keyword);
+	public int[] recipePages(int page, String keyword);
 	public void reviewUpdate(Review_BoardVO vo);
 	public void reviewDelete(int id);
 	public void reviewReplyInsert(Review_Board_ReplyVO vo);

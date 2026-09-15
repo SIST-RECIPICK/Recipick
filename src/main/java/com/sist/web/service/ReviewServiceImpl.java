@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sist.web.mapper.ReviewMapper;
+import com.sist.web.vo.RecipeListVO;
 import com.sist.web.vo.Review_BoardVO;
 import com.sist.web.vo.Review_Board_ReplyVO;
 
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewServiceImpl implements ReviewService {
 	private final ReviewMapper rMapper;
 	private final int ROW_SIZE = 12;
+	private final int RECIPE_ROW_SIZE = 10;
 
 	@Override
     public List<Review_BoardVO> ReviewBoardListData(int page, String keyword, String type) {
@@ -66,6 +68,48 @@ public class ReviewServiceImpl implements ReviewService {
 	@Override
 	public void reviewInsert(Review_BoardVO vo) {
 	    rMapper.reviewInsert(vo);
+	}
+	
+	@Override
+	public List<RecipeListVO> reviewRecipeSearch(String keyword, int page) {
+	    int start = (page - 1) * RECIPE_ROW_SIZE;
+
+	    Map<String, Object> map = new HashMap<>();
+	    map.put("keyword", keyword);
+	    map.put("start", start);
+
+	    return rMapper.reviewRecipeSearch(map);
+	}
+
+	@Override
+	public int reviewRecipeTotalpage(String keyword) {
+	    return rMapper.reviewRecipeTotalpage(keyword);
+	}
+
+	@Override
+	public int[] recipePages(int page, String keyword) {
+
+	    int totalpage =
+	            rMapper.reviewRecipeTotalpage(keyword);
+
+	    final int BLOCK = 10;
+
+	    int startpage =
+	            ((page - 1) / BLOCK * BLOCK) + 1;
+
+	    int endpage =
+	            ((page - 1) / BLOCK * BLOCK) + BLOCK;
+
+	    if (endpage > totalpage) {
+	        endpage = totalpage;
+	    }
+
+	    return new int[] {
+	        page,
+	        totalpage,
+	        startpage,
+	        endpage
+	    };
 	}
 	
 	@Override
