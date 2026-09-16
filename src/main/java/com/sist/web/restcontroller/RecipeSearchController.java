@@ -5,11 +5,13 @@ import java.util.List;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sist.web.security.JwtUser;
 import com.sist.web.service.RecipeSearchService;
 import com.sist.web.vo.RecipePreviewVO;
 import com.sist.web.vo.RecipeSearchVO;
@@ -24,14 +26,14 @@ public class RecipeSearchController {
 	
 	@GetMapping("recipe/search")
 	public ResponseEntity<List<RecipeSearchVO>> recipe_search(
-			@RequestParam("keyword") String keyword,
-			@RequestParam("user_id") int user_id
+			@RequestParam("keyword") String keyword,  // 검색 값과 유저 아이디 받아옴
+			@AuthenticationPrincipal JwtUser jwtUser
 	)
 	{
-		List<RecipeSearchVO> list;
+		List<RecipeSearchVO> list; // 리스트 생성
 		try
 		{
-			list=rsService.selectRecipeSearch(keyword, user_id);
+			list=rsService.selectRecipeSearch(keyword, jwtUser.getUserId());
 		}catch(Exception ex)
 		{
 			ex.printStackTrace();
