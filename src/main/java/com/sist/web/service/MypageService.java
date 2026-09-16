@@ -13,6 +13,7 @@ public interface MypageService {
     public Map<String, Object> mypageMainCount(int id);
     
     public void updateMyProfile(int userId, String nickname, MultipartFile file);
+    public void changePassword(int userId, String currentPassword, String newPassword, String newPasswordConfirm);
 
     public List<Review_BoardVO> myReviewList(int id, int page);
     public int myReviewTotalPage(int id);
