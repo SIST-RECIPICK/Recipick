@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sist.web.exception.BusinessException;
+import com.sist.web.exception.ErrorCode;
 import com.sist.web.security.JwtUser;
 import com.sist.web.service.AdminService;
 import com.sist.web.service.SeasonalIngredientRecommender;
@@ -27,12 +29,15 @@ import com.sist.web.vo.RecIngredientVO;
 import com.sist.web.vo.RecipeVO;
 import com.sist.web.vo.UsersVO;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@Tag(name = "관리자 기능", description = "관리자 회원관리/큐레이션 관리 CRUD API")
 public class AdminRestController {
 
 	private final AdminService adminService;
@@ -58,7 +63,9 @@ public class AdminRestController {
 
 		return ResponseEntity.ok(map);
 	}
-
+	
+	@Operation(summary = "사용자 권한 수정")
+	@Parameter(name = "UsersVO", description = "사용자 id, 사용자 권한")
 	// RequestBody는 하나의 body 덩어리로만 받을 수 있음
 	@PutMapping("/user/role")
 	public ResponseEntity<?> role_update(@RequestBody UsersVO vo) {
@@ -104,46 +111,24 @@ public class AdminRestController {
 
 	@GetMapping("/curation/{id}")
 	public ResponseEntity<?> curation_detail(@PathVariable("id") int id) {
-		CurationVO curation = null;
-		try {
-			curation = adminService.selectCurationDetail(id);
-
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
-
+		CurationVO curation = adminService.selectCurationDetail(id);
 		return ResponseEntity.ok(curation);
 	}
 	
 	@DeleteMapping("/curation/{id}")
 	public ResponseEntity<?> curation_delete(@PathVariable("id") int id){
-		
-		try {
-			adminService.deleteCuration(id);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
+		adminService.deleteCuration(id);
 		return ResponseEntity.ok().build();
 	}
 	
 	@GetMapping("/curation/recommend")
-	public ResponseEntity<List<RecIngredientVO>> recommand(@RequestParam("year") int year, @RequestParam("month") int month){
-		long startTime = System.currentTimeMillis();
+	public ResponseEntity<List<RecIngredientVO>> recommand(@RequestParam("year") int year, 
+			@RequestParam("month") int month, 
+			@RequestParam(value = "refresh", defaultValue = "false") boolean refresh){
 		
-		List<RecIngredientVO> list = null;
-		try {
-			list = recommander.recommand(year, month);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-			
-		}
-		long endTime = System.currentTimeMillis();
-		long duration = endTime - startTime;
-
-		System.out.println("Execution Time :: " + duration + " ms");
+		List<RecIngredientVO> list = recommander.recommand(year, month, refresh);
 		return ResponseEntity.ok(list);
+		
 	}
 	
 	@GetMapping("/curation/recipeTop3")
