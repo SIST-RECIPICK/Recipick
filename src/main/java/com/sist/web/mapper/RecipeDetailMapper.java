@@ -188,4 +188,15 @@ public interface RecipeDetailMapper {
 	 </select>
 	 */
 	public List<Review_BoardVO> recipeReviewList(int rcp_seq);
+	
+	
+	// 내가 등록한 레시피 조회수 증가
+	/* <update id="recipeHitUp" parameterType="int">
+		 UPDATE recipe 
+		 SET hit = hit+1
+		 WHERE rcp_seq = #{rcp_seq}
+		</update>
+	 * 
+	 */
+	public void recipeHitUp(int rcp_seq);
 }
