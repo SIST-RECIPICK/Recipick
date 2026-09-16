@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/ingredients")
-@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class IngredientRestController {
 	private final IngredientService iService;

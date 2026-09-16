@@ -25,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/refrige")
-@CrossOrigin(origins = "http://localhost:5173")
 public class RefridgeRestController {
 	private final RefridgeService rfService;
 
