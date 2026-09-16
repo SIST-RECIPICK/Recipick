@@ -20,8 +20,10 @@ public interface ReviewService {
 	public List<RecipeListVO> reviewRecipeSearch(String keyword, int page);
 	public int reviewRecipeTotalpage(String keyword);
 	public int[] recipePages(int page, String keyword);
-	public void reviewUpdate(Review_BoardVO vo);
-	public void reviewDelete(int id);
+	public void reviewUpdate(Review_BoardVO vo, int usersId);
+	public void reviewDelete(int id, int usersId);
 	public void reviewReplyInsert(Review_Board_ReplyVO vo);
-	public void reviewReplyDelete(int id);
+	public void reviewReplyDelete(int id, int usersId);
+	public void reviewReplyAdminDelete(int id);
+	public void reviewDeleteAdmin(int id);
 }

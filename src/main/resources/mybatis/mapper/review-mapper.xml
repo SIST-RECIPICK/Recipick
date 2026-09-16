@@ -140,7 +140,7 @@
 	    INSERT INTO review_board (
 	        id, subject, content, image_url, image_size, rcp_seq, users_id, hit, created_at
 	    ) VALUES (
-	        seq_review_board.NEXTVAL,
+	        review_board_seq.NEXTVAL,
 	        #{subject},
 	        #{content},
 	        #{image_url, jdbcType=VARCHAR},
@@ -166,12 +166,14 @@
 	    WHERE UPPER(rcp_nm) LIKE '%' || UPPER(#{keyword}) || '%'
 	</select>
 	
-	<update id="reviewUpdate" parameterType="Review_BoardVO">
+	<update id="reviewUpdate" parameterType="map">
 	    UPDATE review_board
 	    SET subject = #{subject},
 	        content = #{content},
-	        image_url = #{image_url, jdbcType=VARCHAR}
+	        image_url = #{image_url, jdbcType=VARCHAR},
+	        rcp_seq = #{rcp_seq}
 	    WHERE id = #{id}
+	      AND users_id = #{users_id}
 	</update>
 	
 	<delete id="reviewReplyAllDelete" parameterType="int">
@@ -179,9 +181,10 @@
 	    WHERE review_board_id = #{review_board_id}
 	</delete>
 	
-	<delete id="reviewDelete" parameterType="int">
+	<delete id="reviewDelete" parameterType="map">
 	    DELETE FROM review_board
 	    WHERE id = #{id}
+	      AND users_id = #{users_id}
 	</delete>
 	
 	
@@ -190,7 +193,7 @@
 	    INSERT INTO review_board_reply (
 	        id, review_board_id, users_id, content, created_at
 	    ) VALUES (
-	        seq_review_board_reply.NEXTVAL,
+	        review_reply_seq.NEXTVAL,
 	        #{review_board_id},
 	        #{users_id},
 	        #{content},
@@ -198,10 +201,20 @@
 	    )
 	</insert>
 	
-	<delete id="reviewReplyDelete" parameterType="int">
+	<delete id="reviewReplyDelete" parameterType="map">
+	    DELETE FROM review_board_reply
+	    WHERE id = #{id}
+	      AND users_id = #{users_id}
+	</delete>
+	
+	
+	<delete id="reviewReplyAdminDelete" parameterType="int">
 	    DELETE FROM review_board_reply
 	    WHERE id = #{id}
 	</delete>
-	
+	<delete id="reviewDeleteAdmin" parameterType="int">
+	    DELETE FROM review_board
+	    WHERE id = #{id}
+	</delete>
 
 </mapper>

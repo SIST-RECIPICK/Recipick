@@ -26,11 +26,17 @@ public interface ReviewMapper {
 	public void reviewInsert(Review_BoardVO vo);
 	public List<RecipeListVO> reviewRecipeSearch(Map<String, Object> map);
 	public int reviewRecipeTotalpage(@Param("keyword") String keyword);
-	public void reviewUpdate(Review_BoardVO vo);
+	public void reviewUpdate(
+			@Param("id") int id, @Param("subject") String subject,
+	        @Param("content") String content,@Param("image_url") String imageUrl,
+	        @Param("rcp_seq") int rcpSeq, @Param("users_id") int usersId
+	);
 	public void reviewReplyAllDelete(@Param("review_board_id") int reviewBoardId);
-	public void reviewDelete(@Param("id") int id);
+	public void reviewDelete(@Param("id") int id, @Param("users_id") int usersId);
 
 	public void reviewReplyInsert(Review_Board_ReplyVO vo);
-	public void reviewReplyDelete(@Param("id") int id);
-
+	public void reviewReplyDelete(@Param("id") int id, @Param("users_id") int usersId);
+	
+	public void reviewReplyAdminDelete(@Param("id") int id);
+	public void reviewDeleteAdmin(@Param("id") int id);
 }

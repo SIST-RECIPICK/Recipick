@@ -113,15 +113,22 @@ public class ReviewServiceImpl implements ReviewService {
 	}
 	
 	@Override
-	public void reviewUpdate(Review_BoardVO vo) {
-	    rMapper.reviewUpdate(vo);
+	public void reviewUpdate(Review_BoardVO vo, int usersId) {
+	    rMapper.reviewUpdate(
+	        vo.getId(),
+	        vo.getSubject(),
+	        vo.getContent(),
+	        vo.getImage_url(),
+	        vo.getRcp_seq(),
+	        usersId
+	    );
 	}
 	
 	@Override
 	@Transactional
-	public void reviewDelete(int id) {
+	public void reviewDelete(int id, int usersId) {
 	    rMapper.reviewReplyAllDelete(id);
-	    rMapper.reviewDelete(id);
+	    rMapper.reviewDelete(id, usersId);
 	}
 	
 	@Override
@@ -130,8 +137,20 @@ public class ReviewServiceImpl implements ReviewService {
 	}
 
 	@Override
-	public void reviewReplyDelete(int id) {
-	    rMapper.reviewReplyDelete(id);
+	public void reviewReplyDelete(int id, int usersId) {
+	    rMapper.reviewReplyDelete(id, usersId);
+	}
+	
+	@Override
+	public void reviewReplyAdminDelete(int id) {
+	    rMapper.reviewReplyAdminDelete(id);
+	}
+	
+	@Override
+	@Transactional
+	public void reviewDeleteAdmin(int id) {
+	    rMapper.reviewReplyAllDelete(id);
+	    rMapper.reviewDeleteAdmin(id);
 	}
 
 }

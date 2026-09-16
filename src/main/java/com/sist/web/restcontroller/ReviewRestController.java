@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sist.web.security.JwtUser;
 import com.sist.web.service.ReviewService;
 import com.sist.web.util.CloudinaryUtil;
 import com.sist.web.vo.RecipeListVO;
@@ -87,16 +89,25 @@ public class ReviewRestController {
 
 	@PostMapping(value = "/review/insert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> review_insert(@RequestPart("board") Review_BoardVO vo,
-			@RequestPart(value = "file", required = false) MultipartFile file) {
+			@RequestPart(value = "file", required = false) MultipartFile file,
+			@AuthenticationPrincipal JwtUser jwtUser) {
+
 		try {
+			if (jwtUser == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+			}
+			vo.setUsers_id(jwtUser.getUserId());
+
 			if (file != null && !file.isEmpty()) {
 				Map<String, Object> uploadResult = cloudinaryUtil.uploadImage(file);
+
 				vo.setImage_url((String) uploadResult.get("url"));
 				vo.setImage_size((Double) uploadResult.get("size"));
 			}
-
 			rService.reviewInsert(vo);
+
 			return ResponseEntity.ok("OK");
+
 		} catch (IllegalArgumentException ex) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
 		} catch (Exception ex) {
@@ -130,15 +141,19 @@ public class ReviewRestController {
 
 	@PutMapping(value = "/review/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> review_update(@RequestPart("board") Review_BoardVO vo,
-			@RequestPart(value = "file", required = false) MultipartFile file) {
+			@RequestPart(value = "file", required = false) MultipartFile file,
+			@AuthenticationPrincipal JwtUser jwtUser) {
 		try {
+			if (jwtUser == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+			}
+			vo.setUsers_id(jwtUser.getUserId());
 			if (file != null && !file.isEmpty()) {
 				Map<String, Object> uploadResult = cloudinaryUtil.uploadImage(file);
 				vo.setImage_url((String) uploadResult.get("url"));
 				vo.setImage_size((Double) uploadResult.get("size"));
 			}
-
-			rService.reviewUpdate(vo);
+			rService.reviewUpdate(vo, jwtUser.getUserId());
 			return ResponseEntity.ok("OK");
 		} catch (IllegalArgumentException ex) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
@@ -149,9 +164,16 @@ public class ReviewRestController {
 	}
 
 	@DeleteMapping("/review/delete")
-	public ResponseEntity<String> review_delete(@RequestParam("id") int id) {
+	public ResponseEntity<String> review_delete(@RequestParam("id") int id, @AuthenticationPrincipal JwtUser jwtUser) {
 		try {
-			rService.reviewDelete(id);
+			if (jwtUser == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+			}
+			if ("ADMIN".equalsIgnoreCase(jwtUser.getRole())) {
+				rService.reviewDeleteAdmin(id);
+			} else {
+				rService.reviewDelete(id, jwtUser.getUserId());
+			}
 			return ResponseEntity.ok("OK");
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -160,9 +182,15 @@ public class ReviewRestController {
 	}
 
 	@PostMapping("/review/reply/insert")
-	public ResponseEntity<String> review_reply_insert(@RequestBody Review_Board_ReplyVO vo) {
+	public ResponseEntity<String> review_reply_insert(@RequestBody Review_Board_ReplyVO vo,
+			@AuthenticationPrincipal JwtUser jwtUser) {
 		try {
+			if (jwtUser == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+			}
+			vo.setUsers_id(jwtUser.getUserId());
 			rService.reviewReplyInsert(vo);
+			
 			return ResponseEntity.ok("OK");
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -171,14 +199,28 @@ public class ReviewRestController {
 	}
 
 	@DeleteMapping("/review/reply/delete")
-	public ResponseEntity<String> review_reply_delete(@RequestParam("id") int id) {
-		try {
-			rService.reviewReplyDelete(id);
-			return ResponseEntity.ok("OK");
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
+	public ResponseEntity<String> review_reply_delete(
+	        @RequestParam("id") int id,
+	        @AuthenticationPrincipal JwtUser jwtUser) {
+
+	    try {
+	        if (jwtUser == null) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+	                    .body("로그인이 필요합니다.");
+	        }
+
+	        if ("ADMIN".equalsIgnoreCase(jwtUser.getRole())) {
+	            rService.reviewReplyAdminDelete(id);
+	        } else {
+	            rService.reviewReplyDelete(id, jwtUser.getUserId());
+	        }
+
+	        return ResponseEntity.ok("OK");
+
+	    } catch (Exception ex) {
+	        ex.printStackTrace();
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	    }
 	}
 
 }
