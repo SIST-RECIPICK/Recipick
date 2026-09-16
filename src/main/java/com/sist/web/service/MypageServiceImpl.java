@@ -18,10 +18,6 @@ public class MypageServiceImpl implements MypageService {
 	private final MypageMapper mMapper;
     private final int ROW_SIZE = 10;
 
-	MypageServiceImpl(ReviewMapper reviewMapper) {
-		this.reviewMapper = reviewMapper;
-	}
-
     @Override
     public UsersVO mypageProfile(int id) {
         return mMapper.mypageProfile(id);
@@ -48,14 +44,16 @@ public class MypageServiceImpl implements MypageService {
         int start = (page - 1) * ROW_SIZE;
         return mMapper.myReviewReplyList(id, start);
     }
+    
+    @Override
+    public int myReviewReplyTotalPage(int id) {
+        return mMapper.myReviewReplyTotalPage(id);
+    }
 
     @Transactional
     @Override
     public void deleteMyReview(int userId, int reviewId) {
-        // 1. 해당 리뷰의 댓글 먼저 삭제
         reviewMapper.reviewReplyAllDelete(reviewId);
-
-        // 2. 본인 리뷰 삭제
         reviewMapper.reviewDelete(reviewId, userId);
     }
 

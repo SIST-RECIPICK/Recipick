@@ -2,19 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sist.web.mapper.MypageMapper">
 	    
-    <select id="mypageProfile" resultType="com.sist.web.vo.UsersVO">
-	    SELECT 
-	    
-	    u.id, 
-	    u.nickname, 
-	    u.profile_image_url, 
-	    u.created_at,
-	    
-	    la.email
-	    
-	    FROM users u
-	    LEFT OUTER JOIN local_accounts la ON u.id = la.user_id
-	    WHERE u.id = #{id}
+    <select id="mypageProfile" resultType="UsersVO">
+	    SELECT id, email, nickname, profile_image_url, created_at
+	    FROM users
+	    WHERE id = #{id}
 	</select>
 	
 	<select id="mypageMainCount" resultType="map">
@@ -26,7 +17,7 @@
 	    FROM DUAL
 	</select>
     
-    <select id="myReviewList" resultType="com.sist.web.vo.Review_BoardVO">
+    <select id="myReviewList" resultType="Review_BoardVO">
    		
    		SELECT
         
@@ -61,12 +52,28 @@
 	    WHERE users_id = #{id}
 	</select>
     
-    <select id="myReviewReplyList" resultType="com.sist.web.vo.Review_Board_ReplyVO">
-	    SELECT id, review_board_id, content, created_at
+    <select id="myReviewReplyList" resultType="Review_Board_ReplyVO">
+	    SELECT
+	    
+	    rbr.id,
+	    rbr.review_board_id,
+	    rbr.content,
+	    rbr.created_at,
+	    
+	    rb.subject AS rev_subject
+	    
+		FROM review_board_reply rbr
+		JOIN review_board rb
+		ON rbr.review_board_id = rb.id
+		WHERE rbr.users_id = #{id}
+		ORDER BY rbr.id DESC
+		OFFSET #{start} ROWS FETCH NEXT 10 ROWS ONLY
+	</select>
+	
+	<select id="myReviewReplyTotalPage" resultType="int">
+	    SELECT CEIL(COUNT(*) / 10.0)
 	    FROM review_board_reply
 	    WHERE users_id = #{id}
-	    ORDER BY id DESC
-	    OFFSET #{start} ROWS FETCH NEXT 10 ROWS ONLY
 	</select>
 	
 	<delete id="deleteMyReviews">

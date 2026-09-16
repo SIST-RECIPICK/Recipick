@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,28 +28,21 @@ public class MypageRestController {
 	private final MypageService mService;
 
 	@GetMapping("/profile")
-	public ResponseEntity<UsersVO> mypageProfile(@RequestParam("id") int id) {
-		try {
-			UsersVO user = mService.mypageProfile(id);
-			if (user == null) {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-			}
-			return ResponseEntity.ok(user);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
+	public ResponseEntity<?> mypageProfile(@AuthenticationPrincipal JwtUser jwtUser) {
+	    if (jwtUser == null) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	    }
+	    UsersVO vo = mService.mypageProfile(jwtUser.getUserId());
+
+	    return ResponseEntity.ok(vo);
 	}
 
 	@GetMapping("/main_count")
-	public ResponseEntity<Map<String, Object>> mypageMainCount(@RequestParam("id") int id) {
-		try {
-			Map<String, Object> counts = mService.mypageMainCount(id);
-			return ResponseEntity.ok(counts);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	public ResponseEntity<Map<String, Object>> mypageMainCount(@AuthenticationPrincipal JwtUser jwtUser) {
+		if (jwtUser == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
+		return ResponseEntity.ok(mService.mypageMainCount(jwtUser.getUserId()));
 	}
 	
 	@GetMapping("/reviews")
@@ -76,43 +70,53 @@ public class MypageRestController {
 	}
 
 	@GetMapping("/replies")
-	public ResponseEntity<List<Review_Board_ReplyVO>> myReviewReplyList(
-			@RequestParam("id") int id,
-			@RequestParam(value = "page", defaultValue = "1") int page) {
-		try {
-			List<Review_Board_ReplyVO> list = mService.myReviewReplyList(id, page);
-			return ResponseEntity.ok(list);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	public ResponseEntity<Map<String, Object>> myReviewReplyList(
+			@RequestParam(value = "page", defaultValue = "1") int page, @AuthenticationPrincipal JwtUser jwtUser) {
+		if (jwtUser == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
+		int id = jwtUser.getUserId();
+		List<Review_Board_ReplyVO> list = mService.myReviewReplyList(id, page);
+		
+		int totalpage = mService.myReviewReplyTotalPage(id);
+		int block = 10;
+		
+		int startpage = ((page - 1) / block) * block + 1;
+		int endpage = Math.min(startpage + block - 1, totalpage);
+		
+		Map<String, Object> result = new HashMap<>();
+
+		result.put("list", list);
+		result.put("pages", Arrays.asList(page, totalpage, startpage, endpage));
+
+		return ResponseEntity.ok(result);
 	}
 
-	@DeleteMapping("/reviews")
-	public ResponseEntity<String> deleteMyReviews(
-			@RequestParam("id") int id,
-			@RequestBody List<Integer> deleteReviewList) {
-		try {
-			mService.deleteMyReviews(id, deleteReviewList);
-			return ResponseEntity.ok("OK");
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
+
+	@DeleteMapping("/reviews/{reviewId}")
+	public ResponseEntity<String> deleteMyReview(
+	        @PathVariable("reviewId") int reviewId,
+	        @AuthenticationPrincipal JwtUser jwtUser) {
+	    if (jwtUser == null) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+	                .body("로그인이 필요합니다.");
+	    }
+	    mService.deleteMyReview(jwtUser.getUserId(), reviewId);
+
+	    return ResponseEntity.ok("OK");
 	}
 
 	@DeleteMapping("/replies")
-	public ResponseEntity<String> deleteMyReviewReplies(
-			@RequestParam("id") int id,
-			@RequestBody List<Integer> deleteReplyList) {
-		try {
-			mService.deleteMyReviewReplies(id, deleteReplyList);
-			return ResponseEntity.ok("OK");
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	public ResponseEntity<String> deleteMyReviewReplies(@RequestBody List<Integer> deleteReplyList,
+			@AuthenticationPrincipal JwtUser jwtUser) {
+		if (jwtUser == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
 		}
+		mService.deleteMyReviewReplies(jwtUser.getUserId(), deleteReplyList);
+
+		return ResponseEntity.ok("OK");
 	}
+
 	
 	
 }
