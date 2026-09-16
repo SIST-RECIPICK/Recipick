@@ -6,9 +6,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
+import com.sist.web.exception.BusinessException;
+import com.sist.web.exception.ErrorCode;
 import com.sist.web.mapper.AdminMapper;
 import com.sist.web.vo.CurationCreateVO;
 import com.sist.web.vo.CurationDetailVO;
@@ -68,6 +73,10 @@ public class AdminServiceImpl implements AdminService {
 		
 		CurationVO curation = adminMapper.selectCurationHeader(id);
 		
+		if(curation == null) {
+			throw new BusinessException(ErrorCode.CURATION_NOT_FOUND);
+		}
+		
 		List<CurationDetailVO> detailList = adminMapper.selectCurationDetail(id);
 		
 		Map<String, IngredientGroupVO> map = new LinkedHashMap<>();
@@ -104,6 +113,13 @@ public class AdminServiceImpl implements AdminService {
 	@Override
 	@Transactional
 	public void deleteCuration(int id) {
+		
+		CurationVO curation = adminMapper.selectCurationHeader(id);
+		
+		if(curation == null) {
+			throw new BusinessException(ErrorCode.CURATION_NOT_FOUND);
+		}
+		
 		// 상세 데이터 삭제
 		adminMapper.deleteCurationDetail(id);
 		// 큐레이션 삭제
