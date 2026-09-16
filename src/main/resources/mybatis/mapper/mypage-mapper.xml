@@ -16,6 +16,17 @@
 	        (SELECT COUNT(*) FROM review_board_reply WHERE users_id = #{id}) AS my_reply_cnt
 	    FROM DUAL
 	</select>
+	
+	<update id="updateMyProfile">
+	    UPDATE users
+	    SET nickname = #{nickname},
+	        profile_image_url = COALESCE(
+	            #{profile_image_url},
+	            profile_image_url
+	        ),
+	        updated_at = SYSDATE
+	    WHERE id = #{id}
+	</update>
     
     <select id="myReviewList" resultType="Review_BoardVO">
    		
