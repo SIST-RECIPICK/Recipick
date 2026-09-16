@@ -104,4 +104,33 @@ public interface CalendarMapper {
 			@Param("meal_type") String meal_type
 
 	);
+	/*
+	 * <select id="selectEmptySlots" parameterType="map" resultType="map">
+	    SELECT TO_CHAR(d.meal_date, 'YYYY-MM-DD') AS meal_date, m.meal_type
+	    FROM (
+	        SELECT TRUNC(TO_DATE(#{year} || '-' || #{month} || '-01', 'YYYY-MM-DD')) + LEVEL - 1 AS meal_date
+	        FROM DUAL
+	        CONNECT BY LEVEL <= TO_NUMBER(TO_CHAR(LAST_DAY(TO_DATE(#{year} || '-' || #{month} || '-01', 'YYYY-MM-DD')), 'DD'))
+	    ) d
+	    CROSS JOIN (
+	        SELECT '아침' AS meal_type FROM DUAL
+	        UNION ALL SELECT '점심' FROM DUAL
+	        UNION ALL SELECT '저녁' FROM DUAL
+	    ) m
+	    WHERE NOT EXISTS (
+	        SELECT 1 FROM CALENDAR_ITEM ci
+	        WHERE ci.user_id = #{user_id}
+	          AND ci.meal_date = d.meal_date
+	          AND ci.meal_type = m.meal_type
+	    )
+	    ORDER BY d.meal_date, m.meal_type
+	</select>
+	 */
+	public List<Map<String, Object>> selectEmptySlots(
+			@Param("user_id") int user_id,
+	        @Param("year") String year,
+	        @Param("month") String month
+	);
+	// 제미나이가 가져올 쿼리
+	public List<Map<String, Object>> selectRecipeCandidates();
 }
