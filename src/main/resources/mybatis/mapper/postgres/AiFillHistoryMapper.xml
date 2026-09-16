@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sist.web.postgres.AiFillHistoryMapper">
+ 	<insert id="insertFillHistory">
+        INSERT INTO ai_fill_history (user_id, meal_date, meal_type, rcp_seq)
+        VALUES (#{user_id}, TO_DATE(#{meal_date}, 'YYYY-MM-DD'), #{meal_type}, #{rcp_seq})
+    </insert>
+
+    <select id="selectRecentFillHistory" resultType="map">
+        SELECT user_id, meal_date, meal_type, rcp_seq
+        FROM ai_fill_history
+        WHERE user_id = #{user_id}
+          AND rolled_back = false
+        ORDER BY filled_at DESC
+    </select>
+
+    <update id="markAsRolledBack">
+        UPDATE ai_fill_history
+        SET rolled_back = true
+        WHERE user_id = #{user_id}
+          AND rolled_back = false
+    </update>
+</mapper>
