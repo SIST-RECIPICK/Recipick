@@ -45,17 +45,24 @@ public class MypageServiceImpl implements MypageService {
     
     @Override
 	public void updateMyProfile(int userId, String nickname, MultipartFile file) {
-		if (nickname == null || nickname.isBlank()) {
-			throw new IllegalArgumentException("닉네임을 입력해주세요.");
+		UsersVO user = mMapper.mypageProfile(userId);
+		if (user == null) {
+			throw new IllegalArgumentException("회원정보를 찾을 수 없습니다.");
 		}
-		if (!nickname.matches("^[가-힣a-zA-Z0-9]{2,10}$")) {
-			throw new IllegalArgumentException("닉네임은 한글, 영문, 숫자를 사용하여 2~10자로 입력해주세요.");
+		String updateNickname = user.getNickname();
+		if (nickname != null && !nickname.isBlank()) {
+			nickname = nickname.trim();
+			if (!nickname.matches("^[가-힣a-zA-Z0-9]{2,10}$")) {
+				throw new IllegalArgumentException("닉네임은 한글, 영문, 숫자를 사용하여 2~10자로 입력해주세요.");
+			}
+			if (!nickname.equals(user.getNickname())) {
+				UsersVO nicknameUser = authMapper.findUserByNickname(nickname);
+				if (nicknameUser != null) {
+					throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+				}
+			}
+			updateNickname = nickname;
 		}
-		UsersVO user = authMapper.findUserByNickname(nickname);
-		if (user != null) {
-			throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
-		}
-		
 		String profileImageUrl = null;
 		if (file != null && !file.isEmpty()) {
 			if (file.getSize() > 5 * 1024 * 1024) {
@@ -72,7 +79,7 @@ public class MypageServiceImpl implements MypageService {
 				throw new RuntimeException("프로필 이미지 업로드에 실패했습니다.", ex);
 			}
 		}
-		mMapper.updateMyProfile(userId, nickname, profileImageUrl);
+		mMapper.updateMyProfile(userId, updateNickname, profileImageUrl);
 	}
     
     @Override

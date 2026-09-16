@@ -50,26 +50,26 @@ public class MypageRestController {
 	}
 	
 	@PutMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> updateMyProfile(@RequestParam("nickname") String nickname,
-			@RequestPart(value = "file", required = false) MultipartFile file,
-			@AuthenticationPrincipal JwtUser jwtUser) {
+	public ResponseEntity<?> updateMyProfile(
+	        @RequestParam(value = "nickname", required = false) String nickname,
+	        @RequestPart(value = "file", required = false) MultipartFile file,
+	        @AuthenticationPrincipal JwtUser jwtUser) {
 
-		if (jwtUser == null) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-		}
+	    if (jwtUser == null) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+	                .body("로그인이 필요합니다.");
+	    }
 
-		try {
-			mService.updateMyProfile(jwtUser.getUserId(), nickname, file);
-
-			return ResponseEntity.ok("OK");
-
-		} catch (IllegalArgumentException ex) {
-			return ResponseEntity.badRequest().body(ex.getMessage());
-
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 수정에 실패했습니다.");
-		}
+	    try {
+	        mService.updateMyProfile(jwtUser.getUserId(), nickname, file);
+	        return ResponseEntity.ok("OK");
+	    } catch (IllegalArgumentException ex) {
+	        return ResponseEntity.badRequest().body(ex.getMessage());
+	    } catch (Exception ex) {
+	        ex.printStackTrace();
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body("프로필 수정에 실패했습니다.");
+	    }
 	}
 	
 	@PutMapping("/password")
@@ -96,6 +96,10 @@ public class MypageRestController {
 	public ResponseEntity<Map<String, Object>> myReviewList(
 	        @RequestParam(value = "page", defaultValue = "1") int page,
 	        @AuthenticationPrincipal JwtUser jwtUser) {
+		
+		if (jwtUser == null) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	    }
 
 	    try {
 	        int id = jwtUser.getUserId();
