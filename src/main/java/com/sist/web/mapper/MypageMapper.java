@@ -17,8 +17,13 @@ public interface MypageMapper {
 
     public Map<String, Object> mypageMainCount(@Param("id") int id);
     
-    public List<Review_BoardVO> myReviewList(@Param("id") int id, @Param("start") int start);    
+    public int updateMyProfile(@Param("id") int id, @Param("nickname") String nickname,
+            @Param("profile_image_url") String profileImageUrl);
+    
+    public List<Review_BoardVO> myReviewList(@Param("id") int id, @Param("start") int start);
+    public int myReviewTotalPage(@Param("id") int id);
     public List<Review_Board_ReplyVO> myReviewReplyList(@Param("id") int id, @Param("start") int start);
+    public int myReviewReplyTotalPage(@Param("id") int id);
 
     public void deleteMyReviews(@Param("id") int id, @Param("deleteReviewList") List<Integer> deleteReviewList);
     public void deleteMyReviewReplies(@Param("id") int id, @Param("deleteReplyList") List<Integer> deleteReplyList);
