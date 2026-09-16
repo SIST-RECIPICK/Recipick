@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sist.web.security.JwtUser;
 import com.sist.web.service.MypageService;
 import com.sist.web.vo.*;
 
@@ -50,16 +52,27 @@ public class MypageRestController {
 	}
 	
 	@GetMapping("/reviews")
-	public ResponseEntity<List<Review_BoardVO>> myReviewList(
-			@RequestParam("id") int id,
-			@RequestParam(value = "page", defaultValue = "1") int page) {
-		try {
-			List<Review_BoardVO> list = mService.myReviewList(id, page);
-			return ResponseEntity.ok(list);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
+	public ResponseEntity<Map<String, Object>> myReviewList(
+	        @RequestParam(value = "page", defaultValue = "1") int page,
+	        @AuthenticationPrincipal JwtUser jwtUser) {
+
+	    try {
+	        int id = jwtUser.getUserId();
+
+	        List<Review_BoardVO> list = mService.myReviewList(id, page);
+	        int totalpage = mService.myReviewTotalPage(id);
+
+	        Map<String, Object> result = new HashMap<>();
+	        result.put("list", list);
+	        result.put("totalpage", totalpage);
+	        result.put("curpage", page);
+
+	        return ResponseEntity.ok(result);
+
+	    } catch (Exception ex) {
+	        ex.printStackTrace();
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	    }
 	}
 
 	@GetMapping("/replies")

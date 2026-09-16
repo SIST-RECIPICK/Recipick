@@ -1,7 +1,9 @@
 package com.sist.web.service;
 
+import com.sist.web.mapper.ReviewMapper;
 import java.util.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.sist.web.mapper.MypageMapper;
 import com.sist.web.vo.*;
@@ -12,8 +14,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MypageServiceImpl implements MypageService {
 
+	private final ReviewMapper reviewMapper;
 	private final MypageMapper mMapper;
     private final int ROW_SIZE = 10;
+
+	MypageServiceImpl(ReviewMapper reviewMapper) {
+		this.reviewMapper = reviewMapper;
+	}
 
     @Override
     public UsersVO mypageProfile(int id) {
@@ -30,6 +37,11 @@ public class MypageServiceImpl implements MypageService {
         int start = (page - 1) * ROW_SIZE;
         return mMapper.myReviewList(id, start);
     }
+    
+    @Override
+    public int myReviewTotalPage(int id) {
+        return mMapper.myReviewTotalPage(id);
+    }
 
     @Override
     public List<Review_Board_ReplyVO> myReviewReplyList(int id, int page) {
@@ -37,26 +49,14 @@ public class MypageServiceImpl implements MypageService {
         return mMapper.myReviewReplyList(id, start);
     }
 
+    @Transactional
     @Override
-    /*
-     * 일괄 삭제를 위해 추가적으로 무언가가 필요
-     * 
-     * 1.
-     * @Transactional으로 댓글삭제와 글 삭제를 일괄로 처리
-     * 2.
-     * ON DELETE CASCADE로 글 삭제시 관련 댓글도 같이 삭제되게 테이블 설계
-     * 3.
-     * 글은 하나씩만 삭제하도록 계획을 수정
-     * 4.
-     * Review 테이블에 status 컬럼을 추가하여 글 삭제가 데이터베이스 삭제가 아니라 데이터베이스에서 삭제 상태를 
-     * delete, live로 설정하도록 하는 방법
-     * 
-     * 로그인 기능이 아직 미구현이니, 여기까지만 만들어두고 나중에 수정
-     */
-    public void deleteMyReviews(int id, List<Integer> deleteReviewList) {
-        if (deleteReviewList != null && !deleteReviewList.isEmpty()) {
-            mMapper.deleteMyReviews(id, deleteReviewList);
-        }
+    public void deleteMyReview(int userId, int reviewId) {
+        // 1. 해당 리뷰의 댓글 먼저 삭제
+        reviewMapper.reviewReplyAllDelete(reviewId);
+
+        // 2. 본인 리뷰 삭제
+        reviewMapper.reviewDelete(reviewId, userId);
     }
 
     @Override

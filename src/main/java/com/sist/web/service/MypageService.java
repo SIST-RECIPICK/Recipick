@@ -10,8 +10,9 @@ public interface MypageService {
     public Map<String, Object> mypageMainCount(int id);
 
     public List<Review_BoardVO> myReviewList(int id, int page);
+    public int myReviewTotalPage(int id);
     public List<Review_Board_ReplyVO> myReviewReplyList(int id, int page);
 
-    public void deleteMyReviews(int id, List<Integer> deleteReviewList);
+    public void deleteMyReview(int userId, int reviewId);
     public void deleteMyReviewReplies(int id, List<Integer> deleteReplyList);
 }

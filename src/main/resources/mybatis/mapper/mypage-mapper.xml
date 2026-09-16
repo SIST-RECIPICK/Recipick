@@ -3,48 +3,62 @@
 <mapper namespace="com.sist.web.mapper.MypageMapper">
 	    
     <select id="mypageProfile" resultType="com.sist.web.vo.UsersVO">
-    SELECT 
-    
-    u.id, 
-    u.nickname, 
-    u.profile_image_url, 
-    u.created_at,
-    
-    la.email
-    
-    FROM users u
-    LEFT OUTER JOIN local_accounts la ON u.id = la.user_id
-    WHERE u.id = #{id}
-</select>
-
-<select id="mypageMainCount" resultType="map">
-    SELECT 
-        (SELECT COUNT(*) FROM recipe WHERE user_id = #{id}) AS my_recipe_cnt,
-        (SELECT COUNT(*) FROM recipe_like WHERE user_id = #{id}) AS like_recipe_cnt,
-        (SELECT COUNT(*) FROM review_board WHERE users_id = #{id}) AS my_review_cnt,
-        (SELECT COUNT(*) FROM review_board_reply WHERE users_id = #{id}) AS my_reply_cnt
-    FROM DUAL
-</select>
+	    SELECT 
+	    
+	    u.id, 
+	    u.nickname, 
+	    u.profile_image_url, 
+	    u.created_at,
+	    
+	    la.email
+	    
+	    FROM users u
+	    LEFT OUTER JOIN local_accounts la ON u.id = la.user_id
+	    WHERE u.id = #{id}
+	</select>
+	
+	<select id="mypageMainCount" resultType="map">
+	    SELECT 
+	        (SELECT COUNT(*) FROM recipe WHERE user_id = #{id}) AS my_recipe_cnt,
+	        (SELECT COUNT(*) FROM recipe_like WHERE user_id = #{id}) AS like_recipe_cnt,
+	        (SELECT COUNT(*) FROM review_board WHERE users_id = #{id}) AS my_review_cnt,
+	        (SELECT COUNT(*) FROM review_board_reply WHERE users_id = #{id}) AS my_reply_cnt
+	    FROM DUAL
+	</select>
     
     <select id="myReviewList" resultType="com.sist.web.vo.Review_BoardVO">
-		SELECT
-		
-		rb.id,
-		rb.subject,
-		rb.content,
-		rb.image_url,
-		rb.hit,
-		rb.created_at,
-		rb.rcp_seq,
-		
-		r.rcp_nm,
-		r.att_file_no_main
-		
-		FROM review_board rb
-		LEFT OUTER JOIN recipe r ON rb.rcp_seq = r.rcp_seq
-		WHERE rb.users_id = #{id}
-		ORDER BY rb.id DESC
-		OFFSET #{start} ROWS FETCH NEXT 10 ROWS ONLY
+   		
+   		SELECT
+        
+        rb.id,
+        rb.subject,
+        rb.content,
+        rb.image_url,
+        rb.hit,
+        rb.created_at,
+        rb.rcp_seq,
+        
+        r.rcp_nm,
+        r.att_file_no_main,
+        
+        u.id AS chef_id,
+        u.nickname AS chef_nickname,
+        u.profile_image_url AS chef_profile_image
+	    
+	    FROM review_board rb
+	    LEFT OUTER JOIN recipe r
+	        ON rb.rcp_seq = r.rcp_seq
+	    LEFT OUTER JOIN users u
+	        ON r.user_id = u.id
+	    WHERE rb.users_id = #{id}
+	    ORDER BY rb.id DESC
+	    OFFSET #{start} ROWS FETCH NEXT 10 ROWS ONLY
+	</select>
+	
+	<select id="myReviewTotalPage" resultType="int">
+	    SELECT CEIL(COUNT(*) / 10.0)
+	    FROM review_board
+	    WHERE users_id = #{id}
 	</select>
     
     <select id="myReviewReplyList" resultType="com.sist.web.vo.Review_Board_ReplyVO">
