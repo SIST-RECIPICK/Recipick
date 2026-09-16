@@ -61,6 +61,9 @@ public class RecipeDetailRestController {
 				user_id = jwtUser.getUserId();
 			}
 			System.out.println(user_id);
+			
+			// 내가 등록한 레시피 조회수 증가
+			service.recipeHitUp(rcp_seq);
 			//좋아요 유무
 			int likeExist = service.recipeDetailLikeExist(rcp_seq,user_id);
 			
