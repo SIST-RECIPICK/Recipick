@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sist.web.mapper.MypageMapper">
+	    
+    <select id="mypageProfile" resultType="UsersVO">
+	    SELECT id, email, nickname, profile_image_url, created_at
+	    FROM users
+	    WHERE id = #{id}
+	</select>
+	
+	<select id="mypageMainCount" resultType="map">
+	    SELECT 
+	        (SELECT COUNT(*) FROM recipe WHERE user_id = #{id}) AS my_recipe_cnt,
+	        (SELECT COUNT(*) FROM recipe_like WHERE user_id = #{id}) AS like_recipe_cnt,
+	        (SELECT COUNT(*) FROM review_board WHERE users_id = #{id}) AS my_review_cnt,
+	        (SELECT COUNT(*) FROM review_board_reply WHERE users_id = #{id}) AS my_reply_cnt
+	    FROM DUAL
+	</select>
+    
+    <select id="myReviewList" resultType="Review_BoardVO">
+   		
+   		SELECT
+        
+        rb.id,
+        rb.subject,
+        rb.content,
+        rb.image_url,
+        rb.hit,
+        rb.created_at,
+        rb.rcp_seq,
+        
+        r.rcp_nm,
+        r.att_file_no_main,
+        
+        u.id AS chef_id,
+        u.nickname AS chef_nickname,
+        u.profile_image_url AS chef_profile_image
+	    
+	    FROM review_board rb
+	    LEFT OUTER JOIN recipe r
+	        ON rb.rcp_seq = r.rcp_seq
+	    LEFT OUTER JOIN users u
+	        ON r.user_id = u.id
+	    WHERE rb.users_id = #{id}
+	    ORDER BY rb.id DESC
+	    OFFSET #{start} ROWS FETCH NEXT 10 ROWS ONLY
+	</select>
+	
+	<select id="myReviewTotalPage" resultType="int">
+	    SELECT CEIL(COUNT(*) / 10.0)
+	    FROM review_board
+	    WHERE users_id = #{id}
+	</select>
+    
+    <select id="myReviewReplyList" resultType="Review_Board_ReplyVO">
+	    SELECT
+	    
+	    rbr.id,
+	    rbr.review_board_id,
+	    rbr.content,
+	    rbr.created_at,
+	    
+	    rb.subject AS rev_subject
+	    
+		FROM review_board_reply rbr
+		JOIN review_board rb
+		ON rbr.review_board_id = rb.id
+		WHERE rbr.users_id = #{id}
+		ORDER BY rbr.id DESC
+		OFFSET #{start} ROWS FETCH NEXT 10 ROWS ONLY
+	</select>
+	
+	<select id="myReviewReplyTotalPage" resultType="int">
+	    SELECT CEIL(COUNT(*) / 10.0)
+	    FROM review_board_reply
+	    WHERE users_id = #{id}
+	</select>
+	
+	<delete id="deleteMyReviews">
+	    DELETE FROM review_board
+	    WHERE users_id = #{id}
+	      AND id IN
+	    <foreach item="reviewId" collection="deleteReviewList" open="(" separator="," close=")">
+	        #{reviewId}
+	    </foreach>
+	</delete>
+	
+	<delete id="deleteMyReviewReplies">
+	    DELETE FROM review_board_reply
+	    WHERE users_id = #{id}
+	      AND id IN
+	    <foreach item="replyId" collection="deleteReplyList" open="(" separator="," close=")">
+	        #{replyId}
+	    </foreach>
+	</delete>
+    
+</mapper>
