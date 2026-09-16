@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sist.web.mapper.ReviewMapper;
+import com.sist.web.vo.RecipeListVO;
 import com.sist.web.vo.Review_BoardVO;
 import com.sist.web.vo.Review_Board_ReplyVO;
 
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewServiceImpl implements ReviewService {
 	private final ReviewMapper rMapper;
 	private final int ROW_SIZE = 12;
+	private final int RECIPE_ROW_SIZE = 10;
 
 	@Override
     public List<Review_BoardVO> ReviewBoardListData(int page, String keyword, String type) {
@@ -69,15 +71,64 @@ public class ReviewServiceImpl implements ReviewService {
 	}
 	
 	@Override
-	public void reviewUpdate(Review_BoardVO vo) {
-	    rMapper.reviewUpdate(vo);
+	public List<RecipeListVO> reviewRecipeSearch(String keyword, int page) {
+	    int start = (page - 1) * RECIPE_ROW_SIZE;
+
+	    Map<String, Object> map = new HashMap<>();
+	    map.put("keyword", keyword);
+	    map.put("start", start);
+
+	    return rMapper.reviewRecipeSearch(map);
+	}
+
+	@Override
+	public int reviewRecipeTotalpage(String keyword) {
+	    return rMapper.reviewRecipeTotalpage(keyword);
+	}
+
+	@Override
+	public int[] recipePages(int page, String keyword) {
+
+	    int totalpage =
+	            rMapper.reviewRecipeTotalpage(keyword);
+
+	    final int BLOCK = 10;
+
+	    int startpage =
+	            ((page - 1) / BLOCK * BLOCK) + 1;
+
+	    int endpage =
+	            ((page - 1) / BLOCK * BLOCK) + BLOCK;
+
+	    if (endpage > totalpage) {
+	        endpage = totalpage;
+	    }
+
+	    return new int[] {
+	        page,
+	        totalpage,
+	        startpage,
+	        endpage
+	    };
+	}
+	
+	@Override
+	public void reviewUpdate(Review_BoardVO vo, int usersId) {
+	    rMapper.reviewUpdate(
+	        vo.getId(),
+	        vo.getSubject(),
+	        vo.getContent(),
+	        vo.getImage_url(),
+	        vo.getRcp_seq(),
+	        usersId
+	    );
 	}
 	
 	@Override
 	@Transactional
-	public void reviewDelete(int id) {
+	public void reviewDelete(int id, int usersId) {
 	    rMapper.reviewReplyAllDelete(id);
-	    rMapper.reviewDelete(id);
+	    rMapper.reviewDelete(id, usersId);
 	}
 	
 	@Override
@@ -86,8 +137,20 @@ public class ReviewServiceImpl implements ReviewService {
 	}
 
 	@Override
-	public void reviewReplyDelete(int id) {
-	    rMapper.reviewReplyDelete(id);
+	public void reviewReplyDelete(int id, int usersId) {
+	    rMapper.reviewReplyDelete(id, usersId);
+	}
+	
+	@Override
+	public void reviewReplyAdminDelete(int id) {
+	    rMapper.reviewReplyAdminDelete(id);
+	}
+	
+	@Override
+	@Transactional
+	public void reviewDeleteAdmin(int id) {
+	    rMapper.reviewReplyAllDelete(id);
+	    rMapper.reviewDeleteAdmin(id);
 	}
 
 }
