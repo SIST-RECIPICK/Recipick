@@ -3,12 +3,15 @@ package com.sist.web.service;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.stereotype.Service;
 
+import com.sist.web.exception.BusinessException;
+import com.sist.web.exception.ErrorCode;
 import com.sist.web.mapper.AdminMapper;
 import com.sist.web.vo.RecIngredientVO;
 
@@ -28,18 +31,32 @@ public class SeasonalIngredientRecommender {
 
 	// spring ai 호출이 너무 오래걸려서 캐시 기능 추가
 	private final Map<String, List<RecIngredientVO>> cache = new ConcurrentHashMap<>();
+	
+	// 현재 AI 호출이 진행 중인 key 추적
+	private final Set<String> inProgress = ConcurrentHashMap.newKeySet();
 
-	public List<RecIngredientVO> recommand(int year, int month) {
+
+	public List<RecIngredientVO> recommand(int year, int month, boolean refresh) {
 		
 		String key = year + "-" + month;
-		if (cache.containsKey(key)) {
+
+		if (!refresh && cache.containsKey(key)) {
 			return cache.get(key);
 		}
 
-		List<RecIngredientVO> result = callAi(year, month);
-		cache.put(key, result);
+		if (!inProgress.add(key)) {
+			throw new BusinessException(ErrorCode.AI_IN_PROGRESS);
+		}
+
+		try {
+			List<RecIngredientVO> result = callAi(year, month);
+			cache.put(key, result);
+			
+			return result;
+		} finally {
+			inProgress.remove(key);
+		}
 		
-		return result;
 	}
 
 	public List<RecIngredientVO> callAi(int year, int month) {
@@ -64,7 +81,14 @@ public class SeasonalIngredientRecommender {
 				- 형식: ["재료1", "재료2"]
 				""".formatted(year, month, String.join(", ", names));
 
-		String json = chatClient.prompt().user(prompt).call().content();
+		String json;
+		
+		try {
+			json= chatClient.prompt().user(prompt).call().content();
+		} catch (Exception e) {
+			throw new BusinessException(ErrorCode.AI_FAILED);
+		}
+		
 		List<String> aiResult = parseJsonArray(json); // 이름 리스트
 
 		return aiResult.stream().distinct()
