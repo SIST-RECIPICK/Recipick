@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sist.web.mapper.RecipeMapper;
+import com.sist.web.vo.IngredientUnitInsertVO;
 import com.sist.web.vo.RecipeInsertVO;
 import com.sist.web.vo.RecipeListVO;
 import com.sist.web.vo.RecipeManualVO;
@@ -201,6 +202,14 @@ public class RecipeServiceImpl implements RecipeService {
 
 			rMapper.recipeManualInsert(manual);
 		}
+		// 재료 리스트를 하나씩 꺼내서, 방금 생긴 레시피 번호를 넣어 저장
+				for(IngredientUnitInsertVO ingredient : vo.getIngredientList())
+				{
+					ingredient.setRecipe_id(vo.getRcp_seq());
+					rMapper.ingredientInsert(ingredient);
+				}
+				
+			
 
 		// 3. 새로 생성된 레시피 번호를 컨트롤러에 돌려줌
 		return vo.getRcp_seq();
@@ -230,6 +239,9 @@ public class RecipeServiceImpl implements RecipeService {
 	    // 3. 조리순서 삭제 (자식)
 	    rMapper.deleteRecipeManual(rcp_seq);
 
+	    // 재료 정보 삭제
+	    rMapper.deleteIngredientUnit(rcp_seq);
+	    
 	    // 4. 마지막으로 레시피 원본 삭제 (부모)
 	    // 자식이 모두 정리된 상태이므로 FK 제약조건 위반 없이 정상 삭제됨
 	    return rMapper.deleteRecipe(rcp_seq);
@@ -263,5 +275,30 @@ public class RecipeServiceImpl implements RecipeService {
 
 			rMapper.recipeManualInsert(manual);
 		}
+	}
+
+	// 레시피 재료 정보 저장
+	@Override
+	public void ingredientInsert(IngredientUnitInsertVO vo) {
+		// TODO Auto-generated method stub
+		// 재료정보 저장 => 한 줄 디비에 저
+		rMapper.ingredientInsert(vo);
+		
+		
+	}
+
+	// 레시피 수정 시 이미지 수정 안 할 경우 기존 이미지 유지
+	@Override
+	public List<RecipeManualVO> manualImageUpdate(int rcp_seq) {
+		// TODO Auto-generated method stub
+		return rMapper.manualImageUpdate(rcp_seq);
+		
+	}
+
+	// 레시피 삭제 시 재료정보 삭제
+	@Override
+	public int deleteIngredientUnit(int rcp_seq) {
+		// TODO Auto-generated method stub
+		return rMapper.deleteIngredientUnit(rcp_seq);
 	}
 }
