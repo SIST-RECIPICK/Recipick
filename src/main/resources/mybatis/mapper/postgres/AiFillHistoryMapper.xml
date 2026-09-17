@@ -11,6 +11,7 @@
         FROM ai_fill_history
         WHERE user_id = #{user_id}
           AND rolled_back = false
+          AND confirmed = false
         ORDER BY filled_at DESC
     </select>
 
@@ -20,4 +21,11 @@
         WHERE user_id = #{user_id}
           AND rolled_back = false
     </update>
+    <update id="confirmFill">
+	    UPDATE ai_fill_history
+	    SET confirmed = true
+	    WHERE user_id = #{user_id}
+	      AND confirmed = false
+	      AND rolled_back = false
+	</update>
 </mapper>
