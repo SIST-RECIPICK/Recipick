@@ -60,7 +60,7 @@ public class RefridgeServiceImpl implements RefridgeService {
 		String vectorString = convertVectorToString(vector);
 
 		// 벡터 유사도 검색 - 필터링으로 일부가 제외될 것을 감안해 여유분을 넉넉히 가져옴
-		List<Map<String, Object>> recipes = prMapper.findSimilarRecipes(vectorString,5);
+		List<Map<String, Object>> recipes = prMapper.findSimilarRecipes(vectorString,1000);
 
 		// 레시피별로 재료 충족 정보 및 부가 정보 채우기
 		for (Map<String, Object> recipe : recipes) {
@@ -74,7 +74,7 @@ public class RefridgeServiceImpl implements RefridgeService {
 			List<String> recipeIngredients = extractIngredients(content, allIngredients);
 
 			// 사용자가 가진 재료와 레시피 재료를 비교해 충족률 계산
-			Map<String, Object> ingredientStatus = calculateIngredientStatus(ingredients, recipeIngredients);
+			Map<String, Object> ingredientStatus = calculateIngredientStatus(ingredients, recipeIngredients, allIngredients);
 
 			recipe.put("haveIngredients", ingredientStatus.get("haveIngredients"));
 			recipe.put("missingIngredients", ingredientStatus.get("missingIngredients"));
@@ -141,7 +141,7 @@ public class RefridgeServiceImpl implements RefridgeService {
 		});
 
 		// 최종적으로 상위 7개만 반환
-		//recipes = recipes.stream().limit(7).collect(Collectors.toList());
+		recipes = recipes.stream().limit(4).collect(Collectors.toList());
 
 		return recipes;
 	}
@@ -367,60 +367,65 @@ public class RefridgeServiceImpl implements RefridgeService {
 	 *
 	 * 5 / 6 × 100 = 83.3%
 	 */
-	private Map<String, Object> calculateIngredientStatus(List<String> userIngredients,
-			List<String> recipeIngredients) {
+	private Map<String, Object> calculateIngredientStatus(
+	        List<String> userIngredients, List<String> recipeIngredients, List<IngredientVO> allIngredients) {
 
-		Map<String, Object> result = new HashMap<>();
+	    Map<String, Object> result = new HashMap<>();
+	    List<String> have = new ArrayList<>();
+	    List<String> missing = new ArrayList<>();
 
-		List<String> have = new ArrayList<>();
-		List<String> missing = new ArrayList<>();
+	    Set<String> seasoningNames = allIngredients.stream()
+	        .filter(vo -> "조미료".equals(vo.getCategory_name()) || "기타".equals(vo.getCategory_name()))
+	        .map(vo -> normalizeIngredient(vo.getIngredient_name()))
+	        .collect(Collectors.toSet());
+	    System.out.println("======================================================================조미료 개수: " + seasoningNames.size());
 
-		// 레시피 재료가 없으면 계산할 수 없으므로 0%
-		if (recipeIngredients == null || recipeIngredients.isEmpty()) {
-			result.put("haveIngredients", have);
-			result.put("missingIngredients", missing);
-			result.put("ingredientRate", 0.0);
-			return result;
-		}
+	    List<String> mainRecipeIngredients = recipeIngredients.stream()
+	        .filter(ing -> !seasoningNames.contains(normalizeIngredient(ing)))
+	        .collect(Collectors.toList());
+	    
+	    System.out.println("원본 재료 개수: " + recipeIngredients.size() + " / 조미료 제외 후: " + mainRecipeIngredients.size());
+	    System.out.println("원본 재료: " + recipeIngredients);
+	    System.out.println("조미료 제외 재료: " + mainRecipeIngredients);
 
-		// 사용자 재료를 정규화한 Set으로 만든다.
-		Set<String> userSet = new HashSet<>();
+	    if (mainRecipeIngredients.isEmpty()) {
+	        result.put("haveIngredients", have);
+	        result.put("missingIngredients", missing);
+	        result.put("ingredientRate", 0.0);
+	        return result;
+	    }
 
-		for (String ingredient : userIngredients) {
-			if (ingredient != null) {
-				userSet.add(normalizeIngredient(ingredient));
-			}
-		}
+	    Set<String> userSet = new HashSet<>();
+	    for (String ingredient : userIngredients) {
+	        if (ingredient != null) {
+	            userSet.add(normalizeIngredient(ingredient));
+	        }
+	    }
 
-		// 레시피 재료 비교
-		for (String recipeIngredient : recipeIngredients) {
-			String normalized = normalizeIngredient(recipeIngredient);
-			boolean exists = false;
+	    for (String recipeIngredient : mainRecipeIngredients) {
+	        String normalized = normalizeIngredient(recipeIngredient);
+	        boolean exists = false;
+	        for (String userIngredient : userSet) {
+	            if (normalized.contains(userIngredient) || userIngredient.contains(normalized)) {
+	                exists = true;
+	                break;
+	            }
+	        }
+	        if (exists) {
+	            have.add(recipeIngredient);
+	        } else {
+	            missing.add(recipeIngredient);
+	        }
+	    }
 
-			for (String userIngredient : userSet) {
-				// 예: 새송이버섯 / 버섯 - 일부 포함 관계도 인정
-				if (normalized.contains(userIngredient) || userIngredient.contains(normalized)) {
-					exists = true;
-					break;
-				}
-			}
+	    double rate = ((double) have.size() / mainRecipeIngredients.size()) * 100.0;
+	    rate = Math.round(rate * 10.0) / 10.0;
 
-			if (exists) {
-				have.add(recipeIngredient);
-			} else {
-				missing.add(recipeIngredient);
-			}
-		}
+	    result.put("haveIngredients", have);
+	    result.put("missingIngredients", missing);
+	    result.put("ingredientRate", rate);
 
-		// 충족률 (소수점 1자리)
-		double rate = ((double) have.size() / recipeIngredients.size()) * 100.0;
-		rate = Math.round(rate * 10.0) / 10.0;
-
-		result.put("haveIngredients", have);
-		result.put("missingIngredients", missing);
-		result.put("ingredientRate", rate);
-
-		return result;
+	    return result;
 	}
 
 	/**
