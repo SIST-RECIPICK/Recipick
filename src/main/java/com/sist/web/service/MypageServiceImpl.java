@@ -4,10 +4,14 @@ import com.sist.web.mapper.ReviewMapper;
 import com.sist.web.util.CloudinaryUtil;
 
 import java.util.*;
+import java.util.regex.Pattern;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sist.web.mapper.AuthMapper;
 import com.sist.web.mapper.MypageMapper;
 import com.sist.web.vo.*;
 
@@ -20,8 +24,11 @@ public class MypageServiceImpl implements MypageService {
 	private final ReviewMapper reviewMapper;
 	private final MypageMapper mMapper;
 	private final CloudinaryUtil cloudinaryUtil;
+	private final AuthMapper authMapper;
+	private final PasswordEncoder passwordEncoder;
+	private static final Pattern PASSWORD_PATTERN = Pattern
+			.compile("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{}|;:,.<>?]).{8,20}$");
     private final int ROW_SIZE = 10;
-    
 
     @Override
     public UsersVO mypageProfile(int id) {
@@ -35,11 +42,23 @@ public class MypageServiceImpl implements MypageService {
     
     @Override
 	public void updateMyProfile(int userId, String nickname, MultipartFile file) {
-		if (nickname == null || nickname.isBlank()) {
-			throw new IllegalArgumentException("닉네임을 입력해주세요.");
+		UsersVO user = mMapper.mypageProfile(userId);
+		if (user == null) {
+			throw new IllegalArgumentException("회원정보를 찾을 수 없습니다.");
 		}
-		if (!nickname.matches("^[가-힣a-zA-Z0-9]{2,10}$")) {
-			throw new IllegalArgumentException("닉네임은 한글, 영문, 숫자를 사용하여 2~10자로 입력해주세요.");
+		String updateNickname = user.getNickname();
+		if (nickname != null && !nickname.isBlank()) {
+			nickname = nickname.trim();
+			if (!nickname.matches("^[가-힣a-zA-Z0-9]{2,10}$")) {
+				throw new IllegalArgumentException("닉네임은 한글, 영문, 숫자를 사용하여 2~10자로 입력해주세요.");
+			}
+			if (!nickname.equals(user.getNickname())) {
+				UsersVO nicknameUser = authMapper.findUserByNickname(nickname);
+				if (nicknameUser != null) {
+					throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+				}
+			}
+			updateNickname = nickname;
 		}
 		String profileImageUrl = null;
 		if (file != null && !file.isEmpty()) {
@@ -57,7 +76,35 @@ public class MypageServiceImpl implements MypageService {
 				throw new RuntimeException("프로필 이미지 업로드에 실패했습니다.", ex);
 			}
 		}
-		mMapper.updateMyProfile(userId, nickname, profileImageUrl);
+		mMapper.updateMyProfile(userId, updateNickname, profileImageUrl);
+	}
+    
+    @Override
+	public void changePassword(int userId, String currentPassword, String newPassword, String newPasswordConfirm) {
+		if (currentPassword == null || currentPassword.isBlank()) {
+			throw new IllegalArgumentException("현재 비밀번호를 입력해주세요.");
+		}
+		if (newPassword == null || newPassword.isBlank()) {
+			throw new IllegalArgumentException("새 비밀번호를 입력해주세요.");
+		}
+		if (newPasswordConfirm == null || newPasswordConfirm.isBlank()) {
+			throw new IllegalArgumentException("새 비밀번호 확인을 입력해주세요.");
+		}
+		if (!PASSWORD_PATTERN.matcher(newPassword).matches()) {
+			throw new IllegalArgumentException("비밀번호는 8~20자의 영문, 숫자, 특수문자를 포함해야 합니다.");
+		}
+		if (!newPassword.equals(newPasswordConfirm)) {
+			throw new IllegalArgumentException("새 비밀번호가 일치하지 않습니다.");
+		}
+		LocalAccountVO localAccount = authMapper.findLocalAccountWithPasswordByUserId(userId);
+		if (localAccount == null) {
+			throw new IllegalArgumentException("비밀번호를 변경할 수 없습니다.");
+		}
+		if (!passwordEncoder.matches(currentPassword, localAccount.getPassword())) {
+			throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+		}
+		String encodedPassword = passwordEncoder.encode(newPassword);
+		authMapper.updatePassword(userId, encodedPassword);
 	}
 
     @Override

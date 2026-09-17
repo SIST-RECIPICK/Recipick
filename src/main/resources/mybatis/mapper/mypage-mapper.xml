@@ -21,7 +21,7 @@
 	    UPDATE users
 	    SET nickname = #{nickname},
 	        profile_image_url = COALESCE(
-	            #{profile_image_url},
+	            #{profile_image_url, jdbcType=VARCHAR},
 	            profile_image_url
 	        ),
 	        updated_at = SYSDATE
@@ -29,7 +29,6 @@
 	</update>
     
     <select id="myReviewList" resultType="Review_BoardVO">
-   		
    		SELECT
         
         rb.id,
