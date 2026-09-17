@@ -13,7 +13,12 @@ import com.sist.web.vo.FilledSlotVO;
 import com.sist.web.vo.RollbackResultVO;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.sql.Date;
 import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
@@ -81,12 +86,15 @@ public class CalendarAiServiceImpl implements CalendarAiService{
 
 	    for (Map<String, Object> plan : plans) {
 	        String meal_date = plan.get("meal_date").toString();
+	        System.out.println("Gemini가 준 meal_date 원본: " + meal_date);
+	        
 	        String meal_type = plan.get("meal_type").toString();
 	        int rcp_seq = ((Number) plan.get("rcp_seq")).intValue();
 	        
 	        Date parsedDate;
 	        try {
-	            parsedDate = new SimpleDateFormat("yyyy-MM-dd").parse(meal_date);
+	            parsedDate = Date.valueOf(meal_date);
+	            System.out.println("Date.valueOf 결과: " + parsedDate);
 	        } catch (Exception e) {
 	            e.printStackTrace();
 	            continue; // 날짜 파싱 실패하면 이 슬롯은 건너뜀
@@ -98,6 +106,7 @@ public class CalendarAiServiceImpl implements CalendarAiService{
 	        vo.setMeal_date(parsedDate); // Date 객체로 넣음
 	        vo.setMeal_type(meal_type);
 	        vo.setRcp_seq(rcp_seq);
+	        
 	        cMapper.upsertCalendarItem(vo);
 
 	        // 2. 이력 기록 (Postgres)
@@ -117,7 +126,7 @@ public class CalendarAiServiceImpl implements CalendarAiService{
 	    result.setFilledSlots(filledSlots);
 	    return result;
 	}
-
+	
 	@Override
 	public RollbackResultVO rollback(int user_id) {
 		// TODO Auto-generated method stub
@@ -167,6 +176,12 @@ public class CalendarAiServiceImpl implements CalendarAiService{
 	    sb.append("\n[{\"meal_date\":\"2026-09-05\",\"meal_type\":\"아침\",\"rcp_seq\":304}, ...]");
 	    
 	    return sb.toString();
+	}
+
+	@Override
+	public void confirm(int user_id) {
+		// TODO Auto-generated method stub
+		aMapper.confirmFill(user_id);
 	}
 
 }
