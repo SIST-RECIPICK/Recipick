@@ -301,4 +301,13 @@ public class RecipeServiceImpl implements RecipeService {
 		// TODO Auto-generated method stub
 		return rMapper.deleteIngredientUnit(rcp_seq);
 	}
+
+	//  특정 카테고리 총 레시피 개수 
+	@Override
+	public int categoryTotalRecipe(String main_category) {
+		// TODO Auto-generated method stub
+		return rMapper.categoryTotalPage(main_category);
+	}
+
+	
 }

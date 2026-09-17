@@ -19,6 +19,9 @@ public interface RecipeService {
 	// 카테고리별 페이지 블록 계산 
 	 public int[] category_pages (Map map); 
 	 
+	 // 카테고리 총 레시피 개수
+	 public int categoryTotalRecipe (String main_category);
+	 
 	// 좋아요 토글 (true=좋아요 등록됨, false=좋아요 취소됨)
 	 public boolean toggleLike(Map map);
 	 
