@@ -28,8 +28,7 @@
 	    WHERE id = #{id}
 	</update>
     
-    <select id="myReviewList" resultType="Review_BoardVO">
-   		
+    <select id="myReviewList" resultType="Review_BoardVO">  		
    		SELECT
         
         rb.id,
