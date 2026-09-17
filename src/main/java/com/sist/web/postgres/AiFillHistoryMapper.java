@@ -45,5 +45,16 @@ public interface AiFillHistoryMapper {
 	public void markAsRolledBack(
 			@Param("user_id") int user_id
 	);
-	
+	/*
+	 * <update id="confirmFill">
+		    UPDATE ai_fill_history
+		    SET confirmed = true
+		    WHERE user_id = #{user_id}
+		      AND confirmed = false
+		      AND rolled_back = false
+		</update>
+	 */
+	public void confirmFill(
+			@Param("user_id") int user_id
+	);
 }

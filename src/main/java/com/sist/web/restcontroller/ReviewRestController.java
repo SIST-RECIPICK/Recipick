@@ -35,9 +35,7 @@ public class ReviewRestController {
 
 	private final ReviewService rService;
 	private final CloudinaryUtil cloudinaryUtil;
-
 	@GetMapping("/review/list")
-
 	public ResponseEntity<Map<String, Object>> review_list(@RequestParam(value = "page", defaultValue = "1") int page,
 			@RequestParam(value = "keyword", required = false) String keyword,
 			@RequestParam(value = "type", defaultValue = "subject") String type
