@@ -107,7 +107,6 @@ public class SocialAuthServiceImpl implements SocialAuthService {
         if (socialAccount != null) {
 
             // 기존 Google 계정
-            // 이메일이 아니라 social_accounts.users_id를 기준으로 users 조회
             user = socialAuthMapper.findUserById(socialAccount.getUsers_id());
 
             if (user == null) {
