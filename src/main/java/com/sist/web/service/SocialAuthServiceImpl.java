@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,9 +20,11 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.sist.web.dto.GoogleLoginRequest;
 import com.sist.web.dto.LoginResponse;
+import com.sist.web.dto.SocialLinkRequest;
 import com.sist.web.exception.AuthException;
 import com.sist.web.mapper.SocialAuthMapper;
 import com.sist.web.security.JwtTokenProvider;
+import com.sist.web.vo.LocalAccountVO;
 import com.sist.web.vo.SocialAccountVO;
 import com.sist.web.vo.UsersVO;
 
@@ -36,6 +39,7 @@ public class SocialAuthServiceImpl implements SocialAuthService {
     private final SocialAuthMapper socialAuthMapper;
     private final JwtTokenProvider jwtTokenProvider;
     private final StringRedisTemplate redisTemplate;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${google.client-id}")
     private String googleClientId;
@@ -161,6 +165,147 @@ public class SocialAuthServiceImpl implements SocialAuthService {
                     HttpStatus.FORBIDDEN
             );
         }
+
+        // 8. Access Token 생성
+        String accessToken =
+                jwtTokenProvider.createAccessToken(user.getId(), user.getRole());
+
+        // 9. Refresh Token 생성 및 Redis 저장
+        String refreshToken = UUID.randomUUID().toString();
+
+        redisTemplate.opsForValue().set(
+                "refresh:" + refreshToken,
+                String.valueOf(user.getId()),
+                Duration.ofMillis(
+                        jwtTokenProvider.getRefreshTokenExpiration()
+                )
+        );
+
+        // 10. 로그인 응답 생성
+        LoginResponse response = new LoginResponse();
+        response.setAccessToken(accessToken);
+        response.setAccountStatus(user.getStatus());
+        response.setUserId(user.getId());
+        response.setNickname(user.getNickname());
+        response.setRole(user.getRole());
+        response.setRefreshToken(refreshToken);
+
+        return response;
+    }
+    
+    @Override
+    @Transactional
+    public LoginResponse linkAndLogin(SocialLinkRequest request) {
+
+        String idTokenString = request.getIdToken();
+        String password = request.getPassword();
+
+        if (idTokenString == null || idTokenString.isBlank()) {
+            throw new AuthException(
+                    "INVALID_TOKEN",
+                    "구글 인증 토큰이 유효하지 않습니다.",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+
+        if (password == null || password.isBlank()) {
+            throw new AuthException(
+                    "INVALID_PASSWORD_INPUT",
+                    "비밀번호를 입력해주세요.",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+
+        // 1. Google ID Token 검증
+        GoogleIdTokenVerifier verifier =
+                new GoogleIdTokenVerifier.Builder(
+                        new NetHttpTransport(),
+                        new GsonFactory()
+                )
+                .setAudience(Collections.singletonList(googleClientId))
+                .build();
+
+        GoogleIdToken idToken;
+
+        try {
+            idToken = verifier.verify(idTokenString);
+        } catch (GeneralSecurityException | IOException e) {
+            throw new AuthException(
+                    "GOOGLE_VERIFY_FAILED",
+                    "구글 토큰 검증 중 오류가 발생했습니다.",
+                    HttpStatus.UNAUTHORIZED
+            );
+        }
+
+        if (idToken == null) {
+            throw new AuthException(
+                    "INVALID_GOOGLE_TOKEN",
+                    "유효하지 않은 구글 토큰입니다.",
+                    HttpStatus.UNAUTHORIZED
+            );
+        }
+
+        // 2. 검증된 Google ID Token에서 정보 추출
+        Payload payload = idToken.getPayload();
+
+        String providerId = payload.getSubject();
+        String email = payload.getEmail();
+
+        if (providerId == null || providerId.isBlank() || email == null || email.isBlank()) {
+            throw new AuthException(
+                    "INVALID_GOOGLE_USER_INFO",
+                    "구글 사용자 정보를 확인할 수 없습니다.",
+                    HttpStatus.UNAUTHORIZED
+            );
+        }
+
+        // 3. local_accounts 테이블에서 이메일로 로컬 인증 정보 조회
+        LocalAccountVO localAccount = socialAuthMapper.findLocalAccountByEmail(email);
+
+        if (localAccount == null) {
+            throw new AuthException(
+                    "USER_NOT_FOUND",
+                    "연동할 기존 로컬 계정을 찾을 수 없습니다.",
+                    HttpStatus.NOT_FOUND
+            );
+        }
+
+        // 4. 로컬 계정 비밀번호 검증 (평문 입력값 vs DB 암호화 값)
+        if (!passwordEncoder.matches(password, localAccount.getPassword())) {
+            throw new AuthException(
+                    "INVALID_PASSWORD",
+                    "기존 계정의 비밀번호가 일치하지 않습니다.",
+                    HttpStatus.UNAUTHORIZED
+            );
+        }
+
+        // 5. users 테이블에서 사용자 공통 프로필 정보 조회
+        UsersVO user = socialAuthMapper.findUserById(localAccount.getUser_id());
+
+        if (user == null) {
+            throw new AuthException(
+                    "USER_NOT_FOUND",
+                    "회원 프로필 정보를 찾을 수 없습니다.",
+                    HttpStatus.NOT_FOUND
+            );
+        }
+
+        // 6. 탈퇴 회원 확인
+        if ("WITHDRAWN".equals(user.getStatus())) {
+            throw new AuthException(
+                    "ACCOUNT_WITHDRAWN",
+                    "탈퇴 처리된 계정입니다.",
+                    HttpStatus.FORBIDDEN
+            );
+        }
+
+        // 7. social_accounts에 구글 계정 연동 저장
+        SocialAccountVO newSocialAccount = new SocialAccountVO();
+        newSocialAccount.setProvider(PROVIDER_GOOGLE);
+        newSocialAccount.setProvider_id(providerId);
+        newSocialAccount.setUsers_id(user.getId());
+
+        socialAuthMapper.insertSocialAccount(newSocialAccount);
 
         // 8. Access Token 생성
         String accessToken =

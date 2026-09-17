@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import com.sist.web.vo.LocalAccountVO;
 import com.sist.web.vo.SocialAccountVO;
 import com.sist.web.vo.UsersVO;
 
@@ -16,4 +17,5 @@ public interface SocialAuthMapper {
 	UsersVO findUserByEmail(@Param("email") String email);
 	UsersVO findUserById(@Param("id") int id);
 	int insertUser(UsersVO user);
+	LocalAccountVO findLocalAccountByEmail(@Param("email") String email);
 }
