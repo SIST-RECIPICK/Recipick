@@ -70,7 +70,7 @@
 	
 	<!-- 좋아요 리스트 -->
 	<select id="userLikeList" resultType="com.sist.web.vo.MyListVO" parameterType="int">
-		SELECT rcp_seq,rcp_nm,att_file_no_main,hit,nickname,
+		SELECT rcp_seq,rcp_nm,att_file_no_main,hit,nickname,rcp_way2,rcp_pat2,
 		(
        		SELECT COUNT(*)
        		FROM recipe_like r
