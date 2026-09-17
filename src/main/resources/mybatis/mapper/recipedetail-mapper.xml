@@ -139,4 +139,11 @@
 		WHERE rcp_seq=#{rcp_seq}
 		ORDER BY created_at DESC
 	</select>
+	
+	<!-- 내가 등록한 레시피 조회수 증가 -->
+	<update id="recipeHitUp" parameterType="int">
+	 UPDATE recipe 
+	 SET hit = hit+1
+	 WHERE rcp_seq = #{rcp_seq}
+	</update>
 </mapper>

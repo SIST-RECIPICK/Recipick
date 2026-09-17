@@ -27,4 +27,5 @@ public interface RecipeDetailService {
 	public List<IngredientUnitVO> relationRecipeIdList(int recipe_id);
 	public List<RecipeVO> relationRecipeList(int recipe_id);
 	public List<Review_BoardVO> recipeReviewList(int rcp_seq);
+	public void recipeHitUp(int rcp_seq);
 }
