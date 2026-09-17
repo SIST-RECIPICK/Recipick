@@ -228,22 +228,60 @@ public class RefridgeServiceImpl implements RefridgeService {
 	 *
 	 * → 볶기
 	 */
+//	private String extractValue(String content, String key) {
+//		if (content == null || content.isEmpty()) {
+//			return "";
+//		}
+//
+//		String[] lines = content.split("\\r?\\n");
+//
+//		for (String line : lines) {
+//			String trim = line.trim();
+//
+//			if (trim.startsWith(key + ":")) {
+//				return trim.substring((key + ":").length()).trim();
+//			}
+//		}
+//
+//		return "";
+//	}
 	private String extractValue(String content, String key) {
-		if (content == null || content.isEmpty()) {
-			return "";
-		}
+	    if (content == null || content.isEmpty()) {
+	        return "";
+	    }
 
-		String[] lines = content.split("\\r?\\n");
+	    String[] lines = content.split("\\r?\\n");
+	    StringBuilder result = new StringBuilder();
+	    boolean capturing = false;
 
-		for (String line : lines) {
-			String trim = line.trim();
+	    String[] allKeys = {"레시피명", "조리방법", "요리종류", "영양정보", "탄수화물",
+	                         "단백질", "지방", "나트륨", "해시태그", "주재료", "조리정보", "요리팁"};
 
-			if (trim.startsWith(key + ":")) {
-				return trim.substring((key + ":").length()).trim();
-			}
-		}
+	    for (String line : lines) {
+	        String trim = line.trim();
 
-		return "";
+	        if (trim.startsWith(key + ":")) {
+	            capturing = true;
+	            result.append(trim.substring((key + ":").length()).trim()).append(" ");
+	            continue;
+	        }
+
+	        if (capturing) {
+	            boolean isAnotherKey = false;
+	            for (String otherKey : allKeys) {
+	                if (!otherKey.equals(key) && trim.startsWith(otherKey + ":")) {
+	                    isAnotherKey = true;
+	                    break;
+	                }
+	            }
+	            if (isAnotherKey) {
+	                break;
+	            }
+	            result.append(trim).append(" ");
+	        }
+	    }
+
+	    return result.toString().trim();
 	}
 
 	/**

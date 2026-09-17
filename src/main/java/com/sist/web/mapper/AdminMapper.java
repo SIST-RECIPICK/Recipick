@@ -25,7 +25,7 @@ public interface AdminMapper {
 			+ "OFFSET #{start} ROWS FETCH NEXT 15 ROWS ONLY")
 	public List<UsersVO> usersList(@Param("start") int start);
 	
-	@Select("SELECT CEIL(COUNT(*)/10.0) "
+	@Select("SELECT CEIL(COUNT(*)/15.0) "
 			+ "FROM ${tablename} ")
 	public int totalPageCount(String tablename);
 	

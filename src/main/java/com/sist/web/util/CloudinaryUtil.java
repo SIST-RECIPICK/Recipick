@@ -1,6 +1,6 @@
 package com.sist.web.util;
 
-import com.cloudinary.Cloudinary;
+
 import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CloudinaryUtil {
 
-    private final Cloudinary cloudinary;
+    private final com.cloudinary.Cloudinary cloudinary;
     private static final long MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 
     public Map<String, Object> uploadImage(MultipartFile file) throws IOException {

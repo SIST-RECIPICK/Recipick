@@ -164,4 +164,10 @@ public class RecipeDetailServiceImpl implements RecipeDetailService{
 		
 		return mapper.recipeReviewList(rcp_seq);
 	}
+
+	@Override
+	public void recipeHitUp(int rcp_seq) {
+		mapper.recipeHitUp(rcp_seq);
+		
+	}
 }
