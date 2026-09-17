@@ -14,4 +14,5 @@ import lombok.RequiredArgsConstructor;
 public interface CalendarAiService {
 	public FillResultVO fillEmptySlots(int user_id, String year, String month, String command);
 	public RollbackResultVO rollback(int user_id);
+	public void confirm(int user_id);
 }
