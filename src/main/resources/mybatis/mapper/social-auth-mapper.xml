@@ -43,5 +43,11 @@
     INSERT INTO users (id, email, nickname, status, role, created_at, updated_at)
     VALUES (#{id}, #{email}, #{nickname}, 'ACTIVE', 'USER', SYSTIMESTAMP, SYSTIMESTAMP)
   </insert>
+  
+  <select id="findLocalAccountByEmail" parameterType="string" resultType="LocalAccountVO">
+        SELECT id, email, password, user_id
+        FROM local_accounts
+        WHERE email = #{email}
+    </select>
 
 </mapper>
