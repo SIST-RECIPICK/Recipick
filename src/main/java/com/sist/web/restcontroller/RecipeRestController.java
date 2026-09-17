@@ -76,13 +76,16 @@ public class RecipeRestController {
 		   map.put("page", page);
 		   map.put("start", start);
 		   map.put("sort", sort);
+		  
 		
 		try {
 		    List<RecipeListVO> list = rService.recipeCategoryData(map);
 		    int[] pages = rService.category_pages(map);
+		    int totalCount = rService.categoryTotalRecipe(main_category);
 		    
 		    resultMap.put("list", list);
 		    resultMap.put("pages", pages);
+		    resultMap.put("totalCount", totalCount);
 		    
 		} catch (Exception ex) {
 		    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
