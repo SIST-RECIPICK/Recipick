@@ -3,16 +3,20 @@ package com.sist.web.restcontroller;
 import java.util.*;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.sist.web.security.JwtUser;
 import com.sist.web.service.MypageService;
@@ -45,10 +49,57 @@ public class MypageRestController {
 		return ResponseEntity.ok(mService.mypageMainCount(jwtUser.getUserId()));
 	}
 	
+	@PutMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> updateMyProfile(
+	        @RequestParam(value = "nickname", required = false) String nickname,
+	        @RequestPart(value = "file", required = false) MultipartFile file,
+	        @AuthenticationPrincipal JwtUser jwtUser) {
+
+	    if (jwtUser == null) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+	                .body("로그인이 필요합니다.");
+	    }
+
+	    try {
+	        mService.updateMyProfile(jwtUser.getUserId(), nickname, file);
+	        return ResponseEntity.ok("OK");
+	    } catch (IllegalArgumentException ex) {
+	        return ResponseEntity.badRequest().body(ex.getMessage());
+	    } catch (Exception ex) {
+	        ex.printStackTrace();
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body("프로필 수정에 실패했습니다.");
+	    }
+	}
+	
+	@PutMapping("/password")
+	public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request,
+			@AuthenticationPrincipal JwtUser jwtUser) {
+		if (jwtUser == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+		}
+		try {
+			String currentPassword = request.get("currentPassword");
+			String newPassword = request.get("newPassword");
+			String newPasswordConfirm = request.get("newPasswordConfirm");
+			mService.changePassword(jwtUser.getUserId(), currentPassword, newPassword, newPasswordConfirm);
+			return ResponseEntity.ok("OK");
+		} catch (IllegalArgumentException ex) {
+			return ResponseEntity.badRequest().body(ex.getMessage());
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("비밀번호 변경에 실패했습니다.");
+		}
+	}
+	
 	@GetMapping("/reviews")
 	public ResponseEntity<Map<String, Object>> myReviewList(
 	        @RequestParam(value = "page", defaultValue = "1") int page,
 	        @AuthenticationPrincipal JwtUser jwtUser) {
+		
+		if (jwtUser == null) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	    }
 
 	    try {
 	        int id = jwtUser.getUserId();
