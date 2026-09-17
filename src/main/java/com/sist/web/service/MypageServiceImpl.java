@@ -1,6 +1,7 @@
 package com.sist.web.service;
 
 import com.sist.web.mapper.ReviewMapper;
+
 import com.sist.web.util.CloudinaryUtil;
 
 import java.util.*;
@@ -29,6 +30,8 @@ public class MypageServiceImpl implements MypageService {
 	private static final Pattern PASSWORD_PATTERN = Pattern
 			.compile("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{}|;:,.<>?]).{8,20}$");
     private final int ROW_SIZE = 10;
+    
+
 
     @Override
     public UsersVO mypageProfile(int id) {
