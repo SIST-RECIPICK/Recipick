@@ -61,5 +61,19 @@ public class CalendarAiRestController {
         }
         return ResponseEntity.ok(result);
     }
-	
+	@PostMapping("/calendar/ai-fill/confirm")
+	public ResponseEntity<String> ai_confirm(
+			@AuthenticationPrincipal JwtUser jwtUser
+	){
+		if (jwtUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+		try {
+			aiService.confirm(jwtUser.getUserId());
+		}catch(Exception ex) {
+			ex.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		return ResponseEntity.ok("OK");
+	}
 }

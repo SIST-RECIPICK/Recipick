@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sist.web.mapper.SocialAuthMapper">
+
+  <select id="findSocialAccount" resultType="SocialAccountVO">
+    SELECT id, provider, provider_id, users_id
+    FROM social_accounts
+    WHERE provider = #{provider}
+      AND provider_id = #{provider_id}
+  </select>
+
+  <select id="findSocialAccountByUserId" parameterType="int" resultType="SocialAccountVO">
+    SELECT id, provider, provider_id, users_id
+    FROM social_accounts
+    WHERE users_id = #{users_id}
+  </select>
+
+  <insert id="insertSocialAccount" parameterType="SocialAccountVO">
+    <selectKey keyProperty="id" resultType="int" order="BEFORE">
+      SELECT SOCIAL_ACCOUNTS_SEQ.NEXTVAL FROM dual
+    </selectKey>
+    INSERT INTO social_accounts (id, provider, provider_id, users_id)
+    VALUES (#{id}, #{provider}, #{provider_id}, #{users_id})
+  </insert>
+
+  <select id="findUserByEmail" parameterType="String" resultType="UsersVO">
+    SELECT id, email, nickname, status, role
+    FROM users
+    WHERE email = #{email}
+  </select>
+
+  <select id="findUserById" parameterType="int" resultType="UsersVO">
+    SELECT id, email, nickname, status, role
+    FROM users
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insertUser" parameterType="UsersVO">
+    <selectKey keyProperty="id" resultType="int" order="BEFORE">
+      SELECT USERS_SEQ.NEXTVAL FROM dual
+    </selectKey>
+    INSERT INTO users (id, email, nickname, status, role, created_at, updated_at)
+    VALUES (#{id}, #{email}, #{nickname}, 'ACTIVE', 'USER', SYSTIMESTAMP, SYSTIMESTAMP)
+  </insert>
+
+</mapper>
