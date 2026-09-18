@@ -19,6 +19,7 @@ public interface MypageMapper {
     
     public int updateMyProfile(@Param("id") int id, @Param("nickname") String nickname,
             @Param("profile_image_url") String profileImageUrl);
+    public boolean existsLocalAccountByUserId(@Param("id") int id);
     
     public List<Review_BoardVO> myReviewList(@Param("id") int id, @Param("start") int start);
     public int myReviewTotalPage(@Param("id") int id);

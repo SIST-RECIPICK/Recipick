@@ -28,6 +28,12 @@
 	        updated_at = SYSDATE
 	    WHERE id = #{id}
 	</update>
+	
+	<select id="existsLocalAccountByUserId" resultType="boolean">
+	    SELECT COUNT(*)
+	    FROM local_accounts
+	    WHERE user_id = #{id}
+	</select>
     
     <select id="myReviewList" resultType="Review_BoardVO">
    		SELECT

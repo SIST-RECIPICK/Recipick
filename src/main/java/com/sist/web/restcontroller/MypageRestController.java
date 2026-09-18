@@ -72,6 +72,14 @@ public class MypageRestController {
 	    }
 	}
 	
+	@GetMapping("/has-local-account")
+	public ResponseEntity<Boolean> hasLocalAccount(@AuthenticationPrincipal JwtUser jwtUser) {
+	    if (jwtUser == null) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	    }
+	    return ResponseEntity.ok(mService.existsLocalAccount(jwtUser.getUserId()));
+	}
+	
 	@PutMapping("/password")
 	public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request,
 			@AuthenticationPrincipal JwtUser jwtUser) {
