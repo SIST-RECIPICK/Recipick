@@ -109,6 +109,11 @@ public class MypageServiceImpl implements MypageService {
 		String encodedPassword = passwordEncoder.encode(newPassword);
 		authMapper.updatePassword(userId, encodedPassword);
 	}
+    
+    @Override
+    public boolean existsLocalAccount(int userId) {
+        return mMapper.existsLocalAccountByUserId(userId);
+    }
 
     @Override
     public List<Review_BoardVO> myReviewList(int id, int page) {

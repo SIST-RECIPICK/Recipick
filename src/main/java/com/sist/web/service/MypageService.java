@@ -12,6 +12,7 @@ public interface MypageService {
     
     public void updateMyProfile(int userId, String nickname, MultipartFile file);
     public void changePassword(int userId, String currentPassword, String newPassword, String newPasswordConfirm);
+    public boolean existsLocalAccount(int userId);
 
     public List<Review_BoardVO> myReviewList(int id, int page);
     public int myReviewTotalPage(int id);
