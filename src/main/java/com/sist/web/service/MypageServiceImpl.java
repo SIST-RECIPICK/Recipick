@@ -94,7 +94,7 @@ public class MypageServiceImpl implements MypageService {
 			throw new IllegalArgumentException("새 비밀번호 확인을 입력해주세요.");
 		}
 		if (!PASSWORD_PATTERN.matcher(newPassword).matches()) {
-			throw new IllegalArgumentException("비밀번호는 8~20자의 영문, 숫자, 특수문자를 포함해야 합니다.");
+			throw new IllegalArgumentException("비밀번호는 문자, 숫자, 특수기호를 모두 포함해 8~20자로 입력해주세요.");
 		}
 		if (!newPassword.equals(newPasswordConfirm)) {
 			throw new IllegalArgumentException("새 비밀번호가 일치하지 않습니다.");
