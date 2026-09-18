@@ -14,6 +14,7 @@ public class Review_Board_ReplyVO {
     
     // 댓글 작성자(user)
     private String writer_nickname;
+    private String writer_profile_image;
     
     //원본 레시피 제목
     private String rev_subject;

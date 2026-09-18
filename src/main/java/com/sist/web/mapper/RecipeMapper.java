@@ -65,6 +65,14 @@ public interface RecipeMapper {
 	// 카테고리 용 총 페이지 
 	public int categoryTotalPage(String main_category);
 	
+	// 카테고리 총 레시피 개수
+	/*
+	 <select id="categoryTotalRecipe" resultType="int" parameterType="String">
+	  SELECT COUNT(*) FROM recipe
+	   WHERE rcp_pat2 = #{main_category}
+	 </select>
+	 */
+	public int categoryTotalRecipe (String main_category);
 	
 	/*
 	 * <select id="checkRecipeLike" resultType="int" parameterType="hashmap">

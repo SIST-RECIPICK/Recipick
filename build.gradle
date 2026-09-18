@@ -70,6 +70,8 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1'
 	/* cloudinary */
 	implementation 'com.cloudinary:cloudinary-http44:1.36.0'
+	/* social login */
+	implementation 'com.google.api-client:google-api-client:2.2.0'
 }
 
 tasks.named('test') {
