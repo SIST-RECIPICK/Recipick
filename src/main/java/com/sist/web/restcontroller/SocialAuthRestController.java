@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sist.web.dto.GoogleLoginRequest;
 import com.sist.web.dto.LoginResponse;
+import com.sist.web.dto.SocialLinkRequest;
 import com.sist.web.security.JwtTokenProvider;
 import com.sist.web.service.SocialAuthService;
 
@@ -43,5 +44,11 @@ public class SocialAuthRestController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(response);
+    }
+    
+    @PostMapping("/google/link")
+    public ResponseEntity<LoginResponse> linkGoogleAccount(@RequestBody SocialLinkRequest request) {
+        LoginResponse response = socialAuthService.linkAndLogin(request);
+        return ResponseEntity.ok(response);
     }
 }

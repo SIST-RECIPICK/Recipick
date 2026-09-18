@@ -66,6 +66,12 @@
   WHERE rcp_pat2 = #{main_category} 
  </select>
  
+ <!-- 특정 카테고리 총 레시피 개수  -->
+ <select id="categoryTotalRecipe" resultType="int" parameterType="String">
+  SELECT COUNT(*) FROM recipe
+   WHERE rcp_pat2 = #{main_category}
+ </select>
+ 
  <!-- 레시피 좋아요 토글버튼  (0=안눌렀음, 1=이미 눌렀음) -->
 	<select id="checkRecipeLike" resultType="int" parameterType="hashmap">
 	    SELECT COUNT(*) FROM recipe_like

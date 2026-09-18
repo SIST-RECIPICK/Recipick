@@ -43,5 +43,15 @@
     INSERT INTO users (id, email, nickname, status, role, created_at, updated_at)
     VALUES (#{id}, #{email}, #{nickname}, 'ACTIVE', 'USER', SYSTIMESTAMP, SYSTIMESTAMP)
   </insert>
+  
+  <select id="findLocalAccountByEmail" parameterType="string" resultType="com.sist.web.vo.LocalAccountVO">
+	    SELECT 
+	        l.id, 
+	        l.password, 
+	        l.user_id
+	    FROM local_accounts l
+	    JOIN users u ON l.user_id = u.id
+	    WHERE u.email = #{email}
+	</select>
 
 </mapper>
