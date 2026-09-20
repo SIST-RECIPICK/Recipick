@@ -24,7 +24,7 @@ public class HardWithdrawScheduler {
 	private final AuthMapper authMapper;
 	private final AuthService authService;
 
-	@Scheduled(cron = "0 0 0 * * *")
+	@Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
 	public void run() {
 		LocalDateTime cutoffDate = LocalDateTime.now().minusDays(HARD_DELETE_GRACE_PERIOD_DAYS);
 		List<Integer> candidates = authMapper.findHardDeleteCandidates(cutoffDate);

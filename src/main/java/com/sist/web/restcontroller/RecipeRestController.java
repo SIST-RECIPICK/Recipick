@@ -6,6 +6,7 @@ import com.sist.web.util.FileUploadUtil;
 import java.util.*;
 
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
@@ -30,9 +31,10 @@ import lombok.RequiredArgsConstructor;
 public class RecipeRestController {
 
 	private final RecipeService rService;
-	
-	// 이미지 업로드 저장 경로 (고정 경로, 공용 설정 파일은 건드리지 않음)
-		private static final String UPLOAD_DIR = "C:/upload";
+
+	// 이미지 업로드 저장 경로 (FileUploadConfig의 서빙 경로와 동일한 app.upload-dir 사용)
+	@Value("${app.upload-dir}")
+	private String UPLOAD_DIR;
 
 
 	// 레시피 목록
