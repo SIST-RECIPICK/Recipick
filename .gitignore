@@ -41,6 +41,9 @@ src/main/resources/db.properties
 src/main/resources/postgres.properties
 src/main/resources/Ai.properties
 
+### env
+.env
+
 ### claude ###
 .claude/
 graphify-out/

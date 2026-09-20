@@ -1,0 +1,52 @@
+services:
+  app:
+    image: ${DOCKER_IMAGE}
+    container_name: recipick-app
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      REDIS_HOST: redis
+      UPLOAD_DIR: /data/uploads
+    volumes:
+      - uploads-data:/data/uploads
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: recipick-redis-prod
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: recipick-postgres
+    environment:
+      POSTGRES_DB: recipick
+      POSTGRES_USER: ${post_username}
+      POSTGRES_PASSWORD: ${post_password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./deploy/postgres-init:/docker-entrypoint-initdb.d:ro
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: recipick-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend-dist:/usr/share/nginx/html:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  uploads-data:
+  redis-data:
+  postgres-data:

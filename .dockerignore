@@ -1,0 +1,13 @@
+.git
+.gradle
+.idea
+.vscode
+build/
+docs/
+docker-compose.yml
+docker-compose.prod.yml
+deploy/
+.env
+.env.example
+*.properties
+*.pem
