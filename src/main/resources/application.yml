@@ -4,10 +4,10 @@ server:
     context-path: /
 spring:
   config:
-    import: 
-      - classpath:db.properties
-      - classpath:postgres.properties
-      - classpath:Ai.properties
+    import:
+      - optional:classpath:db.properties
+      - optional:classpath:postgres.properties
+      - optional:classpath:Ai.properties
   datasource:
     oracle:
       jdbc-url: ${sist_url}
@@ -25,8 +25,12 @@ spring:
         validation-timeout: 5000
   data:
     redis:
-      host: localhost
+      host: ${REDIS_HOST:localhost}
       port: 6379
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 30MB
   jpa:
     database: oracle
     properties:
@@ -77,7 +81,8 @@ jwt:
   access-token-expiration: 1800000       # 30분
   refresh-token-expiration: 1209600000   # 14일
 app:
-  password-reset-url: http://localhost:5173/reset-password
+  password-reset-url: ${FRONTEND_RESET_URL:http://localhost:5173/reset-password}
+  upload-dir: ${UPLOAD_DIR:C:/upload}
 
 mybatis:
   type-aliases-package: com.sist.web.vo
