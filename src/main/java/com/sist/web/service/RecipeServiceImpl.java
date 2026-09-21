@@ -306,7 +306,7 @@ public class RecipeServiceImpl implements RecipeService {
 	@Override
 	public int categoryTotalRecipe(String main_category) {
 		// TODO Auto-generated method stub
-		return rMapper.categoryTotalPage(main_category);
+		return rMapper.categoryTotalRecipe(main_category);
 	}
 
 	
