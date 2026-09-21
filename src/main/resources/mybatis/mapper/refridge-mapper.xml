@@ -26,4 +26,9 @@
         JOIN ingredient i ON r.ingredient_id = i.id
         WHERE r.users_id = #{users_id}
     </select>
+    
+    <delete id="deleteByUserId" parameterType="int">
+    DELETE FROM refrigerator WHERE users_id = #{users_id}
+</delete>
+    
 </mapper>

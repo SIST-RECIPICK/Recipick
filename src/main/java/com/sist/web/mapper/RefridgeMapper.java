@@ -43,4 +43,8 @@ public interface RefridgeMapper {
 	    * 
 	    */
 		//public RecipeVO oracleRecipeAllData(int rcp_seq);
+	
+	
+	
+	public void deleteByUserId(int users_id);
 }

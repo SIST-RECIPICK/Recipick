@@ -32,10 +32,19 @@ public class RefridgeServiceImpl implements RefridgeService {
 
 	@Override
 	public void registerData(List<RefridgeVO> volist) {
-		for (RefridgeVO vo : volist) {
-			System.out.println("vo = " + vo);
-			rMapper.registerData(vo);
-		}
+	    if (volist == null || volist.isEmpty()) {
+	        return;
+	    }
+
+	    int usersId = volist.get(0).getUsers_id();
+
+	    // 기존 냉장고 데이터를 먼저 다 지움
+	    rMapper.deleteByUserId(usersId);
+
+	    // 새로 체크된 재료들만 다시 저장
+	    for (RefridgeVO vo : volist) {
+	        rMapper.registerData(vo);
+	    }
 	}
 
 	@Override
@@ -455,6 +464,7 @@ public class RefridgeServiceImpl implements RefridgeService {
 	 *
 	 * 현재 데이터가 구조화되어 있지 않은 경우 content의 문장을 분리한다.
 	 */
+	
 	private List<String> extractCookingSteps(String content) {
 		List<String> steps = new ArrayList<>();
 
@@ -496,6 +506,13 @@ public class RefridgeServiceImpl implements RefridgeService {
 		}
 
 		return steps;
+	}
+
+	@Override
+	public void deleteByUserId(int users_id) {
+		// TODO Auto-generated method stub
+		rMapper.deleteByUserId(users_id);
+		
 	}
 
 //	@Override
