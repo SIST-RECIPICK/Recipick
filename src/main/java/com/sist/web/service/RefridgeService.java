@@ -15,4 +15,6 @@ public interface RefridgeService {
 	public List<Map<String, Object>> recommandRecipe(List<String> ingredients,String sort);
 	
 	//public RecipeVO oracleRecipeAllData(int rcp_seq);
+	
+	public void deleteByUserId(int users_id);
 }
